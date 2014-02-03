@@ -1,0 +1,11 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: Common-API SomeIP middleware
+Description: Common-API SomeIP middleware
+Version: @PACKAGE_VERSION@
+Requires: CommonAPI glib-2.0 pelagicore-utils @ADDITIONAL_DEPENDENCIES@
+Libs: -L${libdir} -lCommonAPI-SomeIP -lsomeip_client_lib -lsomeip_lib
+Cflags: -I${includedir}/someip/lib -I${includedir}/someip -I${includedir}/someip/CommonApi -std=c++11 -ggdb

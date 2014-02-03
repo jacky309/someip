@@ -1,0 +1,8 @@
+[Unit]
+Description=SomeIP dispatcher daemon
+
+[Socket]
+ListenStream=/tmp/someIPSocket
+
+[Install]
+WantedBy=sockets.target

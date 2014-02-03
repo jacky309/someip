@@ -1,0 +1,11 @@
+[Unit]
+Description=SomeIP dispatcher daemon
+Requires=someip_dispatcher.socket
+
+[Service]
+ExecStart=@prefix@/bin/someip_dispatcher -l /tmp/someip_dispatcher.log
+
+LimitCORE=infinity
+
+[Install]
+Also=someip_dispatcher.socket
