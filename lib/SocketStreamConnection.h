@@ -12,6 +12,8 @@
 
 #define returnIfError(code) {IPCOperationReport c = code; if (c != IPCOperationReport::OK) return c; }
 
+namespace SomeIP_Lib {
+
 class IPCBufferReader {
 
 public:
@@ -232,3 +234,5 @@ protected:
 	int m_fileDescriptor = SocketStreamConnection::UNINITIALIZED_FILE_DESCRIPTOR;
 
 };
+
+}

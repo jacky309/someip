@@ -18,16 +18,21 @@ endif()
 
 add_definitions(-DCOMMONAPI_INTERNAL_COMPILATION)
 
+if (LOGGING_PACKAGE)
+	find_package(${LOGGING_PACKAGE})
+	set (ADDITIONAL_DEPENDENCIES pelagicore-utils)
+else()
+	set (LOGGING_INCLUDE_STATEMENT "\#include \"utilLib/SomeIP-log-null.h\"")
+endif()
+
 # Dependencies
 FIND_PACKAGE(PkgConfig REQUIRED)
-
-find_package(PelagicoreUtilities)
 
 pkg_check_modules(GLIB REQUIRED glib-2.0)
 add_definitions(${GLIB_CFLAGS})
 
-pkg_check_modules(PELAGICORE_UTILS REQUIRED pelagicore-utils)
-add_definitions(${PELAGICORE_UTILS_CFLAGS})
+#pkg_check_modules(PELAGICORE_UTILS REQUIRED pelagicore-utils)
+#add_definitions(${PELAGICORE_UTILS_CFLAGS})
 
 pkg_check_modules(COMMONAPI REQUIRED CommonAPI)
 add_definitions(${COMMONAPI_CFLAGS})
@@ -41,7 +46,7 @@ include_directories(
 )
 
 include_directories(
-	utilLib/include
+	${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 link_directories(
@@ -59,17 +64,24 @@ if (ENABLE_SYSTEMD)
 	set(SYSTEMD_CONFIGURATION_FILES_DIR "/lib/systemd/system")
 endif()
 
+set(PUBLIC_HEADERS_LOCATION include/someip/lib)
+
 add_subdirectory (daemon)
 add_subdirectory (tools)
 add_subdirectory (lib)
 add_subdirectory (clientLib)
-
-add_subdirectory (doc)
+add_subdirectory (utilLib)
 
 add_subdirectory (common-api/include)
 add_subdirectory (common-api/src)
 
-add_subdirectory (test)
+if (ENABLE_TEST)
+	add_subdirectory (test)
+endif()
+
+if (ENABLE_DOC)
+	add_subdirectory (doc)
+endif()
 
 if (ENABLE_EXAMPLES)
 endif()

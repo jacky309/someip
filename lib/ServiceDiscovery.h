@@ -1,12 +1,13 @@
 #pragma once
 
 #include "SomeIP.h"
+#include "SomeIP-common.h"
 #include "boost/variant.hpp"
 #include "Networking.h"
 
 #include "serialization.h"
 
-namespace SomeIP {
+namespace SomeIP_Lib {
 
 static const uint16_t SERVICE_DISCOVERY_UDP_PORT = 10102;
 
@@ -249,7 +250,7 @@ public:
 				break;
 
 				default : {
-					log_warn("Unknown entry type : ") << static_cast<int>(type);
+					log_warning("Unknown entry type : ") << static_cast<int>(type);
 				}
 				break;
 
@@ -279,7 +280,7 @@ public:
 				break;
 
 				default : {
-					log_warn("Unknown entry type : ") << static_cast<int>(type);
+					log_warning("Unknown entry type : ") << static_cast<int>(type);
 				}
 				break;
 
@@ -379,19 +380,19 @@ public:
 	virtual ~ServiceDiscoveryListener() {
 	}
 
-	virtual void onRemoteClientSubscription(const SomeIP::SomeIPServiceDiscoveryEventGroupEntry& serviceEntry,
-						const SomeIP::IPv4ConfigurationOption* address) = 0;
+	virtual void onRemoteClientSubscription(const SomeIPServiceDiscoveryEventGroupEntry& serviceEntry,
+						const IPv4ConfigurationOption* address) = 0;
 
-	virtual void onRemoteClientSubscriptionFinished(const SomeIP::SomeIPServiceDiscoveryEventGroupEntry& serviceEntry,
-							const SomeIP::IPv4ConfigurationOption* address) = 0;
+	virtual void onRemoteClientSubscriptionFinished(const SomeIPServiceDiscoveryEventGroupEntry& serviceEntry,
+							const IPv4ConfigurationOption* address) = 0;
 
-	virtual void onRemoteServiceAvailable(const SomeIP::SomeIPServiceDiscoveryServiceEntry& serviceEntry,
-					      const SomeIP::IPv4ConfigurationOption* address,
-					      const SomeIP::SomeIPServiceDiscoveryMessage& message) = 0;
+	virtual void onRemoteServiceAvailable(const SomeIPServiceDiscoveryServiceEntry& serviceEntry,
+					      const IPv4ConfigurationOption* address,
+					      const SomeIPServiceDiscoveryMessage& message) = 0;
 
-	virtual void onRemoteServiceUnavailable(const SomeIP::SomeIPServiceDiscoveryServiceEntry& serviceEntry,
-						const SomeIP::IPv4ConfigurationOption* address,
-						const SomeIP::SomeIPServiceDiscoveryMessage& message) = 0;
+	virtual void onRemoteServiceUnavailable(const SomeIPServiceDiscoveryServiceEntry& serviceEntry,
+						const IPv4ConfigurationOption* address,
+						const SomeIPServiceDiscoveryMessage& message) = 0;
 };
 
 class ServiceDiscoveryMessageDecoder {
@@ -403,27 +404,26 @@ public:
 		m_listener(listener) {
 	}
 
-	class IPv4AddressExtractor : public boost::static_visitor<const SomeIP::IPv4ConfigurationOption*> {
+	class IPv4AddressExtractor : public boost::static_visitor<const IPv4ConfigurationOption*> {
 public:
-		const SomeIP::IPv4ConfigurationOption* operator()(const SomeIP::IPv4ConfigurationOption& configurationOption)
+		const IPv4ConfigurationOption* operator()(const IPv4ConfigurationOption& configurationOption)
 		const {
 			return &configurationOption;
 		}
 
 		template<typename T>
-		const SomeIP::IPv4ConfigurationOption* operator()(const T& v) const {
+		const IPv4ConfigurationOption* operator()(const T& v) const {
 			return NULL;
 		}
 	};
 
 	class EntryVisitor : public boost::static_visitor<void> {
 public:
-		EntryVisitor(ServiceDiscoveryMessageDecoder& serviceListener,
-			     const SomeIP::SomeIPServiceDiscoveryMessage& message) :
+		EntryVisitor(ServiceDiscoveryMessageDecoder& serviceListener, const SomeIPServiceDiscoveryMessage& message) :
 			m_serviceListener(serviceListener), m_message(message) {
 		}
 
-		void operator()(const SomeIP::SomeIPServiceDiscoveryServiceEntry& entry) const {
+		void operator()(const SomeIPServiceDiscoveryServiceEntry& entry) const {
 			switch (entry.m_type) {
 			case SomeIP::SomeIPServiceDiscoveryEntryHeader::Type::OfferService : {
 				IPv4AddressExtractor ext;
@@ -443,12 +443,12 @@ public:
 			}
 		}
 
-		void operator()(const SomeIP::SomeIPServiceDiscoveryEventGroupEntry& entry) const {
+		void operator()(const SomeIPServiceDiscoveryEventGroupEntry& entry) const {
 			switch (entry.m_type) {
 			case SomeIP::SomeIPServiceDiscoveryEntryHeader::Type::Subscribe : {
 				IPv4AddressExtractor ext;
 
-				const SomeIP::IPv4ConfigurationOption* addressOption = NULL;
+				const IPv4ConfigurationOption* addressOption = NULL;
 
 				if (entry.m_1 != 0)
 					addressOption =
@@ -472,13 +472,13 @@ public:
 		}
 
 		ServiceDiscoveryMessageDecoder& m_serviceListener;
-		const SomeIP::SomeIPServiceDiscoveryMessage& m_message;
+		const SomeIPServiceDiscoveryMessage& m_message;
 	};
 
 	void decodeMessage(const SomeIP::SomeIPHeader& header, const void* payload, size_t payloadLength) {
 		NetworkDeserializer deserializer(payload, payloadLength);
 
-		SomeIP::SomeIPServiceDiscoveryMessage message(header, deserializer);
+		SomeIPServiceDiscoveryMessage message(header, deserializer);
 		EntryVisitor visitor(*this, message);
 		for ( auto& entry : message.getEntries() ) {
 			boost::apply_visitor(visitor, entry);
@@ -488,7 +488,7 @@ public:
 
 	void decodeMessage(const void* payload, size_t payloadLength) {
 		NetworkDeserializer deserializer(payload, payloadLength);
-		SomeIP::SomeIPServiceDiscoveryMessage message(deserializer);
+		SomeIPServiceDiscoveryMessage message(deserializer);
 
 		EntryVisitor visitor(*this, message);
 		for ( auto& entry : message.getEntries() ) {

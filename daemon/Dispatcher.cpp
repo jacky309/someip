@@ -1,6 +1,9 @@
 #include "Dispatcher.h"
-#include "log.h"
+#include "SomeIP-common.h"
+
 #include "GlibIO.h"
+
+namespace SomeIP_Dispatcher {
 
 LOG_DECLARE_DEFAULT_CONTEXT(dispatcherContext, "disp", "Dispatcher");
 
@@ -27,7 +30,7 @@ void Dispatcher::dispatchMessage(DispatcherMessage& msg, Client& client) {
 
 	if ( header.isNotification() ) {
 
-		if (header.getMessageID() == SomeIP::SomeIPServiceDiscoveryMessage::SERVICE_DISCOVERY_MEMBER_ID) {
+		if (header.getMessageID() == SomeIPServiceDiscoveryMessage::SERVICE_DISCOVERY_MEMBER_ID) {
 			assert(false);
 		} else {
 			// we are forwarding a notification to several clients
@@ -40,7 +43,7 @@ void Dispatcher::dispatchMessage(DispatcherMessage& msg, Client& client) {
 		Client* client = getClientFromId(clientIdentifier);
 
 		if (client == nullptr) {
-			log_warn("Answer to client can not be sent since the client has disconnected. client ID: ") <<
+			log_warning("Answer to client can not be sent since the client has disconnected. client ID: ") <<
 			clientIdentifier;
 		} else {
 			client->sendMessage(msg);
@@ -268,3 +271,5 @@ void Notification::setProviderService(Service* service) {
 }
 
 ClientIdentifier Client::s_nextAvailableID = 0;
+
+}

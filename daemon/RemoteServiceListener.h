@@ -8,13 +8,15 @@
 
 #include "glib.h"
 
-#include "log.h"
+#include "SomeIP-common.h"
 
 #include "ipc.h"
 #include "Dispatcher.h"
 #include "LocalClient.h"
 #include "ServiceDiscovery.h"
 #include "TCPClient.h"
+
+namespace SomeIP_Dispatcher {
 
 class RemoteServiceListener {
 
@@ -46,7 +48,7 @@ public:
 		memset( &addr, 0, sizeof(addr) );
 		addr.sin_family = AF_INET;
 		addr.sin_addr.s_addr = htonl(INADDR_ANY);
-		addr.sin_port = htons(SomeIP::SERVICE_DISCOVERY_UDP_PORT);
+		addr.sin_port = htons(SERVICE_DISCOVERY_UDP_PORT);
 
 		if (::bind( m_broadcastFileDescriptor, (struct sockaddr*) &addr, sizeof(addr) ) != 0)
 			throw ConnectionExceptionWithErrno("Can't bind socket");
@@ -68,3 +70,5 @@ public:
 	TCPManager& m_tcpManager;
 
 };
+
+}

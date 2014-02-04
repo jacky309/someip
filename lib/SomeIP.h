@@ -1,11 +1,8 @@
 #pragma once
 
-#include "SomeIP-Config.h"
-
-#include "stdint.h"
-#include "pelagicore-common.h"
+#include "utilLib/common.h"
 #include <string>
-#include "log.h"
+#include "stdint.h"
 
 namespace SomeIP {
 

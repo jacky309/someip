@@ -7,9 +7,10 @@
 #include "config.h"
 #include "Message.h"
 #include "ipc.h"
-#include "log.h"
-#include "pelagicore-common.h"
+#include "SomeIP-common.h"
 #include "GlibIO.h"
+
+namespace SomeIP_Dispatcher {
 
 using namespace std;
 
@@ -210,3 +211,5 @@ public:
 };
 
 void trace_message(const DispatcherMessage& msg);
+
+}

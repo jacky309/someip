@@ -1,5 +1,7 @@
 
-INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} )
+INCLUDE_DIRECTORIES( 
+	${CMAKE_CURRENT_SOURCE_DIR} 
+	${CMAKE_CURRENT_BINARY_DIR} )
 
 set(LIBRARY_FILES
 )
@@ -18,6 +20,7 @@ Message.cpp
 )
 
 TARGET_LINK_LIBRARIES( someip_lib 
+   utilLib
    ${COMMONAPI_LIBRARIES}
    ${GLIB_LIBRARIES}
    ${CPP_LIBS}
@@ -32,15 +35,14 @@ INSTALL(TARGETS someip_lib
 
 
 set(INCLUDE_FILES
+#SomeIP-log.h
+SomeIP-common.h
 SomeIP.h
 SomeIP-Serialization.h
 Message.h
 ipc.h
-log.h
 SocketStreamConnection.h
 )
-
-set(PUBLIC_HEADERS_LOCATION include/someip/lib)
 
 install(FILES ${INCLUDE_FILES} DESTINATION ${PUBLIC_HEADERS_LOCATION})
 

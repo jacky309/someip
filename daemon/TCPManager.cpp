@@ -2,6 +2,8 @@
 #include "TCPClient.h"
 #include "TCPServer.h"
 
+namespace SomeIP_Dispatcher {
+
 TCPClient& TCPManager::getOrCreateClient(const IPv4TCPServerIdentifier& serverID) {
 
 	// Check whether we already know that server
@@ -22,9 +24,9 @@ TCPClient& TCPManager::getOrCreateClient(const IPv4TCPServerIdentifier& serverID
 	return *client;
 }
 
-void TCPManager::onRemoteServiceAvailable(const SomeIP::SomeIPServiceDiscoveryServiceEntry& serviceEntry,
-					  const SomeIP::IPv4ConfigurationOption* address,
-					  const SomeIP::SomeIPServiceDiscoveryMessage& message) {
+void TCPManager::onRemoteServiceAvailable(const SomeIPServiceDiscoveryServiceEntry& serviceEntry,
+					  const IPv4ConfigurationOption* address,
+					  const SomeIPServiceDiscoveryMessage& message) {
 
 	IPv4TCPServerIdentifier serverID(address->m_address, address->m_port);
 
@@ -39,7 +41,7 @@ void TCPManager::onRemoteServiceAvailable(const SomeIP::SomeIPServiceDiscoverySe
 	bool rebootDetected = client.detectReboot(message, true);
 
 	if (rebootDetected) {
-		log_warn("Reboot detected from");
+		log_warning("Reboot detected from");
 		client.onRebootDetected();
 	}
 
@@ -50,9 +52,9 @@ void TCPManager::onRemoteServiceAvailable(const SomeIP::SomeIPServiceDiscoverySe
 
 }
 
-void TCPManager::onRemoteServiceUnavailable(const SomeIP::SomeIPServiceDiscoveryServiceEntry& serviceEntry,
-					    const SomeIP::IPv4ConfigurationOption* address,
-					    const SomeIP::SomeIPServiceDiscoveryMessage& message) {
+void TCPManager::onRemoteServiceUnavailable(const SomeIPServiceDiscoveryServiceEntry& serviceEntry,
+					    const IPv4ConfigurationOption* address,
+					    const SomeIPServiceDiscoveryMessage& message) {
 
 	IPv4TCPServerIdentifier serverID(address->m_address, address->m_port);
 
@@ -67,7 +69,7 @@ void TCPManager::onRemoteServiceUnavailable(const SomeIP::SomeIPServiceDiscovery
 	bool rebootDetected = client.detectReboot(message, true);
 
 	if (rebootDetected) {
-		log_warn("Reboot detected from");
+		log_warning("Reboot detected from");
 		client.onRebootDetected();
 	}
 
@@ -75,5 +77,7 @@ void TCPManager::onRemoteServiceUnavailable(const SomeIP::SomeIPServiceDiscovery
 
 	log_info("New remote service with serviceID:%i, InstanceID:%i is NOT available on IP address: %s port:%i",
 		 serviceEntry.m_serviceID, serviceEntry.m_instanceID, address->m_address.toString().c_str(), address->m_port);
+
+}
 
 }

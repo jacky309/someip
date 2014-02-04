@@ -12,10 +12,10 @@
 #include <tuple>
 #include <unordered_map>
 
+#include "SomeIP-common.h"
 #include "SomeIP-clientLib.h"
 #include "SomeIPRuntime.h"
 
-#include "log.h"
 
 namespace CommonAPI {
 namespace SomeIP {
@@ -214,7 +214,7 @@ private:
 				SerializableArguments<_InArgs ...>::deserialize(inputStream, std::get<_InArgIndices>(
 											argTuple) ...);
 			if ( inputStream.hasMoreData() )
-				log_warn( "Payload was not read completely. Message : %s", message.toString().c_str() );
+				log_warning( "Payload was not read completely. Message : %s", message.toString().c_str() );
 			if (!success)
 				return false;
 		}

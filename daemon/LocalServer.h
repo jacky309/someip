@@ -8,7 +8,7 @@
 
 #include "glib.h"
 
-#include "log.h"
+#include "SomeIP-common.h"
 
 #include "ipc.h"
 #include "Dispatcher.h"
@@ -18,6 +18,8 @@
 #ifdef ENABLE_SYSTEMD
 #include "sd-daemon.h"
 #endif
+
+namespace SomeIP_Dispatcher {
 
 /**
  * Handles the local connections.
@@ -80,7 +82,7 @@ public:
 		// when running as root, allow the applications which are not running as root to connect
 		if ( chmod(getSocketPath(), S_IRWXU | S_IRWXG // | S_IRWXO
 			   ) ) {
-			log_warn("Cannot set the permission on the socket");
+			log_warning("Cannot set the permission on the socket");
 			//			throw ConnectionException("Cannot set the permission on the socket");
 		}
 
@@ -91,3 +93,5 @@ public:
 	Dispatcher& m_dispatcher;
 	GIOChannel* m_serverSocketChannel = nullptr;
 };
+
+}

@@ -7,6 +7,7 @@ set(LIBRARY_FILES
 add_library( CommonAPI-SomeIP SHARED
 CommonAPI-SomeIP.cpp
 SomeIPRuntime.cpp
+#test.cpp
 )
 
 TARGET_LINK_LIBRARIES( CommonAPI-SomeIP

@@ -9,7 +9,7 @@
 
 #include "glib.h"
 
-#include "log.h"
+#include "SomeIP-common.h"
 
 #include "ipc.h"
 #include "Dispatcher.h"
@@ -17,6 +17,8 @@
 #include "ServiceDiscovery.h"
 
 #include "TCPServer.h"
+
+namespace SomeIP_Dispatcher {
 
 /**
  * Announces the available services via UDP
@@ -48,13 +50,13 @@ public:
 		if ( service.isLocal() ) { // we don't publish remote services
 
 			for ( auto ipAddress : TCPServer::getIPAddresses() ) {
-				SomeIP::SomeIPServiceDiscoveryMessage serviceDiscoveryMessage(true);
+				SomeIPServiceDiscoveryMessage serviceDiscoveryMessage(true);
 
-				SomeIP::SomeIPServiceDiscoveryServiceOfferedEntry serviceEntry( serviceDiscoveryMessage,
-												service.getServiceID(),
-												SomeIP::TransportProtocol::TCP,
-												ipAddress,
-												m_tcpServer.getLocalTCPPort() );
+				SomeIPServiceDiscoveryServiceOfferedEntry serviceEntry( serviceDiscoveryMessage,
+											service.getServiceID(),
+											TransportProtocol::TCP,
+											ipAddress,
+											m_tcpServer.getLocalTCPPort() );
 
 				serviceDiscoveryMessage.addEntry(serviceEntry);
 
@@ -77,13 +79,13 @@ public:
 		if ( service.isLocal() ) {
 			for ( auto ipAddress : TCPServer::getIPAddresses() ) {
 
-				SomeIP::SomeIPServiceDiscoveryMessage serviceDiscoveryMessage(true);
+				SomeIPServiceDiscoveryMessage serviceDiscoveryMessage(true);
 
-				SomeIP::SomeIPServiceDiscoveryServiceUnregisteredEntry serviceEntry( serviceDiscoveryMessage,
-												     service.getServiceID(),
-												     SomeIP::TransportProtocol::
-												     TCP, ipAddress,
-												     m_tcpServer.getLocalTCPPort() );
+				SomeIPServiceDiscoveryServiceUnregisteredEntry serviceEntry( serviceDiscoveryMessage,
+											     service.getServiceID(),
+											     SomeIP::TransportProtocol::
+											     TCP, ipAddress,
+											     m_tcpServer.getLocalTCPPort() );
 
 				serviceDiscoveryMessage.addEntry(serviceEntry);
 
@@ -119,7 +121,7 @@ public:
 		addr.sin_family = AF_INET;
 		//		addr.sin_addr.s_addr = inet_addr(SomeIP::SERVICE_DISCOVERY_BROADCAST_GROUP);
 		addr.sin_addr.s_addr = INADDR_BROADCAST;
-		addr.sin_port = htons(SomeIP::SERVICE_DISCOVERY_UDP_PORT);
+		addr.sin_port = htons(SERVICE_DISCOVERY_UDP_PORT);
 
 		m_dispatcher.addServiceRegistrationListener(*this);
 
@@ -135,3 +137,5 @@ public:
 	TCPServer& m_tcpServer;
 
 };
+
+}

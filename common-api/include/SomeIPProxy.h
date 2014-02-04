@@ -1,13 +1,13 @@
 #pragma once
 
+#include "CommonAPI-SomeIP.h"
+
 #include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>
 
-//#include "CommonAPI/CommonAPI.h"
 #include "Attribute.h"
-#include "CommonAPI-SomeIP.h"
 #include "SerializableArguments.h"
 
 namespace CommonAPI {

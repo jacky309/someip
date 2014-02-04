@@ -13,6 +13,8 @@
 #include "dbus/dbus-glib.h"
 #endif
 
+namespace SomeIP_Dispatcher {
+
 class WellKnownServiceManager;
 
 class WellKnownService : public Service {
@@ -265,7 +267,7 @@ public:
 
 			closedir(dir);
 		} else {
-			log_warn("Can't open directory %s", folder);
+			log_warning("Can't open directory %s", folder);
 		}
 	}
 
@@ -305,4 +307,6 @@ void WellKnownService::sendMessage(DispatcherMessage& msg) {
 
 	} else
 		getLocalClient()->sendMessage(msg);
+}
+
 }

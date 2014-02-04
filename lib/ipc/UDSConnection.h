@@ -12,6 +12,8 @@
 
 #include "SocketStreamConnection.h"
 
+namespace SomeIP_Lib {
+
 static constexpr const char* DEFAULT_SERVER_SOCKET_PATH = "/tmp/someIPSocket";
 static constexpr const char* ALTERNATIVE_SERVER_SOCKET_PATH = "/tmp/someIPSocket2";
 
@@ -99,7 +101,7 @@ protected:
 		int fileDescriptor = socket(AF_UNIX, SOCK_STREAM, 0);
 
 		if ( fileDescriptor == -1 ) {
-			log_warn("Failed to create socket");
+			log_warning("Failed to create socket");
 			throw ConnectionException("Failed to create socket");
 		}
 
@@ -111,7 +113,7 @@ protected:
 		if (::connect( fileDescriptor, (struct sockaddr*) &remote, strlen(remote.sun_path) +
 			       sizeof(remote.sun_family) )
 		    == -1) {
-			log_warn("Failed to connect to the daemon via socket %s. Trying alternative socket", uds_socket_path);
+			log_warning("Failed to connect to the daemon via socket %s. Trying alternative socket", uds_socket_path);
 			uds_socket_path = ALTERNATIVE_SERVER_SOCKET_PATH;
 			strcpy(remote.sun_path, uds_socket_path);
 			if (::connect( fileDescriptor, (struct sockaddr*) &remote,
@@ -171,15 +173,15 @@ public:
 
 			if (::bind( getFileDescriptor(), (struct sockaddr*) &local,
 				    strlen(local.sun_path) + sizeof(local.sun_family) ) != 0) {
-				log_warn("Failed to bind server socket %s. Trying alternate socket.",
-					 uds_socket_path);
+				log_warning("Failed to bind server socket %s. Trying alternate socket.",
+					    uds_socket_path);
 
 				uds_socket_path = ALTERNATIVE_SERVER_SOCKET_PATH;
 				strcpy(local.sun_path, uds_socket_path);
 				unlink(local.sun_path);
 				if (::bind( getFileDescriptor(), (struct sockaddr*) &local,
 					    strlen(local.sun_path) + sizeof(local.sun_family) ) != 0) {
-					log_warn("Failed to bind server socket %s", uds_socket_path);
+					log_warning("Failed to bind server socket %s", uds_socket_path);
 					throw ConnectionException("Failed to open socket");
 				}
 			}
@@ -205,3 +207,5 @@ private:
 	const char* uds_socket_path;
 
 };
+
+}

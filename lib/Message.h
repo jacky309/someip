@@ -2,13 +2,13 @@
 
 #include <sys/time.h>
 
-#include "pelagicore-common.h"
-#include "SomeIP.h"
+#include "SomeIP-common.h"
 #include "SomeIP-Serialization.h"
-#include "log.h"
 #include <mutex>
 
 #include "ipc.h"
+
+namespace SomeIP_Lib {
 
 typedef uint16_t ClientIdentifier;
 static const ClientIdentifier UNKNOWN_CLIENT = 0xFFFF;
@@ -430,4 +430,6 @@ inline LogData& operator<<(LogData& log, const OutputMessage& v) {
 inline LogData& operator<<(LogData& log, const InputMessage& v) {
 	log << v.toString();
 	return log;
+}
+
 }

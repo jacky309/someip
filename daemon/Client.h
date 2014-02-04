@@ -8,7 +8,10 @@
 #include <string>
 #include <vector>
 
-#include "GlibIO.h"
+#include "SomeIP-common.h"
+//#include "GlibIO.h"
+
+namespace SomeIP_Dispatcher {
 
 class Dispatcher;
 class Notification;
@@ -115,3 +118,5 @@ private:
 	bool m_registered = false;
 
 };
+
+}

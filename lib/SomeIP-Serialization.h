@@ -1,10 +1,15 @@
 #pragma once
 
 #include "CommonAPI/SerializableVariant.h"
-#include "log.h"
-#include "serialization.h"
+#include "SomeIP-common.h"
+#include "utilLib/serialization.h"
+
+namespace SomeIP_Lib {
 
 using CommonAPI::Variant;
+
+using SomeIP_utils::Serializer;
+using SomeIP_utils::Deserializer;
 
 class SomeIPOutputStream;
 class SomeIPInputStream;
@@ -13,8 +18,8 @@ inline bool isAlignmentNeeded() {
 	return false;
 }
 
-typedef Serializer<true, false> SomeIPSerializer;
-typedef Deserializer<true, false> SomeIPDeserializer;
+typedef SomeIP_utils::Serializer<true, false> SomeIPSerializer;
+typedef SomeIP_utils::Deserializer<true, false> SomeIPDeserializer;
 
 class SomeIPOutputStream : public SomeIPSerializer {
 
@@ -279,4 +284,6 @@ struct SomeIPVariantDeserializer<Variant, _Type, _Types ...> {
 template<typename ... _Types>
 void readFromInputStream(Variant<_Types ...>& variant, uint8_t typeIndex, SomeIPInputStream& inputStream) {
 	SomeIPVariantDeserializer<Variant<_Types ...>, _Types ...>::deserialize(variant, inputStream, typeIndex);
+}
+
 }

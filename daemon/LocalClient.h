@@ -3,10 +3,12 @@
 #include "Dispatcher.h"
 
 #include "ipc.h"
-#include "pelagicore-common.h"
+#include "SomeIP-common.h"
 #include "GlibIO.h"
 
 #include "ipc/UDSConnection.h"
+
+namespace SomeIP_Dispatcher {
 
 class LocalServer;
 
@@ -187,7 +189,7 @@ public:
 		break;
 
 		default : {
-			log_error( "Unknown message type : %s", ::toString( inputMessage.getMessageType() ).c_str() );
+			log_error( "Unknown message type : %s", SomeIP_Lib::toString( inputMessage.getMessageType() ).c_str() );
 		}
 		break;
 		}
@@ -270,3 +272,5 @@ private:
 	std::string processName;
 
 };
+
+}

@@ -12,6 +12,8 @@
 #include <string.h>
 #include <arpa/inet.h>
 
+namespace SomeIP_Dispatcher {
+
 typedef uint16_t TCPPort;
 
 class DaemonConfiguration {
@@ -36,3 +38,5 @@ private:
 };
 
 const DaemonConfiguration& getConfiguration();
+
+}

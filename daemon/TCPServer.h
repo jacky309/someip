@@ -8,7 +8,7 @@
 
 #include "glib.h"
 
-#include "log.h"
+#include "SomeIP-common.h"
 
 #include "ipc.h"
 #include "Dispatcher.h"
@@ -16,10 +16,11 @@
 #include "SocketStreamConnection.h"
 #include "TCPClient.h"
 
+namespace SomeIP_Dispatcher {
+
 class TCPServer : private SocketStreamServer {
 
-	LOG_DECLARE_CLASS_CONTEXT("TCPS", "TCPServer")
-	;
+	LOG_DECLARE_CLASS_CONTEXT("TCPS", "TCPServer");
 
 public:
 	TCPServer(Dispatcher& dispatcher, TCPManager& tcpManager) :
@@ -149,3 +150,5 @@ public:
 
 	int m_port = -1;
 };
+
+}

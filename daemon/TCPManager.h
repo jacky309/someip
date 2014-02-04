@@ -2,13 +2,15 @@
 
 #include "ServiceDiscovery.h"
 
-class TCPClient;
-
 #include "Dispatcher.h"
 #include "TCPClient.h"
 #include "TCPManager.h"
 
-class TCPManager : public SomeIP::ServiceDiscoveryListener {
+class TCPClient;
+
+namespace SomeIP_Dispatcher {
+
+class TCPManager : public ServiceDiscoveryListener {
 
 	LOG_DECLARE_CLASS_CONTEXT("TCPManager", "TCPManager");
 
@@ -17,36 +19,38 @@ public:
 		m_dispatcher(dispatcher), m_serviceDiscoveryDecoder(*this) {
 	}
 
-	void onRemoteClientSubscription(const SomeIP::SomeIPServiceDiscoveryEventGroupEntry& serviceEntry,
-					const SomeIP::IPv4ConfigurationOption* address) {
+	void onRemoteClientSubscription(const SomeIPServiceDiscoveryEventGroupEntry& serviceEntry,
+					const IPv4ConfigurationOption* address) {
 
 		IPv4TCPServerIdentifier serverID(address->m_address, address->m_port);
 
 		log_info( "New subscription from device with address %s", serverID.toString().c_str() );
 	}
 
-	void onRemoteClientSubscriptionFinished(const SomeIP::SomeIPServiceDiscoveryEventGroupEntry& serviceEntry,
-						const SomeIP::IPv4ConfigurationOption* address) {
+	void onRemoteClientSubscriptionFinished(const SomeIPServiceDiscoveryEventGroupEntry& serviceEntry,
+						const IPv4ConfigurationOption* address) {
 		// TODO
 		assert(false);
 	}
 
 	TCPClient& getOrCreateClient(const IPv4TCPServerIdentifier& serverID);
 
-	void onRemoteServiceAvailable(const SomeIP::SomeIPServiceDiscoveryServiceEntry& serviceEntry,
-				      const SomeIP::IPv4ConfigurationOption* address,
-				      const SomeIP::SomeIPServiceDiscoveryMessage& message);
+	void onRemoteServiceAvailable(const SomeIPServiceDiscoveryServiceEntry& serviceEntry,
+				      const IPv4ConfigurationOption* address,
+				      const SomeIPServiceDiscoveryMessage& message);
 
-	void onRemoteServiceUnavailable(const SomeIP::SomeIPServiceDiscoveryServiceEntry& serviceEntry,
-					const SomeIP::IPv4ConfigurationOption* address,
-					const SomeIP::SomeIPServiceDiscoveryMessage& message);
+	void onRemoteServiceUnavailable(const SomeIPServiceDiscoveryServiceEntry& serviceEntry,
+					const IPv4ConfigurationOption* address,
+					const SomeIPServiceDiscoveryMessage& message);
 
-	SomeIP::ServiceDiscoveryMessageDecoder& getServiceDiscoveryMessageDecoder() {
+	ServiceDiscoveryMessageDecoder& getServiceDiscoveryMessageDecoder() {
 		return m_serviceDiscoveryDecoder;
 	}
 
 	std::vector<TCPClient*> m_clients;
 	Dispatcher& m_dispatcher;
-	SomeIP::ServiceDiscoveryMessageDecoder m_serviceDiscoveryDecoder;
+	ServiceDiscoveryMessageDecoder m_serviceDiscoveryDecoder;
 
 };
+
+}

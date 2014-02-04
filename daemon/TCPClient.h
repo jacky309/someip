@@ -2,11 +2,13 @@
 
 #include <netdb.h>
 
-#include "pelagicore-common.h"
+#include "SomeIP-common.h"
 #include <netinet/tcp.h>
 
 #include "Client.h"
 #include "SocketStreamConnection.h"
+
+namespace SomeIP_Dispatcher {
 
 class TCPManager;
 
@@ -16,7 +18,7 @@ class TCPManager;
 class TCPClient : public Client,
 	private SocketStreamConnection,
 	private GlibChannelListener,
-	private SomeIP::ServiceDiscoveryListener {
+	private ServiceDiscoveryListener {
 
 	LOG_DECLARE_CLASS_CONTEXT("TCPC", "TCPClient");
 
@@ -44,7 +46,7 @@ public:
 	 * Constructor used to register a host offering one or several services
 	 */
 	TCPClient(Dispatcher& dispatcher, IPv4TCPServerIdentifier server, TCPManager& tcpManager) :
-		Client(dispatcher), SomeIP::ServiceDiscoveryListener(*this), m_tcpManager(tcpManager), m_serviceDiscoveryDecoder(
+		Client(dispatcher), ServiceDiscoveryListener(*this), m_tcpManager(tcpManager), m_serviceDiscoveryDecoder(
 			*this), m_channelWatcher(*this) {
 		m_serverIdentifier = server;
 	}
@@ -54,26 +56,26 @@ public:
 			setupConnection();
 	}
 
-	void onRemoteClientSubscription(const SomeIP::SomeIPServiceDiscoveryEventGroupEntry& serviceEntry,
-					const SomeIP::IPv4ConfigurationOption* address) override {
+	void onRemoteClientSubscription(const SomeIPServiceDiscoveryEventGroupEntry& serviceEntry,
+					const IPv4ConfigurationOption* address) override {
 
 		// TODO : consider the address
 		assert(address == NULL);
 		subscribeToNotification( SomeIP::getMessageID(serviceEntry.m_serviceID, serviceEntry.m_eventGroupID) );
 	}
 
-	void onRemoteClientSubscriptionFinished(const SomeIP::SomeIPServiceDiscoveryEventGroupEntry& serviceEntry,
-						const SomeIP::IPv4ConfigurationOption* address) override {
+	void onRemoteClientSubscriptionFinished(const SomeIPServiceDiscoveryEventGroupEntry& serviceEntry,
+						const IPv4ConfigurationOption* address) override {
 		// TODO : implement
 	}
 
-	void onRemoteServiceAvailable(const SomeIP::SomeIPServiceDiscoveryServiceEntry& serviceEntry,
-				      const SomeIP::IPv4ConfigurationOption* address,
-				      const SomeIP::SomeIPServiceDiscoveryMessage& message) override;
+	void onRemoteServiceAvailable(const SomeIPServiceDiscoveryServiceEntry& serviceEntry,
+				      const IPv4ConfigurationOption* address,
+				      const SomeIPServiceDiscoveryMessage& message) override;
 
-	void onRemoteServiceUnavailable(const SomeIP::SomeIPServiceDiscoveryServiceEntry& serviceEntry,
-					const SomeIP::IPv4ConfigurationOption* address,
-					const SomeIP::SomeIPServiceDiscoveryMessage& message) override;
+	void onRemoteServiceUnavailable(const SomeIPServiceDiscoveryServiceEntry& serviceEntry,
+					const IPv4ConfigurationOption* address,
+					const SomeIPServiceDiscoveryMessage& message) override;
 
 	void setupConnection() {
 		m_headerReader.setBuffer( m_headerBytes, sizeof(m_headerBytes) );
@@ -225,8 +227,8 @@ public:
 			connect();
 		}
 
-		SomeIP::SomeIPServiceDiscoveryMessage serviceDiscoveryMessage(true);
-		SomeIP::SomeIPServiceDiscoverySubscribeNotificationEntry subscribeEntry(serviceID, memberID);
+		SomeIPServiceDiscoveryMessage serviceDiscoveryMessage(true);
+		SomeIPServiceDiscoverySubscribeNotificationEntry subscribeEntry(serviceID, memberID);
 		serviceDiscoveryMessage.addEntry(subscribeEntry);
 
 		ByteArray byteArray;
@@ -299,7 +301,7 @@ public:
 	IPCBufferReader m_payloadReader;
 
 	TCPManager& m_tcpManager;
-	SomeIP::ServiceDiscoveryMessageDecoder m_serviceDiscoveryDecoder;
+	ServiceDiscoveryMessageDecoder m_serviceDiscoveryDecoder;
 
 	GlibChannelWatcher m_channelWatcher;
 
@@ -322,3 +324,5 @@ public:
 	RebootInformation m_rebootInformationUnicast;
 
 };
+
+}

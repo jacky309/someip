@@ -1,5 +1,7 @@
 #include "Client.h"
 
+namespace SomeIP_Dispatcher {
+
 void Client::unregisterClient() {
 
 	if (m_registered) {
@@ -60,4 +62,6 @@ void Client::subscribeToNotification(SomeIP::MessageID messageID) {
 	log_debug("SUBSCRIBE_NOTIFICATION Message received from client %s. MessageID:0x%X", toString().c_str(), messageID);
 	auto& subscription = m_dispatcher.subscribeClientForNotifications(*this, messageID);
 	m_subscribedNotifications.push_back(&subscription);
+}
+
 }

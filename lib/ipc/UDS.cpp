@@ -3,8 +3,10 @@
 #include <sys/ioctl.h>
 #include <errno.h>
 
-#include "log.h"
+#include "SomeIP-common.h"
 #include "UDSConnection.h"
+
+namespace SomeIP_Lib {
 
 LOG_DECLARE_DEFAULT_CONTEXT(udsLogContext, "UDS", "UDS");
 
@@ -243,4 +245,6 @@ IPCOperationReport SocketStreamConnection::writeBytesNonBlocking(const void* dat
 	}
 
 	return IPCOperationReport::OK;
+}
+
 }

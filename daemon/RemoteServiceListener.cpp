@@ -2,6 +2,8 @@
 #include "ServiceDiscovery.h"
 #include "TCPManager.h"
 
+namespace SomeIP_Dispatcher {
+
 void RemoteServiceListener::handleMessage() {
 	ByteArray array;
 	array.resize(65536);
@@ -11,4 +13,6 @@ void RemoteServiceListener::handleMessage() {
 
 	array.resize(bytes);
 	m_tcpManager.getServiceDiscoveryMessageDecoder().decodeMessage( array.getData(), array.size() );
+}
+
 }

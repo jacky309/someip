@@ -1,10 +1,12 @@
 #pragma once
 
-#include "log.h"
-#include "SomeIP.h"
+#include "SomeIP-common.h"
 
 namespace CommonAPI {
 namespace SomeIP {
+
+using namespace SomeIP_Lib;
+using namespace SomeIP_utils;
 
 class SomeIPConnection;
 

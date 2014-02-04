@@ -1,6 +1,4 @@
-#include "log.h"
-
-#include "log_types.h"
+#include "SomeIP-common.h"
 
 LOG_DEFINE_APP_IDS("sctl", "SomeIP ctl tool");
 LOG_DECLARE_DEFAULT_CONTEXT(mainContext, "ctl", "Main log context");
@@ -13,18 +11,9 @@ LOG_DECLARE_DEFAULT_CONTEXT(mainContext, "ctl", "Main log context");
 #include <string>
 #include <boost/tokenizer.hpp>
 
-void test() {
-	std::vector<int> v;
-	for (LogContext* dummy = &getDefaultContext();
-	     (dummy != 0) && getDefaultContext().isEnabled(LogLevel::Debug);
-	     dummy = 0)
-		LogData(getDefaultContext(), LogLevel::Debug,
-			"/Users/jguillou/_Projects/pelagicore/someip/common-api-someip-runtime/tools/ctl.cpp",
-			18, __PRETTY_FUNCTION__).writeFormatted() << v;
-}
-
-
 using namespace SomeIP;
+using namespace SomeIP_utils;
+using namespace SomeIP_Lib;
 
 typedef std::function<void (const InputMessage&)> MessageReceivedCallbackFunction;
 

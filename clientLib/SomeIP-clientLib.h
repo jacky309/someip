@@ -6,11 +6,9 @@
 #include <poll.h>
 #include <cstdint>
 
-#include "pelagicore-common.h"
+#include "SomeIP-common.h"
 #include "SomeIP.h"
-#include "GlibIO.h"
-
-#include "log.h"
+#include "utilLib/GlibIO.h"
 
 #include "ipc.h"
 
@@ -19,6 +17,9 @@
 #include "ipc/UDSConnection.h"
 
 namespace SomeIPClient {
+
+using namespace SomeIP_Lib;
+using namespace SomeIP_utils;
 
 LOG_IMPORT_CONTEXT(clientLibContext);
 
@@ -534,7 +535,7 @@ private:
 	}
 
 	void onDisconnected() override {
-		log_warn("Disconnected from server");
+		log_warning("Disconnected from server");
 		messageReceivedCallback->onDisconnected();
 	}
 

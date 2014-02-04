@@ -1,7 +1,7 @@
 #include "CommonAPI-SomeIP.h"
 #include "StubAdapterHelper.h"
 
-#include "log.h"
+#include "SomeIP-common.h"
 
 #include "SomeIPProxy.h"
 #include "SomeIPRuntime.h"

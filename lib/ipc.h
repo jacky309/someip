@@ -4,11 +4,14 @@
 #include <stddef.h>
 #include <assert.h>
 #include <memory.h>
-#include "serialization.h"
-#include "pelagicore-common.h"
-#include "log.h"
+#include "utilLib/serialization.h"
+#include "SomeIP-common.h"
+
+namespace SomeIP_Lib {
 
 class IPCOutputMessage;
+
+using namespace SomeIP_utils;
 
 // TODO : move this definition
 enum class SomeIPFunctionReturnCode {
@@ -94,7 +97,8 @@ public:
 
 	std::string toString() const {
 		char buffer[1000];
-		snprintf( buffer, sizeof(buffer), "IPCMessage:MessageType:%s payload:%s", ::toString( getMessageType() ).c_str(),
+		snprintf( buffer, sizeof(buffer), "IPCMessage:MessageType:%s payload:%s", SomeIP_Lib::toString(
+				  getMessageType() ).c_str(),
 			  byteArrayToString( m_payload.getData(), m_payload.size() ).c_str() );
 		return buffer;
 	}
@@ -239,4 +243,6 @@ private:
 
 inline bool IPCInputMessage::isResponseOf(const IPCOutputMessage& outputMessage) const {
 	return ( getRequestID() == outputMessage.getRequestID() );
+}
+
 }

@@ -1,6 +1,8 @@
 #include "TCPClient.h"
 #include "TCPManager.h"
 
+namespace SomeIP_Dispatcher {
+
 /**
  * Called whenever some data is received from a client
  */
@@ -44,7 +46,7 @@ WatchStatus TCPClient::onIncomingDataAvailable() {
 
 				auto& header = m_currentIncomingMessage.getHeader();
 				if (header.getMessageID() ==
-				    SomeIP::SomeIPServiceDiscoveryMessage::SERVICE_DISCOVERY_MEMBER_ID) {
+				    SomeIPServiceDiscoveryMessage::SERVICE_DISCOVERY_MEMBER_ID) {
 					m_serviceDiscoveryDecoder.decodeMessage( m_currentIncomingMessage.getHeader(),
 										 m_currentIncomingMessage.getPayload(),
 										 m_currentIncomingMessage.getPayloadLength() );
@@ -72,14 +74,16 @@ WatchStatus TCPClient::onIncomingDataAvailable() {
 	return WatchStatus::KEEP_WATCHING;
 }
 
-void TCPClient::onRemoteServiceAvailable(const SomeIP::SomeIPServiceDiscoveryServiceEntry& serviceEntry,
-					 const SomeIP::IPv4ConfigurationOption* address,
-					 const SomeIP::SomeIPServiceDiscoveryMessage& message) {
+void TCPClient::onRemoteServiceAvailable(const SomeIPServiceDiscoveryServiceEntry& serviceEntry,
+					 const IPv4ConfigurationOption* address,
+					 const SomeIPServiceDiscoveryMessage& message) {
 	m_tcpManager.onRemoteServiceAvailable(serviceEntry, address, message);
 }
 
-void TCPClient::onRemoteServiceUnavailable(const SomeIP::SomeIPServiceDiscoveryServiceEntry& serviceEntry,
-					   const SomeIP::IPv4ConfigurationOption* address,
-					   const SomeIP::SomeIPServiceDiscoveryMessage& message) {
+void TCPClient::onRemoteServiceUnavailable(const SomeIPServiceDiscoveryServiceEntry& serviceEntry,
+					   const IPv4ConfigurationOption* address,
+					   const SomeIPServiceDiscoveryMessage& message) {
 	m_tcpManager.onRemoteServiceUnavailable(serviceEntry, address, message);
+}
+
 }

@@ -1,11 +1,14 @@
 #pragma once
 
 #include "string"
-#include "pelagicore-common.h"
+#include "SomeIP-common.h"
+#include <array>
+
+namespace SomeIP_Lib {
 
 struct IPV4Address {
 	IPV4Address(const uint8_t n[4]) {
-		memcpy( numbers, n, sizeof(numbers) );
+		memcpy( numbers.data(), n, sizeof(numbers) );
 	}
 
 	IPV4Address() {
@@ -13,7 +16,7 @@ struct IPV4Address {
 	}
 
 	bool operator==(const IPV4Address& right) const {
-		for (size_t i = 0; i < ARRAY_ELEMENT_COUNT(numbers); i++)
+		for (size_t i = 0; i < numbers.size(); i++)
 			if (numbers[i] != right.numbers[i])
 				return false;
 		return true;
@@ -27,7 +30,7 @@ struct IPV4Address {
 		return buffer;
 	}
 
-	uint8_t numbers[4];
+	std::array<uint8_t, 4> numbers;
 };
 
 static const uint8_t m_loopbackInterfaceAddressDigits[] = {127, 0, 0, 1};
@@ -66,3 +69,5 @@ struct IPv4TCPServerIdentifier {
 	IPV4Address m_address;
 	TCPPort m_port;
 };
+
+}

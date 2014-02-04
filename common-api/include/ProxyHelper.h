@@ -15,6 +15,7 @@
 namespace CommonAPI {
 namespace SomeIP {
 
+
 class SomeIPProxy;
 
 template<class, class>
@@ -85,7 +86,7 @@ struct SomeIPProxyHelper<_In<_InArgs ...>, _Out<_OutArgs ...> > {
 			}
 
 		} else {
-			log_warn( "Proxy is not available: ServiceID:%i", proxy.getServiceID() );
+			log_warning( "Proxy is not available: ServiceID:%i", proxy.getServiceID() );
 			callStatus = CallStatus::NOT_AVAILABLE;
 		}
 	}
@@ -175,7 +176,7 @@ private:
 
 			CallStatus callStatus = CallStatus::NOT_AVAILABLE;
 
-			log_warn( "Proxy is not available: ServiceID:%i", proxy.getServiceID() );
+			log_warning( "Proxy is not available: ServiceID:%i", proxy.getServiceID() );
 
 			callCallbackOnNotAvailable( asyncCallback, typename make_sequence<sizeof ... (_OutArgs)>::type() );
 

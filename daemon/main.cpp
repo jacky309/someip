@@ -1,4 +1,4 @@
-#include "log.h"
+#include "SomeIP-common.h"
 
 LOG_DEFINE_APP_IDS("Some", "SomeIP daemon");
 LOG_DECLARE_DEFAULT_CONTEXT(mainContext, "main", "Main log context");
@@ -21,6 +21,10 @@ LOG_DECLARE_DEFAULT_CONTEXT(mainContext, "main", "Main log context");
 
 using namespace SomeIP;
 
+namespace SomeIP_Dispatcher {
+
+using namespace SomeIP_utils;
+
 class DaemonApplication : public MainLoopApplication {
 public:
 	DaemonApplication(const DaemonConfiguration& configuration) :
@@ -42,7 +46,11 @@ const DaemonConfiguration& getConfiguration() {
 	return configuration;
 }
 
+}
+
 int main(int argc, const char** argv) {
+
+	using namespace SomeIP_Dispatcher;
 
 	CommandLineParser commandLineParser("Dispatcher", "", SOMEIP_PACKAGE_VERSION);
 	int tcpPortNumber = configuration.getDefaultLocalTCPPort();
@@ -54,7 +62,7 @@ int main(int argc, const char** argv) {
 	commandLineParser.addArgument(logFilePath, "log", 'l', "Log file path");
 
 	if ( commandLineParser.parse(argc, argv) ) {
-		exit(1);
+	exit(1);
 	}
 
 #ifdef ENABLE_CONSOLE_LOGGING
@@ -91,7 +99,7 @@ int main(int argc, const char** argv) {
 
 	app.run();
 
-	log_warn("Shutting down...");
+	log_warning("Shutting down...");
 
 	usleep(10000);
 
