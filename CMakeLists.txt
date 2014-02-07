@@ -72,8 +72,7 @@ add_subdirectory (lib)
 add_subdirectory (clientLib)
 add_subdirectory (utilLib)
 
-add_subdirectory (common-api/include)
-add_subdirectory (common-api/src)
+add_subdirectory (common-api)
 
 if (ENABLE_TEST)
 	add_subdirectory (test)

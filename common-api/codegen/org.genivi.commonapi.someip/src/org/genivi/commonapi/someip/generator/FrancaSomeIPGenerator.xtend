@@ -15,13 +15,11 @@ import org.franca.deploymodel.dsl.fDeploy.FDInterface
 import java.util.LinkedList
 import org.franca.deploymodel.dsl.FDeployPersistenceManager
 import org.franca.deploymodel.core.FDModelExtender
-import org.genivi.commonapi.qt.generator.FInterfaceQtProxyGenerator
 
 class FrancaSomeIPGenerator implements IGenerator {
     @Inject private extension FrancaGeneratorExtensions
     @Inject private extension FInterfaceSomeIPProxyGenerator
     @Inject private extension FInterfaceSomeIPStubAdapterGenerator
-    @Inject private extension FInterfaceQtProxyGenerator
     @Inject private extension FrancaGenerator
 
     @Inject private FrancaPersistenceManager francaPersistenceManager
@@ -61,16 +59,14 @@ class FrancaSomeIPGenerator implements IGenerator {
             checkArgument(false, "Unknown input: " + input)
         }
 
-        doGenerateSomeIPComponents(fModel, deployedInterfaces, fileSystemAccess)
+        doGenerate(deployedInterfaces, fileSystemAccess)
     }
 
-    def public doGenerateSomeIPComponents(FModel fModel, List<FDInterface> deployedInterfaces, IFileSystemAccess fileSystemAccess) {
+    def public doGenerate(List<FDInterface> deployedInterfaces, IFileSystemAccess fileSystemAccess) {
         deployedInterfaces.forEach[
 			var currentInterface = it
 			generateSomeIPProxy(currentInterface, fileSystemAccess)
 			generateSomeIPStubAdapter(currentInterface, fileSystemAccess)
-				it.target.generateQtProxy(fileSystemAccess, null)
-	        	it.target.generateQmlUI(fileSystemAccess, null)
 		]
     }
 

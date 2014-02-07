@@ -2,13 +2,13 @@
 <launchConfiguration type="org.eclipse.linuxtools.valgrind.launch.valgrindLaunch">
 <intAttribute key="org.eclipse.cdt.launch.ATTR_BUILD_BEFORE_LAUNCH_ATTR" value="2"/>
 <stringAttribute key="org.eclipse.cdt.launch.COREFILE_PATH" value=""/>
-<stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="${BUILD_FOLDER}/common-api-someip-runtime_build/daemon/someip_dispatcher"/>
-<stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="common-api-someip-runtime"/>
+<stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="${BUILD_FOLDER}/someip_build/daemon/someip_dispatcher"/>
+<stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="someip"/>
 <booleanAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_AUTO_ATTR" value="true"/>
 <stringAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_ID_ATTR" value=""/>
 <booleanAttribute key="org.eclipse.cdt.launch.use_terminal" value="true"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/common-api-someip-runtime"/>
+<listEntry value="/someip"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="4"/>

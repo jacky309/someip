@@ -1,0 +1,6 @@
+
+specification SomeIPServiceSpecification {
+	for interfaces {
+		ServiceID : Integer;
+	}
+}

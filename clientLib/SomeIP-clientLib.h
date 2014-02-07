@@ -143,11 +143,7 @@ private:
 	std::string m_err;
 };
 
-//typedef MessageProcessor MessageReceivedCallbackFunction;
-
 class ClientConnection;
-
-//ClientConnection& getClientConnectionSingleton();
 
 class ClientConnection : private MessageSource, private UDSConnection {
 
@@ -210,10 +206,6 @@ public:
 	~ClientConnection() {
 		disconnect();
 	}
-
-	//	static ClientConnection& getSingleton() {
-	//		return getClientConnectionSingleton();
-	//	}
 
 	bool hasIncomingMessages() {
 		return ( ( !m_queue.isEmpty() ) || hasAvailableBytes() );
@@ -604,8 +596,6 @@ private:
 
 	ClientConnectionListener* messageReceivedCallback = NULL;
 
-	//	friend class GLibIntegration;
-
 	std::vector<OutputMessageWithReport> m_messagesWithReport;
 
 	MainLoopInterface* m_mainLoop = NULL;
@@ -621,10 +611,6 @@ private:
 
 };
 
-
-//class GLibIntegration;
-
-//GLibIntegration& defaultContextGlibIntegrationSingleton(std::function<void()> timerFunction);
 
 /**
  * This class integrates the dispatching of messages into a Glib main loop.

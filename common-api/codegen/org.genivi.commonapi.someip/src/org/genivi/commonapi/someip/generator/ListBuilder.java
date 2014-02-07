@@ -24,7 +24,6 @@ public class ListBuilder<T> {
 		return builder.list;
 	}
 	
-
 	public static List join(List list1, List list2, List list3) {
 		ListBuilder builder = new ListBuilder();
 		builder.concat(list1);

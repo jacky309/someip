@@ -6,6 +6,9 @@
 LOG_DEFINE_APP_IDS("SOTE", "Some/IP test");
 LOG_DECLARE_DEFAULT_CONTEXT(blabla, "LOG", "Main context");
 
+using namespace SomeIP_Lib;
+using namespace pelagicore;
+
 class TestSink : public SomeIPClient::ClientConnectionListener {
 public:
 	typedef std::function<void (const InputMessage& msg)> CallBackFunction;
