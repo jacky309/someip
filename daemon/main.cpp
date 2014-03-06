@@ -57,9 +57,9 @@ int main(int argc, const char** argv) {
 	const char* activationConfigurationFolder = SOMEIP_ACTIVATION_CONFIGURATION_FOLDER;
 	const char* logFilePath = "/dev/stdout";
 
-	commandLineParser.addArgument(tcpPortNumber, "port", 'p', "TCP port number");
-	commandLineParser.addArgument(activationConfigurationFolder, "conf", 'c', "Auto-activation configuration folder");
-	commandLineParser.addArgument(logFilePath, "log", 'l', "Log file path");
+	commandLineParser.addOption(tcpPortNumber, "port", 'p', "TCP port number");
+	commandLineParser.addOption(activationConfigurationFolder, "conf", 'c', "Auto-activation configuration folder");
+	commandLineParser.addOption(logFilePath, "log", 'l', "Log file path");
 
 	if ( commandLineParser.parse(argc, argv) ) {
 	exit(1);

@@ -104,11 +104,11 @@ int main(int argc, const char** argv) {
 
 	CommandLineParser commandLineParser("Control tool", "message1 message2 ...", SOMEIP_PACKAGE_VERSION,
 					    "This tools lets you interact with the Some/IP daemon");
-	commandLineParser.addArgument(serviceToRegister, "service", 's', "A service to register");
-	commandLineParser.addArgument(messageToSubscribeTo, "subscribe", 'n', "A message to subscribe to");
-	//	commandLineParser.addArgument(messageToSend, "message", 'm', "A message to be sent.");
-	commandLineParser.addArgument(blockingMode, "blocking", 'b', "Use blocking mode");
-	commandLineParser.addArgument(dumpDaemonState, "dumpDaemonState", 'd', "Dump daemon state");
+	commandLineParser.addOption(serviceToRegister, "service", 's', "A service to register");
+	commandLineParser.addOption(messageToSubscribeTo, "subscribe", 'n', "A message to subscribe to");
+	//	commandLineParser.addOption(messageToSend, "message", 'm', "A message to be sent.");
+	commandLineParser.addOption(blockingMode, "blocking", 'b', "Use blocking mode");
+	commandLineParser.addOption(dumpDaemonState, "dumpDaemonState", 'd', "Dump daemon state");
 
 	if ( commandLineParser.parse(argc, argv) ) {
 		commandLineParser.printHelp();

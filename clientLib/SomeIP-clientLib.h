@@ -23,6 +23,44 @@ using namespace SomeIP_utils;
 
 LOG_IMPORT_CONTEXT(clientLibContext);
 
+
+class SafeMessageQueue {
+
+public:
+	SafeMessageQueue() {
+		queueHeadIndex = 0;
+	}
+
+	void push(const IPCInputMessage& msg) {
+		std::lock_guard<std::mutex> lock(m_mutex);
+		m_messageQueue.push_back( new IPCInputMessage(msg) );
+	}
+
+	const IPCInputMessage* pop() {
+		const IPCInputMessage* msg = NULL;
+		std::lock_guard<std::mutex> lock(m_mutex);
+		if ( !isEmpty() )
+			msg = m_messageQueue[queueHeadIndex++];
+		else {
+			queueHeadIndex = 0;
+			m_messageQueue.resize(0);
+		}
+
+		return msg;
+	}
+
+	bool isEmpty() {
+		return queueHeadIndex == m_messageQueue.size();
+	}
+
+private:
+	std::vector<IPCInputMessage*> m_messageQueue;
+	size_t queueHeadIndex;
+	std::mutex m_mutex;
+
+};
+
+
 class ClientConnectionListener : public MessageSink {
 public:
 	virtual void onDisconnected() = 0;
@@ -145,53 +183,16 @@ private:
 
 class ClientConnection;
 
+/**
+ * This is the main class to be used to connect to the dispatcher
+ */
 class ClientConnection : private MessageSource, private UDSConnection {
 
 	LOG_SET_CLASS_CONTEXT(clientLibContext);
 
-	class SafeMessageQueue {
-
-public:
-		SafeMessageQueue() {
-			queueHeadIndex = 0;
-		}
-
-		void push(const IPCInputMessage& msg) {
-			std::lock_guard<std::mutex> lock(m_mutex);
-			m_messageQueue.push_back( new IPCInputMessage(msg) );
-		}
-
-		const IPCInputMessage* pop() {
-			const IPCInputMessage* msg = NULL;
-			std::lock_guard<std::mutex> lock(m_mutex);
-			if ( !isEmpty() )
-				msg = m_messageQueue[queueHeadIndex++];
-			else {
-				queueHeadIndex = 0;
-				m_messageQueue.resize(0);
-			}
-
-			return msg;
-		}
-
-		bool isEmpty() {
-			return queueHeadIndex == m_messageQueue.size();
-		}
-
-private:
-		std::vector<IPCInputMessage*> m_messageQueue;
-		size_t queueHeadIndex;
-		std::mutex m_mutex;
-
-	};
-
 public:
 	using SocketStreamConnection::getFileDescriptor;
 	using SocketStreamConnection::disconnect;
-
-	static bool isError(SomeIPFunctionReturnCode code) {
-		return (code != SomeIPFunctionReturnCode::OK);
-	}
 
 	struct MainLoopInterface {
 		virtual ~MainLoopInterface() {
@@ -220,7 +221,7 @@ public:
 	}
 
 	/**
-	 * Returns the service registry instance, which
+	 * Returns the service registry instance
 	 */
 	ServiceRegistry& getServiceRegistry() {
 		return m_registry;
@@ -235,17 +236,19 @@ public:
 		if ( isConnected() )
 			throw ConnectionException("Already connected !");
 
-		/* register receive callback */
 		messageReceivedCallback = &clientReceiveCb;
 
 		swapInputMessage();
 
 		connectToServer();
 
-		log_info( "Big endian : %i", isNativeBigEndian() );
+		log_info() << "We are connected to the dispatcher";
 
 	}
 
+	/**
+	 * Return true if the connection to the daemon is active
+	 */
 	bool isConnected() const {
 		return UDSConnection::isConnected();
 	}
@@ -594,11 +597,11 @@ private:
 		log_error("Connection to daemon lost");
 	}
 
-	ClientConnectionListener* messageReceivedCallback = NULL;
+	ClientConnectionListener* messageReceivedCallback = nullptr;
 
 	std::vector<OutputMessageWithReport> m_messagesWithReport;
 
-	MainLoopInterface* m_mainLoop = NULL;
+	MainLoopInterface* m_mainLoop = nullptr;
 
 	ServiceRegistry m_registry;
 
@@ -621,9 +624,7 @@ class GLibIntegration : public GlibChannelListener, private ClientConnection::Ma
 
 public:
 	GLibIntegration(ClientConnection& connection, GMainContext* context = NULL) :
-		m_connection(connection), m_timer([&]() {
-		                                          //							  m_connection.dispatchQueuedMessages();
-						  }, 5000), m_channelWatcher(*this, context), m_idleCallBack(
+		m_connection(connection), m_channelWatcher(*this, context), m_idleCallBack(
 			[&]() {
 				m_idleCallbackFunction();
 				return false;
@@ -666,7 +667,7 @@ private:
 
 	std::mutex m_mutex;
 
-	GLibTimer m_timer;
+//	GLibTimer m_timer;
 
 	GlibChannelWatcher m_channelWatcher;
 

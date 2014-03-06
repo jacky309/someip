@@ -203,7 +203,7 @@ public:
 	}
 
 private:
-	std::vector<unsigned char>* m_dynamicData = NULL;
+	std::vector<unsigned char>* m_dynamicData = nullptr;
 	unsigned char m_staticData[1024];
 	size_t m_length = 0;
 };

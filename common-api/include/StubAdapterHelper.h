@@ -127,7 +127,7 @@ struct StubSignalHelper<_In<_InArgs ...> > {
 			}
 		}
 
-		return !SomeIPClient::ClientConnection::isError( stub.getConnection().sendMessage(message) );
+		return !isError( stub.getConnection().sendMessage(message) );
 	}
 };
 
@@ -235,7 +235,7 @@ private:
 
 		}
 
-		return !SomeIPClient::ClientConnection::isError( stubAdapterHelper.getConnection().sendMessage(messageReply) );
+		return !isError( stubAdapterHelper.getConnection().sendMessage(messageReply) );
 	}
 
 	_StubFunctor stubFunctor_;
@@ -264,7 +264,7 @@ protected:
 
 		outputStream << (stub.get()->*getStubFunctor_)( getSomeIPClientID(message) );
 
-		return !SomeIPClient::ClientConnection::isError( stubAdapterHelper.getConnection().sendMessage(messageReply) );
+		return !isError( stubAdapterHelper.getConnection().sendMessage(messageReply) );
 	}
 
 	GetStubFunctor getStubFunctor_;
