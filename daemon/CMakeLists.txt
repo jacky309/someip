@@ -1,30 +1,27 @@
 
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} )
 
-set(LIBRARY_FILES
-)
-
 add_executable( someip_dispatcher
-main.cpp
-Dispatcher.cpp
-LocalServer.cpp
-RemoteServiceListener.cpp
-ServiceAnnouncer.cpp
-TCPManager.cpp
-TCPClient.cpp
-Client.cpp
-sd-daemon.c
+	main.cpp
+	Dispatcher.cpp
+	LocalServer.cpp
+	RemoteServiceListener.cpp
+	ServiceAnnouncer.cpp
+	TCPManager.cpp
+	TCPClient.cpp
+	Client.cpp
+	sd-daemon.c
 )
 
 TARGET_LINK_LIBRARIES( someip_dispatcher
-   ${COMMONAPI_LIBRARIES}
-   ${GLIB_LIBRARIES}
-   ${GLIB_DBUS_LIBRARIES}
-   someip_lib
+	${COMMONAPI_LIBRARIES}
+	${GLIB_LIBRARIES}
+	${GLIB_DBUS_LIBRARIES}
+	someip_lib
 )
 
 INSTALL(TARGETS someip_dispatcher
-  DESTINATION bin
+	DESTINATION bin
 )
 
 # systemd files

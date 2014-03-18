@@ -359,7 +359,7 @@ private:
 
 		InputMessage answerMessage;
 
-		log_debug("Waiting for answer to message : ") << requestMsg;
+		log_debug("Waiting for answer to message : ") << requestMsg.toString();
 
 		readIncomingMessagesBlocking([&] (IPCInputMessage & incomingIPCMsg) {
 

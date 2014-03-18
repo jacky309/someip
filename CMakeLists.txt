@@ -19,8 +19,9 @@ endif()
 add_definitions(-DCOMMONAPI_INTERNAL_COMPILATION)
 
 if (LOGGING_PACKAGE)
+	message("Logging package : ${LOGGING_PACKAGE}")
 	find_package(${LOGGING_PACKAGE})
-	set (ADDITIONAL_DEPENDENCIES pelagicore-utils)
+	set (ADDITIONAL_DEPENDENCIES ${LOGGING_PKG_CONFIG_DEPENDENCIES})
 else()
 	set (LOGGING_INCLUDE_STATEMENT "\#include \"utilLib/SomeIP-log-null.h\"")
 endif()
@@ -30,9 +31,6 @@ FIND_PACKAGE(PkgConfig REQUIRED)
 
 pkg_check_modules(GLIB REQUIRED glib-2.0)
 add_definitions(${GLIB_CFLAGS})
-
-#pkg_check_modules(PELAGICORE_UTILS REQUIRED pelagicore-utils)
-#add_definitions(${PELAGICORE_UTILS_CFLAGS})
 
 pkg_check_modules(COMMONAPI REQUIRED CommonAPI)
 add_definitions(${COMMONAPI_CFLAGS})

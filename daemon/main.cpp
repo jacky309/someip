@@ -62,13 +62,13 @@ int main(int argc, const char** argv) {
 	commandLineParser.addOption(logFilePath, "log", 'l', "Log file path");
 
 	if ( commandLineParser.parse(argc, argv) ) {
-	exit(1);
+		exit(1);
 	}
 
-#ifdef ENABLE_CONSOLE_LOGGING
-	ConsoleLogOutput logOuput(logFilePath);
-	ConsoleLogOutput::setInstance(logOuput);
-#endif
+//#ifdef ENABLE_CONSOLE_LOGGING
+//	ConsoleLogOutput logOuput(logFilePath);
+//	ConsoleLogOutput::setInstance(logOuput);
+//#endif
 
 	configuration.setDefaultLocalTCPPort(tcpPortNumber);
 

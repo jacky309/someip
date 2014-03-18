@@ -422,14 +422,14 @@ private:
 };
 
 
-inline LogData& operator<<(LogData& log, const OutputMessage& v) {
-	log << v.toString();
-	return log;
-}
-
-inline LogData& operator<<(LogData& log, const InputMessage& v) {
-	log << v.toString();
-	return log;
-}
+//inline LogData& operator<<(LogData& log, const OutputMessage& v) {
+//	log << v.toString();
+//	return log;
+//}
+//
+//inline LogData& operator<<(LogData& log, const InputMessage& v) {
+//	log << v.toString();
+//	return log;
+//}
 
 }
