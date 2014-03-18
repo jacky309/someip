@@ -167,7 +167,7 @@ public:
 
 		std::string path = getSystemDPath(serviceName);
 
-		log_debug( "Path = %s", path.c_str() );
+		log_debug( "Path = " ) << path.c_str();
 
 		/* Create a proxy object for the "bus driver" (name "org.freedesktop.DBus") */
 		DBusGProxy* proxy = dbus_g_proxy_new_for_name(connection, SYSTEMD_DBUS_SERVICE_NAME, path.c_str(),

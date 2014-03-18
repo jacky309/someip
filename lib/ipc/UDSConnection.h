@@ -22,7 +22,7 @@ static constexpr const char* ALTERNATIVE_SERVER_SOCKET_PATH = "/tmp/someIPSocket
  */
 class UDSConnection : public SocketStreamConnection {
 
-	LOG_DECLARE_CLASS_CONTEXT("UDSConnection", "UDSConnection");
+	LOG_DECLARE_CLASS_CONTEXT("UDSC", "UDSConnection");
 
 public:
 	IPCOperationReport writeBlocking(const IPCMessage& msg);

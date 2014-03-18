@@ -93,7 +93,7 @@ public:
 
 #ifdef __linux__
 
-	int unixSignalFileDescriptor;
+	int unixSignalFileDescriptor = -1;
 
 	gboolean onUnixSignalReceived(GIOChannel* channel, GIOCondition condition) {
 		struct signalfd_siginfo fdsi;
