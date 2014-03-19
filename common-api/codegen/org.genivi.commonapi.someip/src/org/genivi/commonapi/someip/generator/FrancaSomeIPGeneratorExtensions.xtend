@@ -7,7 +7,6 @@ import org.franca.core.franca.FStructType
 import org.franca.core.franca.FEnumerationType
 import org.franca.core.franca.FMethod
 import org.franca.core.franca.FBroadcast
-import org.genivi.commonapi.core.generator.FTypeGenerator
 import org.franca.core.franca.FType
 import org.franca.core.franca.FModelElement
 import org.franca.deploymodel.dsl.fDeploy.FDInterface
@@ -29,37 +28,66 @@ class FrancaSomeIPGeneratorExtensions {
     def someipGetMethodName(FAttribute fAttribute) {
         'get' + fAttribute.className
     }
-    
-    def changeNotificationMemberID(FAttribute fAttribute) {
+
+    def changeNotificationMemberID(FAttribute fAttribute, FDInterface interfaceDeployment) {
+		for (attributeDepl : interfaceDeployment.attributes)
+        	if (attributeDepl.target == fAttribute)
+    	    	if (deploymentProperties(interfaceDeployment).getValueChangeMemberID(fAttribute) != null)
+	    	    	return deploymentProperties(interfaceDeployment).getValueChangeMemberID(fAttribute).toString();
+
     	var interface_ = fAttribute.containingInterface
 		var index = interface_.attributes.indexOf(fAttribute)
 		return '0x3000 + ' + (index * 3).toString
     }
 
-    def getterMemberID(FAttribute fAttribute) {
-		return fAttribute.changeNotificationMemberID + '1'
+    def getterMemberID(FAttribute fAttribute, FDInterface interfaceDeployment) {
+		for (methodDepl : interfaceDeployment.attributes)
+        	if (methodDepl.target == fAttribute)
+	        	if (deploymentProperties(interfaceDeployment).getGetterMemberID(fAttribute) != null)
+		        	return deploymentProperties(interfaceDeployment).getGetterMemberID(fAttribute).toString();
+		
+		return fAttribute.changeNotificationMemberID(interfaceDeployment) + '1'
     }
 
-    def setterMemberID(FAttribute fAttribute) {
-		return fAttribute.changeNotificationMemberID + '2'
-    }
+    def setterMemberID(FAttribute fAttribute, FDInterface interfaceDeployment) {
+		for (methodDepl : interfaceDeployment.attributes)
+        	if (methodDepl.target == fAttribute)
+	        	if (deploymentProperties(interfaceDeployment).getSetterMemberID(fAttribute)!=null)
+		        	return deploymentProperties(interfaceDeployment).getSetterMemberID(fAttribute).toString();
 
-    def memberID(FMethod fMethod) {
+		return fAttribute.changeNotificationMemberID(interfaceDeployment) + '2'
+    }
+    
+    def private deploymentProperties(FDInterface interfaceDeployment) {
+    	var deployedInterface = new FDeployedInterface(interfaceDeployment)
+		return new someip.ServiceSpecificationInterfacePropertyAccessor(deployedInterface)
+     }
+
+    def memberID(FMethod fMethod, FDInterface interfaceDeployment) {
+        for (methodDepl : interfaceDeployment.methods)
+        	if (methodDepl.target == fMethod)
+	        	return deploymentProperties(interfaceDeployment).getMemberID(fMethod).toString();
+
+		// No ID set in deployment file => assign one
       	var interface_ = fMethod.containingInterface
 		var index = interface_.methods.indexOf(fMethod)
 		return '0x1000 + ' + index.toString
+
     }
 
-    def memberID(FBroadcast fBroadcast) {
-        var interface_ = fBroadcast.containingInterface
-		var index = interface_.broadcasts.indexOf(fBroadcast)
-		return '0x2000 + ' + index.toString
+    def memberID(FBroadcast fBroadcast, FDInterface interfaceDeployment) {
+        for (broadcastDepl : interfaceDeployment.broadcasts)
+        	if (broadcastDepl.target == fBroadcast)
+	        	return deploymentProperties(interfaceDeployment).getMemberID(fBroadcast).toString();
+
+        	var interface_ = fBroadcast.containingInterface
+			var index = interface_.broadcasts.indexOf(fBroadcast)
+			return '0x2000 + ' + index.toString
+
     }
 
     def serviceID(FDInterface fInterface) {
-		var deployedInterface = new FDeployedInterface(fInterface)
-		var d = new SomeIPServiceAddressInterfacePropertyAccessor(deployedInterface)
-		var id = d.getServiceID(fInterface.target)
+		var id = deploymentProperties(fInterface).getServiceID(fInterface.target)
 		return id
     }
 

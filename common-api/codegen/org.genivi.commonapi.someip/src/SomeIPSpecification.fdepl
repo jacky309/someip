@@ -1,0 +1,21 @@
+ 
+specification someip.ServiceSpecification {
+	for interfaces {
+		ServiceID : Integer;
+	}
+
+	for methods {
+		MemberID : Integer;
+	}
+
+	for broadcasts  {
+		MemberID : Integer;
+	}
+
+	for attributes {
+		ValueChangeMemberID : Integer ;
+		SetterMemberID : Integer;
+		GetterMemberID : Integer;
+	}
+
+}

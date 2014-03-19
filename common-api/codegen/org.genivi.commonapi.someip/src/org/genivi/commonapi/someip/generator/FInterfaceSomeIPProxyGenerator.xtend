@@ -109,10 +109,10 @@ class FInterfaceSomeIPProxyGenerator {
                             CommonAPI::SomeIP::ServiceID serviceID):
                 CommonAPI::SomeIP::SomeIPProxy(someipProxyconnection, commonApiAddress, serviceID)
                 «FOR attribute : fInterface.attributes BEFORE ',' SEPARATOR ','»
-                    «attribute.generateSomeIPVariableInit(deploymentAccessor)»
+                    «attribute.generateSomeIPVariableInit(fDInterface)»
                 «ENDFOR»
                 «FOR broadcast : fInterface.broadcasts BEFORE ',' SEPARATOR ','»
-                    «broadcast.someipClassVariableName»(*this, «broadcast.memberID»)
+                    «broadcast.someipClassVariableName»(*this, «broadcast.memberID(fDInterface)»)
                 «ENDFOR» {
         }
 
@@ -129,10 +129,11 @@ class FInterfaceSomeIPProxyGenerator {
         «ENDFOR»
 
         «FOR method : fInterface.methods»
+«««        	«var method = methodDeployment.target»
             «method.generateDefinitionWithin(fInterface.someipProxyClassName)» {
                 «method.generateSomeIPProxyHelperClass»::callMethodWithReply(
                     *this,
-                    «method.memberID»,
+                    «method.memberID(fDInterface)»,
                     «method.inArgs.map[name].join('', ', ', ', ', [toString])»
                     callStatus«IF method.hasError»,
                     methodError«ENDIF»
@@ -142,7 +143,7 @@ class FInterfaceSomeIPProxyGenerator {
                 «method.generateAsyncDefinitionWithin(fInterface.someipProxyClassName)» {
                     return «method.generateSomeIPProxyHelperClass»::callMethodAsync(
                         *this,
-                        «method.memberID»,
+                        «method.memberID(fDInterface)»,
                         «method.inArgs.map[name].join('', ', ', ', ', [toString])»
                         std::move(callback));
                 }
@@ -200,16 +201,16 @@ class FInterfaceSomeIPProxyGenerator {
         return type
     }
 
-    def private generateSomeIPVariableInit(FAttribute fAttribute, DeploymentInterfacePropertyAccessor deploymentAccessor) {
+    def private generateSomeIPVariableInit(FAttribute fAttribute, FDInterface fdInterface) {
         var ret = fAttribute.someipClassVariableName + '(*this'
 
         if (fAttribute.isObservable)
-            ret = ret + ', ' + fAttribute.changeNotificationMemberID + ''
+            ret = ret + ', ' + fAttribute.changeNotificationMemberID(fdInterface) + ''
 
         if (!fAttribute.isReadonly)
-            ret = ret + ', ' + fAttribute.setterMemberID 
+            ret = ret + ', ' + fAttribute.setterMemberID (fdInterface)
 
-        ret = ret + ', ' + fAttribute.getterMemberID + ')'
+        ret = ret + ', ' + fAttribute.getterMemberID(fdInterface) + ')'
 
         return ret
     }

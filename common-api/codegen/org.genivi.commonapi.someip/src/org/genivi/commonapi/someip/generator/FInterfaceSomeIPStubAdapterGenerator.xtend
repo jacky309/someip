@@ -130,6 +130,7 @@ namespace SomeIP_Lib {
         «ENDFOR»
         
         «FOR method : fInterface.methods»
+«««        	«var method = methodDeployment.target»
             «IF !method.isFireAndForget»
                 static CommonAPI::SomeIP::MethodWithReplyStubDispatcher<
                     «fInterface.stubClassName»,
@@ -151,7 +152,7 @@ namespace SomeIP_Lib {
                 	CommonAPI::SomeIP::StubSignalHelper<CommonAPI::SomeIP::SerializableArguments<«attribute.type.getNameReference(fInterface.model)»>>
                         ::sendSignal(
                             *this,
-                            «attribute.changeNotificationMemberID»,
+                            «attribute.changeNotificationMemberID(fDInterface)»,
                             value
                     );
                 }
@@ -159,11 +160,12 @@ namespace SomeIP_Lib {
         «ENDFOR»
 
         «FOR broadcast: fInterface.broadcasts»
+«««        	«var broadcast = broadcastDeployment.target»
             void «fInterface.someipStubAdapterClassName»::«broadcast.stubAdapterClassFireEventMethodName»(«broadcast.outArgs.map['const ' + type.getNameReference(fInterface.model) + '& ' + name].join(', ')») {
                 CommonAPI::SomeIP::StubSignalHelper<CommonAPI::SomeIP::SerializableArguments<«broadcast.outArgs.map[type.getNameReference(fInterface.model)].join(', ')»>>
                         ::sendSignal(
                             *this,
-                            «broadcast.memberID»
+                            «broadcast.memberID(fDInterface)»
                             «IF broadcast.outArgs.size > 0»,«ENDIF»
                             «broadcast.outArgs.map[name].join(', ')»
                     );
@@ -175,14 +177,14 @@ namespace SomeIP_Lib {
         template<>
         const «fInterface.absoluteNamespace»::«fInterface.someipStubAdapterHelperClassName»::StubDispatcherTable «fInterface.absoluteNamespace»::«fInterface.someipStubAdapterHelperClassName»::stubDispatcherTable_ = {
             «FOR attribute : fInterface.attributes SEPARATOR ','»
-                { «attribute.getterMemberID», &«fInterface.absoluteNamespace»::«attribute.someipGetStubDispatcherVariable» }
+                { «attribute.getterMemberID(fDInterface)», &«fInterface.absoluteNamespace»::«attribute.someipGetStubDispatcherVariable» }
                 «IF !attribute.isReadonly»
-                    , { «attribute.setterMemberID» + 1, &«fInterface.absoluteNamespace»::«attribute.someipSetStubDispatcherVariable» }
+                    , { «attribute.setterMemberID(fDInterface)» + 1, &«fInterface.absoluteNamespace»::«attribute.someipSetStubDispatcherVariable» }
                 «ENDIF»
             «ENDFOR»
             «IF !fInterface.attributes.empty && !fInterface.methods.empty»,«ENDIF»
             «FOR method : fInterface.methods SEPARATOR ','»
-                { «method.memberID», &«fInterface.absoluteNamespace»::«method.someipStubDispatcherVariable» }
+                { «method.memberID(fDInterface)», &«fInterface.absoluteNamespace»::«method.someipStubDispatcherVariable» }
             «ENDFOR»
         };
         
