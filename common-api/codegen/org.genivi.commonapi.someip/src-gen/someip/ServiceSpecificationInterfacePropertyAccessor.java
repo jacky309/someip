@@ -34,8 +34,8 @@ public class ServiceSpecificationInterfacePropertyAccessor
 		return target.getInteger(obj, "MemberID");
 	}
 	
-	public Integer getValueChangeMemberID (FAttribute obj) {
-		return target.getInteger(obj, "ValueChangeMemberID");
+	public Integer getValueChangedNotificationMemberID (FAttribute obj) {
+		return target.getInteger(obj, "ValueChangedNotificationMemberID");
 	}
 	
 	public Integer getSetterMemberID (FAttribute obj) {

@@ -183,7 +183,7 @@ private:
 
 class SocketStreamServer {
 
-	LOG_DECLARE_CLASS_CONTEXT("SocketStreamServer", "SocketStreamServer");
+	LOG_DECLARE_CLASS_CONTEXT("SSS", "SocketStreamServer");
 
 public:
 	SocketStreamServer() {

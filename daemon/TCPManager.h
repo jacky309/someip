@@ -12,7 +12,7 @@ namespace SomeIP_Dispatcher {
 
 class TCPManager : public ServiceDiscoveryListener {
 
-	LOG_DECLARE_CLASS_CONTEXT("TCPManager", "TCPManager");
+	LOG_DECLARE_CLASS_CONTEXT("TCPM", "TCPManager");
 
 public:
 	TCPManager(Dispatcher& dispatcher) :

@@ -145,7 +145,7 @@ protected:
 template<bool convertToNetworkByteOrder, bool alignmentNeeded>
 class Deserializer {
 
-	LOG_SET_CLASS_CONTEXT(serializationContext)
+	LOG_SET_CLASS_CONTEXT(serializationContext);
 
 public:
 	void readValue(std::string& v) {

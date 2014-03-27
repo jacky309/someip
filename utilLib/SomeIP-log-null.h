@@ -32,6 +32,7 @@ struct LogMainLoopIntegration {
 #define LOG_DECLARE_DEFAULT_LOCAL_CONTEXT(contextShortID, contextDescription)
 #define LOG_IMPORT_DEFAULT_CONTEXT(context)
 #define LOG_DECLARE_CLASS_CONTEXT(contextShortID, contextDescription)
+#define LOG_FILE_SET_OUTPUT(path)
 #endif
 
 }

@@ -62,13 +62,10 @@ int main(int argc, const char** argv) {
 	commandLineParser.addOption(logFilePath, "log", 'l', "Log file path");
 
 	if ( commandLineParser.parse(argc, argv) ) {
-		exit(1);
+	exit(1);
 	}
 
-//#ifdef ENABLE_CONSOLE_LOGGING
-//	ConsoleLogOutput logOuput(logFilePath);
-//	ConsoleLogOutput::setInstance(logOuput);
-//#endif
+	LOG_FILE_SET_OUTPUT(logFilePath);
 
 	configuration.setDefaultLocalTCPPort(tcpPortNumber);
 
@@ -77,7 +74,7 @@ int main(int argc, const char** argv) {
 	log_info("Daemon started. version: ") << SOMEIP_PACKAGE_VERSION << ". Logging to : " << logFilePath;
 
 	for ( auto& localIpAddress : TCPServer::getIPAddresses() ) {
-		log_debug( "Local IP address : %s", localIpAddress.toString().c_str() );
+		log_debug() << "Local IP address : " << localIpAddress.toString();
 	}
 
 	TCPManager tcpManager( app.getDispatcher() );
@@ -99,9 +96,7 @@ int main(int argc, const char** argv) {
 
 	app.run();
 
-	log_warning("Shutting down...");
-
-	usleep(10000);
+	log_info("Shutting down...");
 
 	return 0;
 

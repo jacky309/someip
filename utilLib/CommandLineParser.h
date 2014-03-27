@@ -53,7 +53,7 @@ public:
 	 * Add a bool parameter to the list of command line options to handle
 	 */
 	GOptionEntry& addOption(bool& value, const char* longName, char shortName, const char* description,
-				  const char* argumentDescription = NULL) {
+				const char* argumentDescription = NULL) {
 
 		m_boolEntries.push_back( new BoolTuple(value) );
 
@@ -71,7 +71,7 @@ public:
 	 * Add an int parameter to the list of command line options to handle
 	 */
 	GOptionEntry& addOption(int& value, const char* longName, char shortName, const char* description,
-				  const char* argumentDescription = NULL) {
+				const char* argumentDescription = NULL) {
 		GOptionEntry entry = {longName, shortName, 0, G_OPTION_ARG_INT, &value, defaultString(description, value),
 				      argumentDescription};
 		m_entries.push_back(entry);
@@ -82,7 +82,7 @@ public:
 	 * Add an int parameter to the list of command line options to handle
 	 */
 	GOptionEntry& addOption(unsigned int& value, const char* longName, char shortName, const char* description,
-				  const char* argumentDescription = NULL) {
+				const char* argumentDescription = NULL) {
 		GOptionEntry entry = {longName, shortName, 0, G_OPTION_ARG_INT, &value, defaultString(description, value),
 				      argumentDescription};
 		m_entries.push_back(entry);
@@ -93,7 +93,7 @@ public:
 	 * Add a string parameter to the list of command line options to handle
 	 */
 	GOptionEntry& addOption(const char*& value, const char* longName, char shortName, const char* description,
-				  const char* argumentDescription = NULL) {
+				const char* argumentDescription = NULL) {
 		GOptionEntry entry = {longName, shortName, 0, G_OPTION_ARG_STRING, &value, defaultString(description, value),
 				      argumentDescription};
 		m_entries.push_back(entry);

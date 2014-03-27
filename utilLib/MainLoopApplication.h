@@ -166,7 +166,7 @@ public:
 	}
 
 	GMainLoop* m_mainLoop = NULL;
-//	LogMainLoopIntegration m_logMainLoopIntegration;
+	//	LogMainLoopIntegration m_logMainLoopIntegration;
 };
 
 }

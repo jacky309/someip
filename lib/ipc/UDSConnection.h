@@ -149,7 +149,7 @@ protected:
 
 class UDSServer : public SocketStreamServer {
 
-	LOG_DECLARE_CLASS_CONTEXT("UDSServer", "UDSServer");
+	LOG_DECLARE_CLASS_CONTEXT("UDSS", "UDSServer");
 
 public:
 	UDSServer() {

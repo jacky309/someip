@@ -1,21 +1,50 @@
  
 specification someip.ServiceSpecification {
+
 	for interfaces {
+		
+		/**
+		 * A Service ID must be defined for each SOME/IP interface
+		 */
 		ServiceID : Integer;
+		
 	}
 
 	for methods {
-		MemberID : Integer;
+		
+		/**
+		 * Member IDs for methods can be defined. If not defined, the code generator will assign an ID
+		 */
+		MemberID : Integer (optional);
+		
 	}
 
 	for broadcasts  {
-		MemberID : Integer;
+		
+		/**
+		 * Member IDs for broadcasts can be defined. If not defined, the code generator will assign an ID
+		 */
+		MemberID : Integer (optional);
+		
 	}
 
 	for attributes {
-		ValueChangeMemberID : Integer ;
-		SetterMemberID : Integer;
-		GetterMemberID : Integer;
+
+		/**
+		 * Member IDs for "attribute changed notifications" can be defined. If not defined, the code generator will assign an ID
+		 */
+		ValueChangedNotificationMemberID : Integer (optional);
+
+		/**
+		 * Member IDs for attribute setters can be defined. If not defined, the code generator will assign an ID
+		 */
+		SetterMemberID : Integer (optional);
+
+		/**
+		 * Member IDs for attribute getters can be defined. If not defined, the code generator will assign an ID
+		 */
+		GetterMemberID : Integer (optional);
+
 	}
 
 }

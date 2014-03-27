@@ -65,7 +65,7 @@ public:
 
 	SomeIPFunctionReturnCode activateService() {
 
-		log_info( "Activating service %s", toString().c_str() );
+		log_info("Activating service ") << toString();
 
 		if (m_state != ProcessState::STARTING) {
 
@@ -81,7 +81,7 @@ public:
 				// we did not start via systemD, start as command line
 
 				if (chdir( m_workingDirectory.c_str() ) != 0) {
-					log_debug( "Can't change current directory to %s", m_workingDirectory.c_str() );
+					log_debug("Can't change current directory to ") << m_workingDirectory;
 					throw new Exception("Bad configuration");
 				}
 
@@ -89,7 +89,7 @@ public:
 				if ( g_spawn_command_line_async(m_commandLine.c_str(), &error) ) {
 					m_state = ProcessState::STARTING;
 				} else {
-					log_error( "Can't start application %s", m_commandLine.c_str() );
+					log_error("Can't start application") << m_commandLine;
 					m_state = ProcessState::START_FAILED;
 				}
 
@@ -142,7 +142,7 @@ public:
 
 		connection = dbus_g_bus_get(DBUS_BUS_SYSTEM, &error);
 		if (connection == NULL) {
-			log_error("Failed to open connection to dbus: %s", error->message);
+			log_error("Failed to open connection to dbus: ") << error->message;
 			throw Exception("Failed to open connection to dbus");
 		}
 
@@ -167,7 +167,7 @@ public:
 
 		std::string path = getSystemDPath(serviceName);
 
-		log_debug( "Path = " ) << path.c_str();
+		log_debug("Path = ") << path.c_str();
 
 		/* Create a proxy object for the "bus driver" (name "org.freedesktop.DBus") */
 		DBusGProxy* proxy = dbus_g_proxy_new_for_name(connection, SYSTEMD_DBUS_SERVICE_NAME, path.c_str(),
@@ -267,7 +267,7 @@ public:
 
 			closedir(dir);
 		} else {
-			log_warning("Can't open directory %s", folder);
+			log_warning("Can't open directory") << folder;
 		}
 	}
 
@@ -296,7 +296,7 @@ void WellKnownService::sendMessage(DispatcherMessage& msg) {
 	if (getLocalClient() == NULL) {
 		if (activateService() == SomeIPFunctionReturnCode::OK) {
 			m_pendingMessages.push_back( msg.getIPCMessage() );
-			log_debug( "Pushed message %s", m_pendingMessages[m_pendingMessages.size() - 1].toString().c_str() );
+			log_debug("Pushed message") << m_pendingMessages[m_pendingMessages.size() - 1].toString();
 		} else {
 			log_error() << "Can't start " << toString();
 			OutputMessage responseMessage = createMethodReturn(msg);

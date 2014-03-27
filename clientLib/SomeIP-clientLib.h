@@ -388,7 +388,7 @@ private:
 	void pushToQueue(const IPCInputMessage& msg) {
 		m_queue.push(msg);
 
-		log_verbose( "Message pushed : ") << msg.toString().c_str();
+		log_verbose("Message pushed : ") << msg.toString().c_str();
 
 		if (m_mainLoop)
 			m_mainLoop->addIdleCallback([&] () {

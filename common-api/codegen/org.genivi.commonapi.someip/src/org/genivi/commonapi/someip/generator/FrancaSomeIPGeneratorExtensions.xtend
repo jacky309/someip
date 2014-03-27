@@ -32,8 +32,8 @@ class FrancaSomeIPGeneratorExtensions {
     def changeNotificationMemberID(FAttribute fAttribute, FDInterface interfaceDeployment) {
 		for (attributeDepl : interfaceDeployment.attributes)
         	if (attributeDepl.target == fAttribute)
-    	    	if (deploymentProperties(interfaceDeployment).getValueChangeMemberID(fAttribute) != null)
-	    	    	return deploymentProperties(interfaceDeployment).getValueChangeMemberID(fAttribute).toString();
+    	    	if (deploymentProperties(interfaceDeployment).getValueChangedNotificationMemberID(fAttribute) != null)
+	    	    	return deploymentProperties(interfaceDeployment).getValueChangedNotificationMemberID(fAttribute).toString();
 
     	var interface_ = fAttribute.containingInterface
 		var index = interface_.attributes.indexOf(fAttribute)

@@ -2,7 +2,7 @@
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} )
 
 add_executable( someip_dispatcher
-	main.cpp
+	daemon.cpp
 	Dispatcher.cpp
 	LocalServer.cpp
 	RemoteServiceListener.cpp
