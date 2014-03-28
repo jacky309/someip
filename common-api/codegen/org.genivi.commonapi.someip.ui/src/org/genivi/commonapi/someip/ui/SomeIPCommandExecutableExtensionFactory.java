@@ -8,7 +8,6 @@ package org.genivi.commonapi.someip.ui;
 
 import org.eclipse.xtext.generator.IGenerator;
 import org.genivi.commonapi.core.ui.CommandExecutableExtensionFactory;
-import org.genivi.commonapi.someip.generator.FrancaSomeIPGeneratorExtensions;
 import org.osgi.framework.Bundle;
 import org.genivi.commonapi.someip.generator.FrancaSomeIPGenerator;
 

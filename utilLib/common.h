@@ -42,7 +42,7 @@ inline EnumType string2Enum(const char* str) {
 	return string2Enum<EnumType>( std::string(str) );
 }
 
-#define RETURN_ENUM_NAME_IF_EQUAL(value, type, v) if (value == type::v) return # v;
+#define RETURN_ENUM_NAME_IF_EQUAL(value, type, v) if (value == type::v) return # v
 
 //#define RETURN_ENUM_NAME_IF_EQUAL(value, v) if (value == v) return # v;
 

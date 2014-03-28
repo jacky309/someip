@@ -5,5 +5,5 @@
 	<classpathentry kind="src" path="xtend-gen"/>
 	<classpathentry kind="src" path="src-gen"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="output" path="build"/>
+	<classpathentry kind="output" path="bin"/>
 </classpath>

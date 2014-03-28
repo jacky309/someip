@@ -31,18 +31,6 @@
 		<nature>org.eclipse.xtext.ui.shared.xtextNature</nature>
 		<nature>org.eclipse.pde.PluginNature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>bin</name>
-			<type>2</type>
-			<locationURI>HOME%7D/build/org.genivi.commonapi.someip</locationURI>
-		</link>
-		<link>
-			<name>build</name>
-			<type>2</type>
-			<locationURI>BUILD_LOC/org.genivi.commonapi.someip</locationURI>
-		</link>
-	</linkedResources>
 	<variableList>
 		<variable>
 			<name>BUILD_LOC</name>

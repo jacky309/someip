@@ -23,8 +23,7 @@ static const MemberID PING_MEMBER_ID = 0xFF12;
 /// ServiceID identifying the dispatcher itself. TODO : check if Some/IP defines such a thing
 static const ServiceID DISPATCHER_SERVICE_ID = 0xFFFE;
 
-enum ReturnCode
-: uint8_t {
+enum ReturnCode : uint8_t {
 	E_OK
 };
 
