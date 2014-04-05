@@ -36,14 +36,11 @@ This package is made of the following components:
 \li Add security features
 \li Implement IPv6 support
 
-Code review by someone of Pelagicore.
 Possibility to configure a local "subnet" in order to include only selected hosts in the service discovery process.
 Implement more unit tests
 
-Write documentation
-Code cleanup.
+Write documentation.
 Submit CommonAPI patches.
-Clean main loop integration
 
 \li
 \li ...

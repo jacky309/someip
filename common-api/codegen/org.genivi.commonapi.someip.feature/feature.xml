@@ -2,7 +2,7 @@
 <feature
       id="org.genivi.commonapi.someip.feature"
       label="%featureName"
-      version="2.0.1.qualifier"
+      version="1.0.0.qualifier"
       provider-name="%providerName">
 
    <copyright>
@@ -30,15 +30,13 @@
       <import feature="org.genivi.commonapi.core.feature" version="2.0.0.qualifier"/>
       <import plugin="org.genivi.commonapi.core" version="1.0.0" match="greaterOrEqual"/>
       <import plugin="org.genivi.commonapi.core.ui" version="1.0.0" match="greaterOrEqual"/>
-      <import plugin="org.genivi.commonapi.someip" />
    </requires>
 
    <plugin
          id="org.genivi.commonapi.someip"
          download-size="0"
          install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.genivi.commonapi.someip.ui"

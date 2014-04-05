@@ -55,17 +55,16 @@ int main(int argc, const char** argv) {
 	CommandLineParser commandLineParser("Dispatcher", "", SOMEIP_PACKAGE_VERSION);
 	int tcpPortNumber = configuration.getDefaultLocalTCPPort();
 	const char* activationConfigurationFolder = SOMEIP_ACTIVATION_CONFIGURATION_FOLDER;
-	const char* logFilePath = "/dev/stdout";
+	const char* logFilePath = "/tmp/someip_dispatcher.log";
 
 	commandLineParser.addOption(tcpPortNumber, "port", 'p', "TCP port number");
 	commandLineParser.addOption(activationConfigurationFolder, "conf", 'c', "Auto-activation configuration folder");
 	commandLineParser.addOption(logFilePath, "log", 'l', "Log file path");
 
-	if ( commandLineParser.parse(argc, argv) ) {
-	exit(1);
-	}
+	if ( commandLineParser.parse(argc, argv) )
+		exit(1);
 
-	LOG_FILE_SET_OUTPUT(logFilePath);
+	SomeIPFileLoggingContext::openFile(logFilePath);
 
 	configuration.setDefaultLocalTCPPort(tcpPortNumber);
 

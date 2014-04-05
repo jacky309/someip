@@ -20,7 +20,7 @@ Here are the main components:
         \li Dispatcher core. This component handle the core features such as the registration/unregistration of services and the message dispatching from one client to another.
         \li Local Server. This component handles the connection of the local client applications. Unix domain sockets are currently used as low-level IPC channel.
         \li TCP Server. This component handles the connection of client applications via TCP.
-        \li Service announcer. This components is in charge of sending notifications on the network (via UDP broadcasts) as soon as a service has registered or unregistered.
+        \li Service announcer. This component is in charge of sending notifications on the network (via UDP broadcasts) as soon as a service has been registered or unregistered.
         \li Remote service listener. This component listens to notifications sent by other devices on the network and registers those service locally, so that they can be used by local clients.
 
 \dot

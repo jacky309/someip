@@ -7,6 +7,8 @@
 #include <sys/types.h>
 #include <sys/un.h>
 
+FILE* SomeIPFileLoggingContext::m_file = nullptr;
+
 namespace SomeIP_utils {
 
 LOG_DECLARE_DEFAULT_CONTEXT(libContext, "lib", "lib");

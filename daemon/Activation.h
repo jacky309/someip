@@ -167,9 +167,8 @@ public:
 
 		std::string path = getSystemDPath(serviceName);
 
-		log_debug("Path = ") << path.c_str();
+		log_debug("Path : ") << path.c_str();
 
-		/* Create a proxy object for the "bus driver" (name "org.freedesktop.DBus") */
 		DBusGProxy* proxy = dbus_g_proxy_new_for_name(connection, SYSTEMD_DBUS_SERVICE_NAME, path.c_str(),
 							      SYSTEMD_DBUS_INTERFACE_NAME);
 
@@ -178,29 +177,14 @@ public:
 		GError* error = NULL;
 		if ( !dbus_g_proxy_call(proxy, "Start", &error, G_TYPE_STRING, "replace", G_TYPE_INVALID,
 					G_TYPE_STRING, &returnValue, G_TYPE_INVALID) ) {
-
-			//			if (error->domain == DBUS_GERROR && error->code == DBUS_GERROR_REMOTE_EXCEPTION) {
-			//				log_error("Caught remote method exception %s: %s", dbus_g_error_get_name(error), error->message);
-			//			} else {
-			//				log_error("Error: %s", error->message);
-			//			}
-			//
-			//			g_error_free(error);
-			//			exit(1);
+			log_error() << "Could not activate service : " << serviceName;
 		}
 
-		log_info("Return value : %s", (returnValue == NULL) ? "null" : returnValue);
+		log_info("Return value : ") << (returnValue == NULL) ? "null" : returnValue;
 
 		g_object_unref(proxy);
 
 		return true;
-
-		/* Print the results */
-		//		g_print("Names on the message bus:\n");
-		//		for (name_list_ptr = name_list; *name_list_ptr; name_list_ptr++) {
-		//			g_print("  %s\n", *name_list_ptr);
-		//		}
-		//		g_strfreev(name_list);
 
 	}
 #endif
@@ -267,7 +251,7 @@ public:
 
 			closedir(dir);
 		} else {
-			log_warning("Can't open directory") << folder;
+			log_warning("Can't open directory ") << folder;
 		}
 	}
 

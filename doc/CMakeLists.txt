@@ -17,7 +17,7 @@ macro(add_doxygen_doc packageName sourceCodePath examplesPath)
 			set(OUTDIR ${CMAKE_CURRENT_BINARY_DIR})
 			set(DOXYGEN_EXAMPLES_PATH ${examplesPath})
 			set(DOXYGEN_PROJECT_NAME ${packageName})
-			configure_file(pelagicore.doxygen.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/doxygen.cfg)
+			configure_file(doxygen.cfg.in ${CMAKE_CURRENT_BINARY_DIR}/doxygen.cfg)
 			
 			# add doxygen as target
 			add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/doxygen COMMAND ${DOXYGEN_EXECUTABLE} ARGS ${CMAKE_CURRENT_BINARY_DIR}/doxygen.cfg)
@@ -44,4 +44,6 @@ macro(add_doxygen_doc packageName sourceCodePath examplesPath)
 	endif()
 
 endmacro()
+
+
 add_doxygen_doc(someip "${CMAKE_CURRENT_SOURCE_DIR}/.." ${CMAKE_CURRENT_SOURCE_DIR}/examples)

@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
+   <extension point="org.franca.deploymodel.dsl.deploySpecProvider" >
+
+      <model
+            FDSpecification="someip.ServiceSpecification"
+            alias="someip.ServiceSpecification"
+            resource="SomeIPSpecification.fdepl">
+      </model>
+         
+   </extension>
 
 </plugin>
