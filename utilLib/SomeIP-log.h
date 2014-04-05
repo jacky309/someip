@@ -36,15 +36,17 @@ public:
 namespace pelagicore {
 
 typedef pelagicore::LogContextT<
-		Input<pelagicore::ConsoleLogContext, pelagicore::DltContextClass, SomeIPFileLoggingContext>,
-		Output<pelagicore::ConsoleLogContext::LogDataType,
-				pelagicore::DltContextClass::LogDataType, SomeIPFileLoggingContext::LogDataType> > LogContext;
-
-typedef pelagicore::LogContextT<Input<pelagicore::DltContextClass>, Output<DltLogData> > LogContext9;
-typedef pelagicore::LogContextT<Input<pelagicore::DltContextClass,
-				      pelagicore::DltContextClass>, Output<DltLogData, DltLogData> > LogContext8;
-typedef pelagicore::LogContextT<Input<pelagicore::ConsoleLogContext
-				      >, Output<ConsoleLogData> > LogContext2;
+		Input<pelagicore::ConsoleLogContext
+#ifdef ENABLE_DLT_LOGGING
+		, pelagicore::DltContextClass
+#endif
+		, SomeIPFileLoggingContext>,
+		Output<pelagicore::ConsoleLogContext::LogDataType
+#ifdef ENABLE_DLT_LOGGING
+		, 
+		pelagicore::DltContextClass::LogDataType
+#endif
+		, SomeIPFileLoggingContext::LogDataType> > LogContext;
 
 }
 
