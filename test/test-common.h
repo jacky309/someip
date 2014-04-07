@@ -2,7 +2,7 @@
 
 #include "gtest/gtest.h"
 
-#include "pelagicore-log.h"
+#include "plog.h"
 LOG_DEFINE_APP_IDS("SOTE", "Some/IP test");
 LOG_DECLARE_DEFAULT_CONTEXT(blabla, "LOG", "Main context");
 

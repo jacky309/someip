@@ -18,13 +18,8 @@ endif()
 
 add_definitions(-DCOMMONAPI_INTERNAL_COMPILATION)
 
-if (LOGGING_PACKAGE)
-	message("Logging package : ${LOGGING_PACKAGE}")
-	find_package(${LOGGING_PACKAGE})
-	set (ADDITIONAL_DEPENDENCIES ${LOGGING_PKG_CONFIG_DEPENDENCIES})
-else()
-	set (LOGGING_INCLUDE_STATEMENT "\#include \"utilLib/SomeIP-log-null.h\"")
-endif()
+find_package(PLog REQUIRED)
+set(LOGGING_LIBRARIES ${PLOG_LIBRARIES})
 
 # Dependencies
 FIND_PACKAGE(PkgConfig REQUIRED)

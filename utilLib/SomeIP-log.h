@@ -9,17 +9,18 @@
 #include "log-dlt.h"
 #endif
 
-#ifdef ENABLE_CONSOLE_LOGGING
 #include "log-console.h"
-#endif
-
 #include "log-file.h"
 
-class SomeIPFileLoggingContext : public pelagicore::FileLogContext {
+class SomeIPFileLoggingContext : public logging::FileLogContext {
+
 public:
 
-	FILE* getFile() override {
-//		printf("%i\n", m_file);
+	SomeIPFileLoggingContext() {
+		setLogLevel(logging::LogLevel::Info);
+	}
+
+	FILE* getFile(logging::ConsoleLogData& data) override {
 		return m_file;
 	}
 
@@ -33,23 +34,16 @@ public:
 	static FILE* m_file;
 };
 
-namespace pelagicore {
-
-typedef pelagicore::LogContextT<
-		Input<pelagicore::ConsoleLogContext
+typedef logging::LogContextT<
+		logging::TypeSet<logging::ConsoleLogContext
 #ifdef ENABLE_DLT_LOGGING
-		, pelagicore::DltContextClass
+		, logging::DltContextClass
 #endif
 		, SomeIPFileLoggingContext>,
-		Output<pelagicore::ConsoleLogContext::LogDataType
+		logging::TypeSet<logging::ConsoleLogContext::LogDataType
 #ifdef ENABLE_DLT_LOGGING
-		, 
-		pelagicore::DltContextClass::LogDataType
+		, logging::DltContextClass::LogDataType
 #endif
 		, SomeIPFileLoggingContext::LogDataType> > LogContext;
-
-}
-
-#include "log-types.h"
 
 #include "SomeIP-Config.h"

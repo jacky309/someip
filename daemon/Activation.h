@@ -47,7 +47,7 @@ public:
 	void sendMessage(DispatcherMessage& msg) override;
 
 	std::string toString() const override {
-		if (m_client != NULL) {
+		if (m_client != nullptr) {
 			return Service::toString();
 		} else {
 			char buffer[2000];
@@ -85,7 +85,7 @@ public:
 					throw new Exception("Bad configuration");
 				}
 
-				GError* error = NULL;
+				GError* error = nullptr;
 				if ( g_spawn_command_line_async(m_commandLine.c_str(), &error) ) {
 					m_state = ProcessState::STARTING;
 				} else {
@@ -138,10 +138,10 @@ public:
 
 #ifdef ENABLE_SYSTEMD
 
-		GError* error = NULL;
+		GError* error = nullptr;
 
 		connection = dbus_g_bus_get(DBUS_BUS_SYSTEM, &error);
-		if (connection == NULL) {
+		if (connection == nullptr) {
 			log_error("Failed to open connection to dbus: ") << error->message;
 			throw Exception("Failed to open connection to dbus");
 		}
@@ -172,15 +172,15 @@ public:
 		DBusGProxy* proxy = dbus_g_proxy_new_for_name(connection, SYSTEMD_DBUS_SERVICE_NAME, path.c_str(),
 							      SYSTEMD_DBUS_INTERFACE_NAME);
 
-		const char* returnValue = NULL;
+		const char* returnValue = nullptr;
 
-		GError* error = NULL;
+		GError* error = nullptr;
 		if ( !dbus_g_proxy_call(proxy, "Start", &error, G_TYPE_STRING, "replace", G_TYPE_INVALID,
 					G_TYPE_STRING, &returnValue, G_TYPE_INVALID) ) {
 			log_error() << "Could not activate service : " << serviceName;
 		}
 
-		log_info("Return value : ") << (returnValue == NULL) ? "null" : returnValue;
+		log_info() << "Return value : " << ((returnValue == nullptr) ? "null" : returnValue);
 
 		g_object_unref(proxy);
 
@@ -192,9 +192,9 @@ public:
 	void readConfiguration(const char* folder) {
 
 		DIR* dir = opendir(folder);
-		if (dir != NULL) {
+		if (dir != nullptr) {
 			struct dirent* dp;
-			while ( ( dp = readdir(dir) ) != NULL ) {
+			while ( ( dp = readdir(dir) ) != nullptr ) {
 
 				if ( strstr(dp->d_name, SERVICE_FILENAME_EXTENSION)
 				     == dp->d_name + strlen(dp->d_name) - strlen(SERVICE_FILENAME_EXTENSION) ) {
@@ -210,10 +210,10 @@ public:
 
 					const char* fileName = str->str;
 
-					GError* pGError = NULL;
+					GError* pGError = nullptr;
 					if ( !g_key_file_load_from_file(gpMyKeyFile, fileName, myConfFlags, &pGError) ) {
 						g_key_file_free(gpMyKeyFile);
-						gpMyKeyFile = NULL;
+						gpMyKeyFile = nullptr;
 						g_clear_error(&pGError);
 					}
 
@@ -277,7 +277,7 @@ bool WellKnownService::activateSystemDService() {
 
 
 void WellKnownService::sendMessage(DispatcherMessage& msg) {
-	if (getLocalClient() == NULL) {
+	if (getLocalClient() == nullptr) {
 		if (activateService() == SomeIPFunctionReturnCode::OK) {
 			m_pendingMessages.push_back( msg.getIPCMessage() );
 			log_debug("Pushed message") << m_pendingMessages[m_pendingMessages.size() - 1].toString();
