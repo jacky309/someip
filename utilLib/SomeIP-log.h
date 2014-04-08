@@ -8,6 +8,15 @@
 
 #include "log-console.h"
 #include "log-file.h"
+#include "log-null.h"
+
+#define ENABLE_TRAFFIC_LOGGING
+
+#ifdef ENABLE_TRAFFIC_LOGGING
+#define log_traffic log_debug
+#else
+#define log_traffic(args ...) for (int _i_ = 0; _i_ > 1; _i_++) NullLogData()
+#endif
 
 class SomeIPFileLoggingContext : public logging::FileLogContext {
 
@@ -30,6 +39,9 @@ public:
 	static FILE* m_file;
 };
 
+/**
+ * We set our logging "LogContext" typedef to log to the console, the log file, and the DLT if available
+ */
 typedef logging::LogContextT<
 	logging::TypeSet<logging::ConsoleLogContext
 #ifdef ENABLE_DLT_LOGGING

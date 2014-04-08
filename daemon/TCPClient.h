@@ -146,16 +146,14 @@ public:
 
 	void sendMessage(const DispatcherMessage& msg) override;
 
-	SomeIPFunctionReturnCode sendMessage(OutputMessage& msg) override {
+	SomeIPReturnCode sendMessage(OutputMessage& msg) override {
 
-#ifdef ENABLE_TRAFFIC_LOGGING
-		log_debug( "Sending message to client %s. Message: %s", toString().c_str(), msg.toString().c_str() );
-#endif
+		log_traffic( "Sending message to client %s. Message: %s", toString().c_str(), msg.toString().c_str() );
 
 		sendMessage( msg.getHeader(), msg.getPayload(), msg.getPayloadLength() );
 
 		// TODO : return proper error code if needed
-		return SomeIPFunctionReturnCode::OK;
+		return SomeIPReturnCode::OK;
 	}
 
 	IPCOperationReport sendMessage(const SomeIP::SomeIPHeader& header, const void* payload, size_t payloadLength);

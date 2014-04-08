@@ -21,7 +21,7 @@ public:
 		return "SomeIPStubAdapter";
 	}
 
-	SomeIPFunctionReturnCode sendMessage(OutputMessage& msg);
+	SomeIPReturnCode sendMessage(OutputMessage& msg);
 
 	virtual void init();
 	virtual void deinit();

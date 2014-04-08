@@ -65,7 +65,7 @@ public:
 
 	void sendMessage(DispatcherMessage& msg) override;
 
-	SomeIPFunctionReturnCode activateService();
+	SomeIPReturnCode activateService();
 
 	std::string toString() const override {
 		if (m_client != nullptr) {

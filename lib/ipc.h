@@ -13,15 +13,6 @@ class IPCOutputMessage;
 
 using namespace SomeIP_utils;
 
-// TODO : move this definition
-enum class SomeIPFunctionReturnCode {
-	OK, DISCONNECTED, ERROR
-};
-
-inline bool isError(SomeIPFunctionReturnCode code) {
-	return (code != SomeIPFunctionReturnCode::OK);
-}
-
 enum class IPCOperationReport {
 	OK, BUFFER_FULL, DISCONNECTED
 };

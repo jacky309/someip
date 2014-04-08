@@ -86,7 +86,7 @@ public:
 	}
 
 	bool isConnected() const {
-		return (connectionFileDescriptor != UNINITIALIZED_FILE_DESCRIPTOR);
+		return (m_connectionFileDescriptor != UNINITIALIZED_FILE_DESCRIPTOR);
 	}
 
 	void disconnect() {
@@ -98,11 +98,11 @@ public:
 	}
 
 	int getFileDescriptor() const {
-		return connectionFileDescriptor;
+		return m_connectionFileDescriptor;
 	}
 
 	void setFileDescriptor(int fd) {
-		connectionFileDescriptor = fd;
+		m_connectionFileDescriptor = fd;
 	}
 
 	/**
@@ -122,7 +122,7 @@ public:
 	virtual void onCongestionDetected() = 0;
 
 	virtual void onCongestionFinished() {
-		log_info( "Congestion finished %s", toString().c_str() );
+		log_info() << "Congestion finished " << toString();
 	}
 
 	/**
@@ -173,7 +173,7 @@ private:
 	}
 
 	//	const char* uds_socket_path;
-	int connectionFileDescriptor = UNINITIALIZED_FILE_DESCRIPTOR;
+	int m_connectionFileDescriptor = UNINITIALIZED_FILE_DESCRIPTOR;
 	ByteArray m_dataToBeSent;
 
 	size_t m_writtenBytesCount = 0;

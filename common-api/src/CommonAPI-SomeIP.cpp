@@ -90,7 +90,7 @@ void SomeIPStubAdapter::init() {
 	m_isRegistered = true;
 }
 
-SomeIPFunctionReturnCode SomeIPStubAdapter::sendMessage(OutputMessage& msg) {
+SomeIPReturnCode SomeIPStubAdapter::sendMessage(OutputMessage& msg) {
 	return getConnection().sendMessage(msg);
 }
 

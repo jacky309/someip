@@ -13,18 +13,12 @@ void Notification::sendMessageToSubscribedClients(const DispatcherMessage& msg) 
 	}
 }
 
-//void trace_message(const DispatcherMessage& msg) {
-//	//	log_debug( "Message : MessageID:0x%X, MessageType:%i", msg.getMessageID(), msg.getMessageType() );
-//}
-
 void Dispatcher::dispatchMessage(DispatcherMessage& msg, Client& client) {
 
 	if (m_messageCounter++ % 10000 == 0)
 		log_info("Message count : ") << m_messageCounter;
 
-#ifdef ENABLE_TRAFFIC_LOGGING
-	log_debug( "Message received from client %s : %s", client.toString().c_str(), msg.toString().c_str() );
-#endif
+	log_traffic( "Message received from client %s : %s", client.toString().c_str(), msg.toString().c_str() );
 
 	auto& header = msg.getHeader();
 

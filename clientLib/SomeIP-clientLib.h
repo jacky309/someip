@@ -206,10 +206,17 @@ public:
 		disconnect();
 	}
 
+	/**
+	 * Returns true if some data has been received
+	 */
 	bool hasIncomingMessages() {
 		return ( ( !m_queue.isEmpty() ) || hasAvailableBytes() );
 	}
 
+	/**
+	 * Handle the data which has been received.
+	 * @return : true if there is still some data to be processed
+	 */
 	bool dispatchIncomingMessages();
 
 	/**
@@ -223,7 +230,7 @@ public:
 	 * Connect to the dispatcher.
 	 * @exception ConnectionException is thrown if the connection can not be established
 	 */
-	void connect(ClientConnectionListener& clientReceiveCb);
+	SomeIPReturnCode connect(ClientConnectionListener& clientReceiveCb);
 
 	/**
 	 * Return true if the connection to the daemon is active
@@ -235,23 +242,22 @@ public:
 	/**
 	 * Register a new service.
 	 */
-	void registerService(SomeIP::ServiceID serviceID);
+	SomeIPReturnCode registerService(SomeIP::ServiceID serviceID);
 
 	/**
 	 * Unregister the given service
 	 */
-	void unregisterService(SomeIP::ServiceID serviceID);
+	SomeIPReturnCode unregisterService(SomeIP::ServiceID serviceID);
 
 	/**
 	 * Subscribe to notifications for the given MessageID
 	 */
-	void subscribeToNotifications(SomeIP::MessageID messageID);
-
+	SomeIPReturnCode subscribeToNotifications(SomeIP::MessageID messageID);
 
 	/**
 	 * Send the given message to the dispatcher.
 	 */
-	SomeIPFunctionReturnCode sendMessage(OutputMessage& msg);
+	SomeIPReturnCode sendMessage(OutputMessage& msg);
 
 	/**
 	 * Send the given message to the dispatcher and block until a response is received.
@@ -263,9 +269,10 @@ public:
 	 */
 	std::string getDaemonStateDump();
 
-	void sendPing() {
+	SomeIPReturnCode sendPing() {
 		IPCOutputMessage ipcMessage(IPCMessageType::PONG);
 		writeMessage(ipcMessage);
+		return SomeIPReturnCode::OK;
 	}
 
 	void setMainLoopInterface(MainLoopInterface& mainloopInterface) {
@@ -321,11 +328,10 @@ private:
 
 	IPCOperationReport readIncomingMessagesBlocking(IPCMessageReceivedCallbackFunction dispatchFunction);
 
-
 	bool readIncomingMessages(IPCMessageReceivedCallbackFunction dispatchFunction);
 
 	void onConnectionLost() {
-		log_error("Connection to daemon lost");
+		log_error() << "Connection to daemon lost";
 	}
 
 	ClientConnectionListener* messageReceivedCallback = nullptr;

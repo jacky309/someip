@@ -130,9 +130,7 @@ void TCPClient::connect() {
 
 void TCPClient::sendMessage(const DispatcherMessage& msg) {
 
-#ifdef ENABLE_TRAFFIC_LOGGING
-	log_debug( "Sending message to client %s. Message: %s", toString().c_str(), msg.toString().c_str() );
-#endif
+	log_traffic( "Sending message to client %s. Message: %s", toString().c_str(), msg.toString().c_str() );
 
 	if ( !isConnected() ) {
 		connect();

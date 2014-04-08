@@ -281,7 +281,7 @@ public:
 	virtual ~MessageSource() {
 	}
 
-	virtual SomeIPFunctionReturnCode sendMessage(OutputMessage& msg) = 0;
+	virtual SomeIPReturnCode sendMessage(OutputMessage& msg) = 0;
 
 };
 

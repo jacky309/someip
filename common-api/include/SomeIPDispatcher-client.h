@@ -64,7 +64,7 @@ private:
 		 * @param eventFlags The events that shall be retrieved from the file descriptor.
 		 */
 		void dispatch(unsigned int eventFlags) override {
-			log_info() << eventFlags;
+			//			log_info() << eventFlags;
 			m_connection.dispatchIncomingMessages();
 		}
 
@@ -135,7 +135,7 @@ public:
 		log_info();
 	}
 
-	SomeIPFunctionReturnCode sendMessage(OutputMessage& msg) {
+	SomeIPReturnCode sendMessage(OutputMessage& msg) {
 		return m_connection.sendMessage(msg);
 	}
 

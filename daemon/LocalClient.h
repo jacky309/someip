@@ -69,26 +69,18 @@ public:
 	}
 
 	void sendMessage(const DispatcherMessage& msg) override {
-
-#ifdef ENABLE_TRAFFIC_LOGGING
-		log_debug( "Sending message to client %s. Message: %s", toString().c_str(), msg.toString().c_str() );
-#endif
-
+		log_traffic( "Sending message to client %s. Message: %s", toString().c_str(), msg.toString().c_str() );
 		sendIPCMessage( msg.getIPCMessage() );
 	}
 
-	SomeIPFunctionReturnCode sendMessage(OutputMessage& msg) override {
-
-#ifdef ENABLE_TRAFFIC_LOGGING
-		log_debug( "Sending message to client %s. Message: %s", toString().c_str(), msg.toString().c_str() );
-#endif
-
+	SomeIPReturnCode sendMessage(OutputMessage& msg) override {
+		log_traffic( "Sending message to client %s. Message: %s", toString().c_str(), msg.toString().c_str() );
 		return sendIPCMessage( msg.getIPCMessage() );
 	}
 
-	SomeIPFunctionReturnCode sendIPCMessage(const IPCMessage& msg) {
+	SomeIPReturnCode sendIPCMessage(const IPCMessage& msg) {
 		writeNonBlocking(msg);
-		return SomeIPFunctionReturnCode::OK;
+		return SomeIPReturnCode::OK;
 	}
 
 	void onServiceRegistered(const Service& service) override {

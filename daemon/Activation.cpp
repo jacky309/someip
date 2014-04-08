@@ -20,7 +20,7 @@ ReturnCode WellKnownService::setClient(Client& client) {
 
 void WellKnownService::sendMessage(DispatcherMessage& msg) {
 	if (getLocalClient() == nullptr) {
-		if (activateService() == SomeIPFunctionReturnCode::OK) {
+		if (activateService() == SomeIPReturnCode::OK) {
 			m_pendingMessages.push_back( msg.getIPCMessage() );
 			log_debug() << "Pushed message" << m_pendingMessages[m_pendingMessages.size() - 1].toString();
 		} else {
@@ -36,7 +36,7 @@ void WellKnownService::sendMessage(DispatcherMessage& msg) {
 }
 
 
-SomeIPFunctionReturnCode WellKnownService::activateService() {
+SomeIPReturnCode WellKnownService::activateService() {
 
 	log_info("Activating service ") << toString();
 
@@ -71,7 +71,7 @@ SomeIPFunctionReturnCode WellKnownService::activateService() {
 		}
 	}
 
-	return (m_state != ProcessState::START_FAILED) ? SomeIPFunctionReturnCode::OK : SomeIPFunctionReturnCode::ERROR;
+	return (m_state != ProcessState::START_FAILED) ? SomeIPReturnCode::OK : SomeIPReturnCode::ERROR;
 }
 
 void WellKnownServiceManager::init(const char* configurationFolder) {

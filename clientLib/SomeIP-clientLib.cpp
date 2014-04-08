@@ -28,57 +28,63 @@ bool ClientConnection::dispatchIncomingMessages() {
 				    });
 }
 
-void ClientConnection::connect(ClientConnectionListener& clientReceiveCb) {
+SomeIPReturnCode ClientConnection::connect(ClientConnectionListener& clientReceiveCb) {
 
 	if ( isConnected() )
-		throw ConnectionException("Already connected !");
+		return SomeIPReturnCode::ALREADY_CONNECTED;
 
 	messageReceivedCallback = &clientReceiveCb;
 
 	swapInputMessage();
 
-	connectToServer();
+	auto c = connectToServer();
 
-	log_info() << "We are connected to the dispatcher";
+	if ( !isError(c) )
+		log_info() << "Connected to the dispatcher";
 
+	return c;
 }
 
-void ClientConnection::registerService(SomeIP::ServiceID serviceID) {
+SomeIPReturnCode ClientConnection::registerService(SomeIP::ServiceID serviceID) {
 	IPCOutputMessage msg(IPCMessageType::REGISTER_SERVICE);
 	msg << serviceID;
 	IPCInputMessage returnMessage = writeRequest(msg);
 
 	if (returnMessage.getReturnCode() == IPCReturnCode::ERROR)
-		throw RegistrationException("Can't register service", serviceID);
+		return SomeIPReturnCode::ERROR;
 	else
 		log_info("Successfully registered service 0x%X", serviceID);
+
+	return SomeIPReturnCode::OK;
 }
 
-void ClientConnection::unregisterService(SomeIP::ServiceID serviceID) {
+SomeIPReturnCode ClientConnection::unregisterService(SomeIP::ServiceID serviceID) {
 	IPCOutputMessage msg(IPCMessageType::UNREGISTER_SERVICE);
 	msg << serviceID;
 	IPCInputMessage returnMessage = writeRequest(msg);
 
 	if (returnMessage.getReturnCode() == IPCReturnCode::ERROR)
-		throw RegistrationException("Can't unregister service", serviceID);
+		return SomeIPReturnCode::ERROR;
 	else
 		log_info("Successfully unregistered service 0x%X", serviceID);
+
+	return SomeIPReturnCode::OK;
 }
 
-void ClientConnection::subscribeToNotifications(SomeIP::MessageID messageID) {
+SomeIPReturnCode ClientConnection::subscribeToNotifications(SomeIP::MessageID messageID) {
 	log_debug("Subscribing to notifications 0x%X", messageID);
 	IPCOutputMessage msg(IPCMessageType::SUBSCRIBE_NOTIFICATION);
 	msg << messageID;
 	writeMessage(msg);
+
+	return SomeIPReturnCode::OK;
 }
 
-SomeIPFunctionReturnCode ClientConnection::sendMessage(OutputMessage& msg) {
+SomeIPReturnCode ClientConnection::sendMessage(OutputMessage& msg) {
 	const IPCMessage& ipcMessage = msg.getIPCMessage();
 	writeMessage(ipcMessage);
-#ifdef ENABLE_TRAFFIC_LOGGING
-	log_debug( "Message sent : %s", msg.toString().c_str() );
-#endif
-	return SomeIPFunctionReturnCode::OK;
+	log_traffic() << "Message sent : " << msg.toString();
+	return SomeIPReturnCode::OK;
 }
 
 
@@ -86,9 +92,7 @@ InputMessage ClientConnection::sendMessageBlocking(const OutputMessage& msg) {
 	assert( msg.getHeader().isRequestWithReturn() );
 	assert(msg.getClientIdentifier() == 0);
 
-#ifdef ENABLE_TRAFFIC_LOGGING
-	log_verbose( "Send blocking message : %s", msg.toString().c_str() );
-#endif
+	log_traffic() << "Send blocking message : " << msg.toString();
 
 	const IPCMessage& ipcMessage = msg.getIPCMessage();
 
@@ -103,7 +107,7 @@ InputMessage ClientConnection::waitForAnswer(const OutputMessage& requestMsg) {
 
 	InputMessage answerMessage;
 
-	log_debug("Waiting for answer to message : ") << requestMsg.toString();
+	log_debug() << "Waiting for answer to message : " << requestMsg.toString();
 
 	readIncomingMessagesBlocking([&] (IPCInputMessage & incomingIPCMsg) {
 
@@ -113,9 +117,7 @@ InputMessage ClientConnection::waitForAnswer(const OutputMessage& requestMsg) {
 
 	                                                     // copy the content into the message to return to the caller
 							     answerMessage.copyFrom(incomingIPCMsg);
-#ifdef ENABLE_TRAFFIC_LOGGING
-							     log_debug( "Answer received : %s", inputMsg.toString().c_str() );
-#endif
+							     log_traffic() << "Answer received : " << inputMsg.toString();
 							     return false;
 						     } else {
 							     pushToQueue(incomingIPCMsg);
@@ -132,7 +134,7 @@ InputMessage ClientConnection::waitForAnswer(const OutputMessage& requestMsg) {
 void ClientConnection::pushToQueue(const IPCInputMessage& msg) {
 	m_queue.push(msg);
 
-	log_verbose("Message pushed : ") << msg.toString().c_str();
+	log_verbose() << "Message pushed : " << msg.toString().c_str();
 
 	if (m_mainLoop)
 		m_mainLoop->addIdleCallback([&] () {
@@ -194,10 +196,7 @@ void ClientConnection::handleConstIncomingIPCMessage(const IPCInputMessage& inpu
 
 	case IPCMessageType::SEND_MESSAGE : {
 		const InputMessage msg = readMessageFromIPCMessage(inputMessage);
-
-#ifdef ENABLE_TRAFFIC_LOGGING
-		log_debug( "Dispatching message %s:", msg.toString().c_str() );
-#endif
+		log_traffic() << "Dispatching message " << msg.toString();
 		if (m_endPoint.processMessage(msg) == MessageProcessingResult::NotProcessed_OK)
 			messageReceivedCallback->processMessage(msg);
 	}
@@ -235,7 +234,7 @@ void ClientConnection::handleConstIncomingIPCMessage(const IPCInputMessage& inpu
 	break;
 
 	default : {
-		log_error( "Unknown message type : %i", static_cast<int>(messageType) );
+		log_error() << "Unknown message type : " << static_cast<int>(messageType);
 	}
 	break;
 	}
@@ -308,7 +307,7 @@ void ClientConnection::onCongestionDetected() {
 }
 
 void ClientConnection::onDisconnected() {
-	log_warning("Disconnected from server");
+	log_warning() << "Disconnected from server";
 	messageReceivedCallback->onDisconnected();
 }
 
