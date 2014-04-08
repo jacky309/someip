@@ -405,7 +405,7 @@ public:
 protected:
 	void sendPongMessage(const InputMessage& msg) {
 
-		log_info("Sending pong");
+		log_info() << "Sending pong";
 
 		// send a pong with the same content
 		OutputMessage outputMessage = createMethodReturn(msg);

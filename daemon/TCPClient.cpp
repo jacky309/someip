@@ -8,7 +8,7 @@ namespace SomeIP_Dispatcher {
  */
 WatchStatus TCPClient::onIncomingDataAvailable() {
 
-	if(inputBlocked)
+	if( isInputBlocked() )
 		return WatchStatus::STOP_WATCHING;
 
 	bool bKeepProcessing = true;
@@ -84,6 +84,104 @@ void TCPClient::onRemoteServiceUnavailable(const SomeIPServiceDiscoveryServiceEn
 					   const IPv4ConfigurationOption* address,
 					   const SomeIPServiceDiscoveryMessage& message) {
 	m_tcpManager.onRemoteServiceUnavailable(serviceEntry, address, message);
+}
+
+void TCPClient::connect() {
+
+	int fileDescriptor;
+
+	//		struct hostent *ptrh; /* pointer to a host table entry       */
+	struct protoent* ptrp; /* pointer to a protocol table entry   */
+	struct sockaddr_in sad; /* structure to hold an IP address     */
+	//		char *host; /* pointer to host name                */
+
+	memset( &sad, 0, sizeof(sad) ); /* clear sockaddr structure */
+	sad.sin_family = AF_INET; /* set family to Internet     */
+	sad.sin_port = htons(m_serverIdentifier.m_port);
+
+	/* Convert host name to equivalent IP address and copy to sad. */
+	memcpy( &(sad.sin_addr), &m_serverIdentifier.m_address, sizeof(sad.sin_addr) );
+
+	//		sad.sin_addr;
+
+	/* Map TCP transport protocol name to protocol number. */
+	if ( ( ptrp = getprotobyname("tcp") ) == 0 ) {
+		log_error("Failed to connect to server. Cannot map \"tcp\" to protocol number");
+	}
+
+	/* Create a socket. */
+	fileDescriptor = socket(AF_INET, SOCK_STREAM, ptrp->p_proto);
+	if (fileDescriptor < 0) {
+		log_error( "Failed to connect to server. Socket creation failed. Error : %s", strerror(errno) );
+	}
+
+	enableNoDelay(fileDescriptor);
+
+	/* Connect the socket to the specified server. */
+	if (::connect( fileDescriptor, (struct sockaddr*) &sad, sizeof(sad) ) < 0) {
+		log_error( "Failed to connect to server : %s", m_serverIdentifier.toString().c_str() );
+	}
+
+	setFileDescriptor(fileDescriptor);
+
+	setupConnection();
+}
+
+
+void TCPClient::sendMessage(const DispatcherMessage& msg) {
+
+#ifdef ENABLE_TRAFFIC_LOGGING
+	log_debug( "Sending message to client %s. Message: %s", toString().c_str(), msg.toString().c_str() );
+#endif
+
+	if ( !isConnected() ) {
+		connect();
+	}
+
+	const SomeIP::SomeIPHeader& header = msg.getHeader();
+
+	if ( header.isRequestWithReturn() ) {
+		// If this is a request, we use the requestID to identify the client which is sending the request, in order to dispatch the answer to it
+		SomeIP::SomeIPHeader requestHeader(header);
+		tagClientIdentifier( requestHeader, msg.getClientIdentifier() );
+		sendMessage( requestHeader, msg.getPayload(), msg.getPayloadLength() );
+	} else
+		sendMessage( header, msg.getPayload(), msg.getPayloadLength() );
+}
+
+IPCOperationReport TCPClient::sendMessage(const SomeIP::SomeIPHeader& header, const void* payload, size_t payloadLength) {
+
+	ByteArray headerBytes;
+	NetworkSerializer serializer(headerBytes);
+
+	{
+		serializer << header.m_messageID;
+		LengthPlaceHolder<uint32_t, NetworkSerializer> lengthPlaceHolder(serializer);
+		serializer << header.m_requestID << header.m_protocolVersion << header.m_interfaceVersion;
+		serializer.writeEnum(header.m_messageType);
+		serializer.writeEnum(header.m_returnCode);
+		serializer.writeRawData(payload, payloadLength); // TODO : for big messages, send the content directly without making a copy
+	}
+
+	auto v = writeBytesNonBlocking( headerBytes.getData(), headerBytes.size() );
+	return v;
+}
+
+void TCPClient::onNotificationSubscribed(SomeIP::MemberID serviceID, SomeIP::MemberID memberID) {
+
+	if ( !isConnected() ) {
+		connect();
+	}
+
+	SomeIPServiceDiscoveryMessage serviceDiscoveryMessage(true);
+	SomeIPServiceDiscoverySubscribeNotificationEntry subscribeEntry(serviceID, memberID);
+	serviceDiscoveryMessage.addEntry(subscribeEntry);
+
+	ByteArray byteArray;
+	NetworkSerializer s(byteArray);
+	serviceDiscoveryMessage.serialize(s);
+
+	writeBytesNonBlocking( byteArray.getData(), byteArray.size() );
 }
 
 }

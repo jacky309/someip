@@ -15,7 +15,7 @@ void Client::unregisterClient() {
 
 		m_registered = false;
 
-		log_info( "Client unregistered %s", toString().c_str() );
+		log_info() << "Client unregistered : " << toString();
 	}
 
 }
@@ -41,7 +41,7 @@ void Client::unregisterService(SomeIP::ServiceID serviceID) {
 	for (auto i = m_registeredServices.begin(); i != m_registeredServices.end(); ++i) {
 		auto& service = *i;
 		if (service->getServiceID() == serviceID) {
-			log_debug("Unregistering service ID") << serviceID << " from " << toString();
+			log_debug() << "Unregistering service ID" << serviceID << " from " << toString();
 			getDispatcher().unregisterService(*service);
 			m_registeredServices.erase(i);
 

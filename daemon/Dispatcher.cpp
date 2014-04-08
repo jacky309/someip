@@ -13,9 +13,9 @@ void Notification::sendMessageToSubscribedClients(const DispatcherMessage& msg) 
 	}
 }
 
-void trace_message(const DispatcherMessage& msg) {
-	//	log_debug( "Message : MessageID:0x%X, MessageType:%i", msg.getMessageID(), msg.getMessageType() );
-}
+//void trace_message(const DispatcherMessage& msg) {
+//	//	log_debug( "Message : MessageID:0x%X, MessageType:%i", msg.getMessageID(), msg.getMessageType() );
+//}
 
 void Dispatcher::dispatchMessage(DispatcherMessage& msg, Client& client) {
 

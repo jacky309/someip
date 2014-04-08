@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "SomeIP-common.h"
-//#include "GlibIO.h"
 
 namespace SomeIP_Dispatcher {
 
@@ -38,8 +37,6 @@ class Client : private MessageSource {
 public:
 	Client(Dispatcher& dispatcher) :
 		m_dispatcher(dispatcher), m_endPoint(*this) {
-		inputBlocked = isCongested = false;
-		receivedMessagesCount = receivedBytesCount = 0;
 	}
 
 	void assignUniqueID() {
@@ -93,25 +90,32 @@ public:
 protected:
 	void subscribeToNotification(SomeIP::MessageID messageID);
 
+	bool isInputBlocked() {
+		return inputBlocked;
+	}
+
 	std::vector<Service*> m_registeredServices;
 
+private:
 	Dispatcher& m_dispatcher;
 	SomeIPEndPoint m_endPoint;
 	PingSender m_pingSender;
 
-	bool inputBlocked /** Indicates whether the client's input has been blocked because a client to which it sent data to is congested */;
-	bool isCongested /** Indicates whether the client can't receive anymore data because its reception buffer is full */;
+	/** Indicates whether the client's input has been blocked because a client to which it sent data to is congested */
+	bool inputBlocked = false;
 
-private:
+	/** Indicates whether the client can't receive anymore data because its reception buffer is full */
+	bool isCongested = false;
+
 	std::vector<Notification*> m_subscribedNotifications;
 
 	ClientIdentifier m_id = UNKNOWN_CLIENT;
 
 	/// Counter of messages sent to that application
-	unsigned int receivedMessagesCount;
+	unsigned int receivedMessagesCount = 0;
 
 	/// Counter of bytes sent to that application
-	unsigned int receivedBytesCount;
+	unsigned int receivedBytesCount = 0;
 
 	static uint16_t s_nextAvailableID;
 

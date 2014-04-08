@@ -139,28 +139,8 @@ public:
 	}
 
 	bool hasError() const {
-		return isErrorSet();
-	}
-
-	/**
-	 * Marks the stream as erroneous.
-	 */
-	void setError() {
-
-	}
-
-	/**
-	 * @return true if this stream is in an erroneous state, false otherwise.
-	 */
-	bool isErrorSet() const {
 		return false;
 	}
-
-	/**
-	 * Marks the state of the stream as cleared from all errors. Further reading is possible afterwards.
-	 * The stream will have maintained the last valid position from before its state became erroneous.
-	 */
-	void clearError();
 
 };
 

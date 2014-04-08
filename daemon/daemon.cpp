@@ -73,7 +73,7 @@ int main(int argc, const char** argv) {
 	log_info("Daemon started. version: ") << SOMEIP_PACKAGE_VERSION << ". Logging to : " << logFilePath;
 
 	for ( auto& localIpAddress : TCPServer::getIPAddresses() ) {
-		log_debug() << "Local IP address : " << localIpAddress.toString();
+	log_debug() << "Local IP address : " << localIpAddress.toString();
 	}
 
 	TCPManager tcpManager( app.getDispatcher() );

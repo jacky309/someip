@@ -103,6 +103,7 @@ private:
 			return m_dependentDispatchSources;
 		}
 
+private:
 		pollfd m_pollfd;
 		std::vector<DispatchSource*> m_dependentDispatchSources;
 

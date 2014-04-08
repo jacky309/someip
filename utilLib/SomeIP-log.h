@@ -1,8 +1,5 @@
 #pragma once
 
-// Enable verbose logs for the console output, which are disabled by default
-//#define LOG_CONSOLE_SEVERITY LogLevel::Verbose
-
 #include "plog.h"
 
 #ifdef ENABLE_DLT_LOGGING
@@ -15,7 +12,6 @@
 class SomeIPFileLoggingContext : public logging::FileLogContext {
 
 public:
-
 	SomeIPFileLoggingContext() {
 		setLogLevel(logging::LogLevel::Info);
 	}
@@ -35,15 +31,15 @@ public:
 };
 
 typedef logging::LogContextT<
-		logging::TypeSet<logging::ConsoleLogContext
+	logging::TypeSet<logging::ConsoleLogContext
 #ifdef ENABLE_DLT_LOGGING
-		, logging::DltContextClass
+			 , logging::DltContextClass
 #endif
-		, SomeIPFileLoggingContext>,
-		logging::TypeSet<logging::ConsoleLogContext::LogDataType
+			 , SomeIPFileLoggingContext>,
+	logging::TypeSet<logging::ConsoleLogContext::LogDataType
 #ifdef ENABLE_DLT_LOGGING
-		, logging::DltContextClass::LogDataType
+			 , logging::DltContextClass::LogDataType
 #endif
-		, SomeIPFileLoggingContext::LogDataType> > LogContext;
+			 , SomeIPFileLoggingContext::LogDataType> > LogContext;
 
 #include "SomeIP-Config.h"

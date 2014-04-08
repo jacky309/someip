@@ -128,6 +128,7 @@ public:
 
 	MessageProcessingResult processMessage(const InputMessage& message) override;
 
+private:
 	SomeIPConnection& connection_;
 
 	const std::string commonApiServiceId_;

@@ -131,6 +131,7 @@ public:
 		return m_payload.size() - sizeof(IPCMessageHeader);
 	}
 
+private:
 	ByteArray m_payload;
 
 };
@@ -180,7 +181,7 @@ public:
 	}
 
 	void setLength(size_t length) {
-		m_payload.resize(length);
+		getPayload().resize(length);
 		m_totalMessageSize = length;
 		m_receivedSize = 0;
 	}
@@ -233,7 +234,7 @@ public:
 	}
 
 	ResizeableByteArray& getWritablePayload() {
-		return m_payload;
+		return getPayload();
 	}
 
 	void assignRequestID() {

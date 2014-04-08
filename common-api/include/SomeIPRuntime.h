@@ -63,6 +63,7 @@ public:
 		return *( m_connection.get() );
 	}
 
+private:
 	SomeIPClient::ClientConnection m_clientLibConnection;
 	std::shared_ptr<SomeIPConnection> m_connection;
 };

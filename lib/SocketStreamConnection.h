@@ -211,10 +211,10 @@ public:
 		struct sockaddr remote = { 0 };
 		socklen_t sizeOfStruct = sizeof(remote);
 
-		log_info("Accepting new connection");
+		log_info() << "Accepting new connection";
 		int clientConnectionFileDescriptor = accept(m_fileDescriptor, &remote, &sizeOfStruct);
 		if (clientConnectionFileDescriptor == -1) {
-			log_error("Failed to accept client connection");
+			log_error() << "Failed to accept client connection";
 			return false;
 		}
 

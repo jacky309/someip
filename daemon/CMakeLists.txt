@@ -3,12 +3,15 @@ INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} )
 
 add_executable( someip_dispatcher
 	daemon.cpp
+	Activation.cpp
 	Dispatcher.cpp
 	LocalServer.cpp
+	LocalClient.cpp
 	RemoteServiceListener.cpp
 	ServiceAnnouncer.cpp
 	TCPManager.cpp
 	TCPClient.cpp
+	TCPServer.cpp
 	Client.cpp
 	sd-daemon.c
 )

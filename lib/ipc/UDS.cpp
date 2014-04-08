@@ -81,11 +81,11 @@ IPCOperationReport UDSConnection::read(IPCInputMessage& msg, bool blocking) {
 
 		size_t bytesToRead = msg.getLength() - msg.getReceivedSize();
 		if (blocking) {
-			returnIfError( readBytesBlocking(msg.m_payload.getData() + msg.getReceivedSize(), bytesToRead) );
+			returnIfError( readBytesBlocking(msg.getPayload().getData() + msg.getReceivedSize(), bytesToRead) );
 			msg.m_receivedSize = msg.getLength();
 		} else {
 			size_t readBytes;
-			auto p = msg.m_payload.getData();
+			auto p = msg.getPayload().getData();
 
 			returnIfError( readAvailableData(p + msg.getReceivedSize(), bytesToRead, readBytes) );
 			msg.m_receivedSize += readBytes;

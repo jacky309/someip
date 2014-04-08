@@ -23,8 +23,7 @@ public:
 					const IPv4ConfigurationOption* address) {
 
 		IPv4TCPServerIdentifier serverID(address->m_address, address->m_port);
-
-		log_info( "New subscription from device with address %s", serverID.toString().c_str() );
+		log_info() << "New subscription from device with address" << serverID.toString();
 	}
 
 	void onRemoteClientSubscriptionFinished(const SomeIPServiceDiscoveryEventGroupEntry& serviceEntry,
@@ -47,6 +46,7 @@ public:
 		return m_serviceDiscoveryDecoder;
 	}
 
+private:
 	std::vector<TCPClient*> m_clients;
 	Dispatcher& m_dispatcher;
 	ServiceDiscoveryMessageDecoder m_serviceDiscoveryDecoder;

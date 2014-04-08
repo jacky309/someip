@@ -22,6 +22,20 @@ class TCPClient : public Client,
 
 	LOG_DECLARE_CLASS_CONTEXT("TCPC", "TCPClient");
 
+	struct RebootInformation {
+
+		bool updateAndTestReboot(const SomeIP::SomeIPServiceDiscoveryHeader& serviceDiscoveryHeader) {
+			bool hasRebooted =
+				( serviceDiscoveryHeader.getRebootFlag() &&
+				  (serviceDiscoveryHeader.getRequestID() < m_lastReceivedSessionID) );
+			m_lastReceivedSessionID = serviceDiscoveryHeader.getRequestID();
+			return hasRebooted;
+		}
+
+		SomeIP::RequestID m_lastReceivedSessionID = 0;
+
+	};
+
 public:
 	using SocketStreamConnection::disconnect;
 	using SocketStreamConnection::isConnected;
@@ -49,6 +63,9 @@ public:
 		Client(dispatcher), ServiceDiscoveryListener(*this), m_tcpManager(tcpManager), m_serviceDiscoveryDecoder(
 			*this), m_channelWatcher(*this) {
 		m_serverIdentifier = server;
+	}
+
+	~TCPClient() override {
 	}
 
 	void init() override {
@@ -102,10 +119,6 @@ public:
 		registerClient();
 	}
 
-public:
-	~TCPClient() override {
-	}
-
 	void onDisconnected() override {
 		unregisterClient();
 		m_channelWatcher.disableWatch();
@@ -118,46 +131,7 @@ public:
 			log_error( "Can't enable TCP_NODELAY on the socket. Error : %s", strerror(errno) );
 	}
 
-	void connect() {
-
-		int fileDescriptor;
-
-		//		struct hostent *ptrh; /* pointer to a host table entry       */
-		struct protoent* ptrp; /* pointer to a protocol table entry   */
-		struct sockaddr_in sad; /* structure to hold an IP address     */
-		//		char *host; /* pointer to host name                */
-
-		memset( &sad, 0, sizeof(sad) ); /* clear sockaddr structure */
-		sad.sin_family = AF_INET; /* set family to Internet     */
-		sad.sin_port = htons(m_serverIdentifier.m_port);
-
-		/* Convert host name to equivalent IP address and copy to sad. */
-		memcpy( &(sad.sin_addr), &m_serverIdentifier.m_address, sizeof(sad.sin_addr) );
-
-		//		sad.sin_addr;
-
-		/* Map TCP transport protocol name to protocol number. */
-		if ( ( ptrp = getprotobyname("tcp") ) == 0 ) {
-			log_error("Failed to connect to server. Cannot map \"tcp\" to protocol number");
-		}
-
-		/* Create a socket. */
-		fileDescriptor = socket(AF_INET, SOCK_STREAM, ptrp->p_proto);
-		if (fileDescriptor < 0) {
-			log_error( "Failed to connect to server. Socket creation failed. Error : %s", strerror(errno) );
-		}
-
-		enableNoDelay(fileDescriptor);
-
-		/* Connect the socket to the specified server. */
-		if (::connect( fileDescriptor, (struct sockaddr*) &sad, sizeof(sad) ) < 0) {
-			log_error( "Failed to connect to server : %s", m_serverIdentifier.toString().c_str() );
-		}
-
-		setFileDescriptor(fileDescriptor);
-
-		setupConnection();
-	}
+	void connect();
 
 	void tagClientIdentifier(SomeIP::SomeIPHeader& header, ClientIdentifier clientIdentifier) const {
 		SomeIP::RequestID requestID = clientIdentifier;
@@ -170,26 +144,7 @@ public:
 		return header.getRequestID() >> 16;
 	}
 
-	void sendMessage(const DispatcherMessage& msg) override {
-
-#ifdef ENABLE_TRAFFIC_LOGGING
-		log_debug( "Sending message to client %s. Message: %s", toString().c_str(), msg.toString().c_str() );
-#endif
-
-		if ( !isConnected() ) {
-			connect();
-		}
-
-		const SomeIP::SomeIPHeader& header = msg.getHeader();
-
-		if ( header.isRequestWithReturn() ) {
-			// If this is a request, we use the requestID to identify the client which is sending the request, in order to dispatch the answer to it
-			SomeIP::SomeIPHeader requestHeader(header);
-			tagClientIdentifier( requestHeader, msg.getClientIdentifier() );
-			sendMessage( requestHeader, msg.getPayload(), msg.getPayloadLength() );
-		} else
-			sendMessage( header, msg.getPayload(), msg.getPayloadLength() );
-	}
+	void sendMessage(const DispatcherMessage& msg) override;
 
 	SomeIPFunctionReturnCode sendMessage(OutputMessage& msg) override {
 
@@ -203,44 +158,13 @@ public:
 		return SomeIPFunctionReturnCode::OK;
 	}
 
-	IPCOperationReport sendMessage(const SomeIP::SomeIPHeader& header, const void* payload, size_t payloadLength) {
+	IPCOperationReport sendMessage(const SomeIP::SomeIPHeader& header, const void* payload, size_t payloadLength);
 
-		ByteArray headerBytes;
-		NetworkSerializer serializer(headerBytes);
-
-		{
-			serializer << header.m_messageID;
-			LengthPlaceHolder<uint32_t, NetworkSerializer> lengthPlaceHolder(serializer);
-			serializer << header.m_requestID << header.m_protocolVersion << header.m_interfaceVersion;
-			serializer.writeEnum(header.m_messageType);
-			serializer.writeEnum(header.m_returnCode);
-			serializer.writeRawData(payload, payloadLength); // TODO : for big messages, send the content directly without making a copy
-		}
-
-		auto v = writeBytesNonBlocking( headerBytes.getData(), headerBytes.size() );
-		return v;
-	}
-
-	void onNotificationSubscribed(SomeIP::MemberID serviceID, SomeIP::MemberID memberID) override {
-
-		if ( !isConnected() ) {
-			connect();
-		}
-
-		SomeIPServiceDiscoveryMessage serviceDiscoveryMessage(true);
-		SomeIPServiceDiscoverySubscribeNotificationEntry subscribeEntry(serviceID, memberID);
-		serviceDiscoveryMessage.addEntry(subscribeEntry);
-
-		ByteArray byteArray;
-		NetworkSerializer s(byteArray);
-		serviceDiscoveryMessage.serialize(s);
-
-		writeBytesNonBlocking( byteArray.getData(), byteArray.size() );
-	}
+	void onNotificationSubscribed(SomeIP::MemberID serviceID, SomeIP::MemberID memberID) override;
 
 	void onCongestionDetected() override {
 		m_channelWatcher.enableOutputWatch();
-		log_info( "Congestion %s", toString().c_str() );
+		log_info() << "Congestion %s" << toString();
 	}
 
 	class MyInputMessage : public DispatcherMessage {
@@ -267,6 +191,7 @@ public:
 			return const_cast<void*>( getPayload() );
 		}
 
+private:
 		IPCInputMessage m_ipcMessage;
 
 	};
@@ -292,6 +217,7 @@ public:
 		return info.updateAndTestReboot(serviceDiscoveryHeader);
 	}
 
+private:
 	IPv4TCPServerIdentifier m_serverIdentifier;
 
 	MyInputMessage m_currentIncomingMessage;
@@ -304,21 +230,6 @@ public:
 	ServiceDiscoveryMessageDecoder m_serviceDiscoveryDecoder;
 
 	GlibChannelWatcher m_channelWatcher;
-
-	struct RebootInformation {
-
-		bool updateAndTestReboot(const SomeIP::SomeIPServiceDiscoveryHeader& serviceDiscoveryHeader) {
-			bool hasRebooted =
-				( serviceDiscoveryHeader.getRebootFlag() &&
-				  (serviceDiscoveryHeader.getRequestID() < m_lastReceivedSessionID) );
-			m_lastReceivedSessionID = serviceDiscoveryHeader.getRequestID();
-			return hasRebooted;
-		}
-
-		//		bool m_lastReceivedRebootFlag;
-		SomeIP::RequestID m_lastReceivedSessionID = 0;
-
-	};
 
 	RebootInformation m_rebootInformationMulticast;
 	RebootInformation m_rebootInformationUnicast;

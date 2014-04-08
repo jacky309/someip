@@ -17,7 +17,37 @@ namespace SomeIP_Dispatcher {
 
 class WellKnownServiceManager;
 
+LOG_IMPORT_CONTEXT(activationContext);
+
+#ifdef ENABLE_SYSTEMD
+
+/**
+ * This class is used to activate a service using SystemD's DBUS interface
+ */
+class SystemDActivator {
+
+	LOG_SET_CLASS_CONTEXT(activationContext);
+
+	static constexpr const char* SYSTEMD_DBUS_SERVICE_NAME = "org.freedesktop.systemd1";
+	static constexpr const char* SYSTEMD_DBUS_INTERFACE_NAME = "org.freedesktop.systemd1.Unit";
+
+public:
+	bool activateSystemDService(const char* serviceName);
+	void init();
+
+private:
+	DBusGConnection* connection = nullptr;
+
+};
+#endif
+
 class WellKnownService : public Service {
+
+	LOG_SET_CLASS_CONTEXT(activationContext);
+
+	enum class ProcessState {
+		STOPPED, STARTING, RUNNING, START_FAILED
+	};
 
 public:
 	WellKnownService(WellKnownServiceManager& serviceManager, SomeIP::ServiceID serviceID, const char* commandLine,
@@ -31,20 +61,11 @@ public:
 		return static_cast<LocalClient*>( getClient() );
 	}
 
-	ReturnCode setClient(Client& client) override {
-		auto v = Service::setClient(client);
-		if (v == ReturnCode::OK) {
-
-			// Send the pending messages
-			for (auto& msg : m_pendingMessages)
-				getLocalClient()->sendIPCMessage(msg);
-			m_pendingMessages.resize(0);
-
-		}
-		return v;
-	}
+	ReturnCode setClient(Client& client) override;
 
 	void sendMessage(DispatcherMessage& msg) override;
+
+	SomeIPFunctionReturnCode activateService();
 
 	std::string toString() const override {
 		if (m_client != nullptr) {
@@ -57,49 +78,7 @@ public:
 		}
 	}
 
-	enum class ProcessState {
-		STOPPED, STARTING, RUNNING, START_FAILED
-	};
-
-	bool activateSystemDService();
-
-	SomeIPFunctionReturnCode activateService() {
-
-		log_info("Activating service ") << toString();
-
-		if (m_state != ProcessState::STARTING) {
-
-			bool bStarted = false;
-
-			if (m_systemDServiceName.size() != 0) {
-				bStarted = activateSystemDService();
-				m_state = ProcessState::STARTING;
-			}
-
-			if (!bStarted) {
-
-				// we did not start via systemD, start as command line
-
-				if (chdir( m_workingDirectory.c_str() ) != 0) {
-					log_debug("Can't change current directory to ") << m_workingDirectory;
-					throw new Exception("Bad configuration");
-				}
-
-				GError* error = nullptr;
-				if ( g_spawn_command_line_async(m_commandLine.c_str(), &error) ) {
-					m_state = ProcessState::STARTING;
-				} else {
-					log_error("Can't start application") << m_commandLine;
-					m_state = ProcessState::START_FAILED;
-				}
-
-			}
-		}
-
-		return (m_state != ProcessState::START_FAILED) ? SomeIPFunctionReturnCode::OK : SomeIPFunctionReturnCode::ERROR;
-
-	}
-
+private:
 	WellKnownServiceManager& m_serviceManager;
 
 	std::string m_commandLine;
@@ -115,6 +94,8 @@ class WellKnownServiceManager {
 
 	static constexpr const char* SERVICE_SECTION = "Service";
 	static constexpr const char* SERVICE_FILENAME_EXTENSION = "someip-service";
+
+	LOG_SET_CLASS_CONTEXT(activationContext);
 
 public:
 	WellKnownServiceManager(Dispatcher& dispatcher) :
@@ -132,165 +113,23 @@ public:
 		return m_dispatcher;
 	}
 
-	void init(const char* configurationFolder) {
+	void init(const char* configurationFolder);
 
-		readConfiguration(configurationFolder);
-
-#ifdef ENABLE_SYSTEMD
-
-		GError* error = nullptr;
-
-		connection = dbus_g_bus_get(DBUS_BUS_SYSTEM, &error);
-		if (connection == nullptr) {
-			log_error("Failed to open connection to dbus: ") << error->message;
-			throw Exception("Failed to open connection to dbus");
-		}
-
-#endif
-
-	}
-
+	void readConfiguration(const char* folder);
 
 #ifdef ENABLE_SYSTEMD
-
-	static constexpr const char* SYSTEMD_DBUS_SERVICE_NAME = "org.freedesktop.systemd1";
-	static constexpr const char* SYSTEMD_DBUS_INTERFACE_NAME = "org.freedesktop.systemd1.Unit";
-
-	static std::string getSystemDPath(const char* serviceName) {
-		std::string s = "/org/freedesktop/systemd1/unit/";
-		s += serviceName;
-		s += "_2eservice";
-		return s;
+	SystemDActivator& getSystemDActivator() {
+		return m_activator;
 	}
-
-	bool activateSystemDService(const char* serviceName) {
-
-		std::string path = getSystemDPath(serviceName);
-
-		log_debug("Path : ") << path.c_str();
-
-		DBusGProxy* proxy = dbus_g_proxy_new_for_name(connection, SYSTEMD_DBUS_SERVICE_NAME, path.c_str(),
-							      SYSTEMD_DBUS_INTERFACE_NAME);
-
-		const char* returnValue = nullptr;
-
-		GError* error = nullptr;
-		if ( !dbus_g_proxy_call(proxy, "Start", &error, G_TYPE_STRING, "replace", G_TYPE_INVALID,
-					G_TYPE_STRING, &returnValue, G_TYPE_INVALID) ) {
-			log_error() << "Could not activate service : " << serviceName;
-		}
-
-		log_info() << "Return value : " << ((returnValue == nullptr) ? "null" : returnValue);
-
-		g_object_unref(proxy);
-
-		return true;
-
-	}
+private:
+	SystemDActivator m_activator;
 #endif
-
-	void readConfiguration(const char* folder) {
-
-		DIR* dir = opendir(folder);
-		if (dir != nullptr) {
-			struct dirent* dp;
-			while ( ( dp = readdir(dir) ) != nullptr ) {
-
-				if ( strstr(dp->d_name, SERVICE_FILENAME_EXTENSION)
-				     == dp->d_name + strlen(dp->d_name) - strlen(SERVICE_FILENAME_EXTENSION) ) {
-
-					GString* str = g_string_new(folder);
-					g_string_append(str, "/");
-					g_string_append(str, dp->d_name);
-
-					GKeyFile* gpMyKeyFile = g_key_file_new();
-					GKeyFileFlags myConfFlags =
-						static_cast<GKeyFileFlags>(G_KEY_FILE_NONE | G_KEY_FILE_KEEP_COMMENTS
-									   | G_KEY_FILE_KEEP_TRANSLATIONS);
-
-					const char* fileName = str->str;
-
-					GError* pGError = nullptr;
-					if ( !g_key_file_load_from_file(gpMyKeyFile, fileName, myConfFlags, &pGError) ) {
-						g_key_file_free(gpMyKeyFile);
-						gpMyKeyFile = nullptr;
-						g_clear_error(&pGError);
-					}
-
-					gchar* commandLine = g_key_file_get_string(gpMyKeyFile, SERVICE_SECTION, "ExecStart",
-										   &pGError);
-					gchar* workingDirectory =
-						g_key_file_get_string(gpMyKeyFile, SERVICE_SECTION, "WorkingDirectory",
-								      &pGError);
-					gchar* systemDServiceName =
-						g_key_file_get_string(gpMyKeyFile, SERVICE_SECTION, "SystemdService",
-								      &pGError);
-					SomeIP::ServiceID serviceID =
-						g_key_file_get_integer(gpMyKeyFile, SERVICE_SECTION, "ServiceID",
-								       &pGError);
-
-					WellKnownService* testService = new WellKnownService(
-						*this, serviceID, commandLine, workingDirectory,
-						(systemDServiceName != nullptr) ? systemDServiceName : "");
-
-					//					if (commandLine)
-					free(commandLine);
-					//					if (workingDirectory)
-					free(workingDirectory);
-					//					if (systemDServiceName)
-					free(systemDServiceName);
-
-					m_dispatcher.registerService(*testService);
-					m_services.push_back(testService);
-
-					g_key_file_unref(gpMyKeyFile);
-
-					g_string_free(str, true);
-				}
-			}
-
-			closedir(dir);
-		} else {
-			log_warning("Can't open directory ") << folder;
-		}
-	}
 
 private:
 	Dispatcher& m_dispatcher;
 	std::vector<WellKnownService*> m_services;
 
-#ifdef ENABLE_SYSTEMD
-	DBusGConnection* connection;
-#endif
-
 };
 
-#ifdef ENABLE_SYSTEMD
-bool WellKnownService::activateSystemDService() {
-	return m_serviceManager.activateSystemDService( m_systemDServiceName.c_str() );
-}
-#else
-bool WellKnownService::activateSystemDService() {
-	return false;
-}
-#endif
-
-
-void WellKnownService::sendMessage(DispatcherMessage& msg) {
-	if (getLocalClient() == nullptr) {
-		if (activateService() == SomeIPFunctionReturnCode::OK) {
-			m_pendingMessages.push_back( msg.getIPCMessage() );
-			log_debug("Pushed message") << m_pendingMessages[m_pendingMessages.size() - 1].toString();
-		} else {
-			log_error() << "Can't start " << toString();
-			OutputMessage responseMessage = createMethodReturn(msg);
-			responseMessage.getHeader().setMessageType(SomeIP::MessageType::ERROR);
-			auto client = m_serviceManager.getDispatcher().getClientFromId( msg.getClientIdentifier() );
-			client->sendMessage(responseMessage);
-		}
-
-	} else
-		getLocalClient()->sendMessage(msg);
-}
 
 }

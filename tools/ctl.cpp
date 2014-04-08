@@ -26,7 +26,7 @@ public:
 	}
 
 	MessageProcessingResult processMessage(const InputMessage& msg) {
-		log_info( "Message received : %s", msg.toString().c_str() );
+		log_info() << "Message received : " << msg.toString();
 		for (auto& listener : m_messageListeners) {
 			listener(msg);
 		}
@@ -118,7 +118,7 @@ int main(int argc, const char** argv) {
 	SomeIPClient::ClientConnection connection;
 	ControlApp app(connection);
 
-	log_info("Control app started. version: ") << SOMEIP_PACKAGE_VERSION;
+	log_info() << "Control app started. version: " << SOMEIP_PACKAGE_VERSION;
 
 	if (serviceToRegister != NO_SERVICE_ID) {
 		app.addMessageReceivedListener([&] (const InputMessage &inputMsg) {
@@ -155,8 +155,6 @@ int main(int argc, const char** argv) {
 		const char* messageToSend = argv[i];
 		auto v = tokenize(messageToSend, ':');
 
-		//		log_debug() << v;
-
 		if (v.size() == 4) {
 
 			ServiceID serviceID = parseIntString(v[0]);
@@ -174,11 +172,11 @@ int main(int argc, const char** argv) {
 			for (size_t i = 0; i < bytes.size(); i++)
 				os.writeValue(bytes[i]);
 
-			log_info( "Sending message : %s", msg.toString().c_str() );
+			log_info() << "Sending message : " << msg.toString();
 
 			if (blockingMode) {
 				InputMessage answerMessage = connection.sendMessageBlocking(msg);
-				log_info( "Answer : %s", answerMessage.toString().c_str() );
+				log_info() << "Answer : " << answerMessage.toString();
 			} else
 				connection.sendMessage(msg);
 
@@ -189,7 +187,7 @@ int main(int argc, const char** argv) {
 
 	app.run();
 
-	log_info("Shutting down...");
+	log_info() << "Shutting down...";
 
 	return 0;
 

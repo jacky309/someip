@@ -60,10 +60,12 @@ public:
 
 	std::string toString() const;
 
+private:
 	vector<Client*> m_subscribedClients;
 	const SomeIP::MessageID m_messageID;
 	Service* m_providerService = nullptr;
 	Dispatcher& m_dispatcher;
+
 };
 
 /**
@@ -193,23 +195,18 @@ public:
 
 	void sendPingMessages();
 
+private:
 	vector<Notification*> m_notifications;
-
 	vector<Service*> m_services;
-
 	vector<Client*> m_clients;
 	vector<Client*> m_disconnectedClients;
-
 	vector<ServiceRegistrationListener*> m_serviceRegistrationListeners;
-
 	int m_messageCounter;
-
 	GlibIdleCallback m_idleCallback;
-
 	GLibTimer m_pingTimer;
 
 };
 
-void trace_message(const DispatcherMessage& msg);
+//void trace_message(const DispatcherMessage& msg);
 
 }
