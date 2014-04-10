@@ -20,7 +20,7 @@ void LocalServer::init() {
 	if (systemdPassedSockets == 1) {
 		// we got a file descriptor from systemd => use it instead of creating a new one
 		m_fileDescriptor = SD_LISTEN_FDS_START;
-		log_info("Got a file descriptor from systemd");
+		log_info() << "Got a file descriptor from systemd";
 	} else
 		initServerSocket();
 #else
@@ -29,19 +29,19 @@ void LocalServer::init() {
 
 	m_serverSocketChannel = g_io_channel_unix_new( getFileDescriptor() );
 
-	if ( !g_io_add_watch(m_serverSocketChannel, (GIOCondition)(G_IO_IN | G_IO_HUP), onNewSocketConnection, this) ) {
-		log_error("Cannot add watch on GIOChannel");
+	if ( !g_io_add_watch(m_serverSocketChannel, G_IO_IN | G_IO_HUP, onNewSocketConnection, this) ) {
+		log_error() << "Cannot add watch on GIOChannel";
 		throw ConnectionException("Cannot add watch on GIOChannel");
 	}
 
 	// when running as root, allow the applications which are not running as root to connect
 	if ( chmod(getSocketPath(), S_IRWXU | S_IRWXG         // | S_IRWXO
 		   ) ) {
-		log_warning("Cannot set the permission on the socket");
+		log_warning() << "Cannot set the permission on the socket";
 		//			throw ConnectionException("Cannot set the permission on the socket");
 	}
 
-	log_info("UNIX domain server socket listening on path") << getSocketPath();
+	log_info() << "UNIX domain server socket listening on path" << getSocketPath();
 
 }
 

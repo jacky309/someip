@@ -14,29 +14,27 @@
 
 namespace SomeIP_Dispatcher {
 
-typedef uint16_t TCPPort;
-
-class DaemonConfiguration {
-
-public:
-	static const uint16_t DEFAULT_TCP_SERVER_PORT = 10032;
-
-	DaemonConfiguration() {
-	}
-
-	TCPPort getDefaultLocalTCPPort() const {
-		return m_tcpPort;
-	}
-
-	void setDefaultLocalTCPPort(int port) {
-		m_tcpPort = port;
-	}
-
-private:
-	TCPPort m_tcpPort = DEFAULT_TCP_SERVER_PORT;
-
-};
-
-const DaemonConfiguration& getConfiguration();
+//class DaemonConfiguration {
+//
+//public:
+//	static const uint16_t DEFAULT_TCP_SERVER_PORT = 10032;
+//
+//	DaemonConfiguration() {
+//	}
+//
+//	TCPPort getDefaultLocalTCPPort() const {
+//		return m_tcpPort;
+//	}
+//
+//	void setDefaultLocalTCPPort(int port) {
+//		m_tcpPort = port;
+//	}
+//
+//private:
+//	TCPPort m_tcpPort = DEFAULT_TCP_SERVER_PORT;
+//
+//};
+//
+//const DaemonConfiguration& getConfiguration();
 
 }

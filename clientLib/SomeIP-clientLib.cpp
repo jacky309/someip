@@ -10,7 +10,7 @@ std::string ClientConnection::getDaemonStateDump() {
 	IPCInputMessage returnMessage = writeRequest(msg);
 
 	if (returnMessage.getReturnCode() == IPCReturnCode::ERROR)
-		throw Exception("Can't dump state");
+		return "";
 
 	IPCInputMessageReader reader(returnMessage);
 
@@ -88,6 +88,11 @@ SomeIPReturnCode ClientConnection::sendMessage(OutputMessage& msg) {
 }
 
 
+SomeIPReturnCode ClientConnection::sendPing() {
+	IPCOutputMessage ipcMessage(IPCMessageType::PONG);
+	return writeMessage(ipcMessage);
+}
+
 InputMessage ClientConnection::sendMessageBlocking(const OutputMessage& msg) {
 	assert( msg.getHeader().isRequestWithReturn() );
 	assert(msg.getClientIdentifier() == 0);
@@ -96,14 +101,14 @@ InputMessage ClientConnection::sendMessageBlocking(const OutputMessage& msg) {
 
 	const IPCMessage& ipcMessage = msg.getIPCMessage();
 
-	std::lock_guard<std::recursive_mutex> receptionLock(dataReceptionMutex); // we prevent other threads to steal the response of our request
+	std::lock_guard<std::recursive_mutex> receptionLock(dataReceptionMutex); // we prevent other threads from stealing the response of our request
 	writeMessage(ipcMessage);
 
 	return waitForAnswer(msg);
 }
 
 InputMessage ClientConnection::waitForAnswer(const OutputMessage& requestMsg) {
-	std::lock_guard<std::recursive_mutex> receptionLock(dataReceptionMutex); // we prevent other threads to steal the response of our request
+	std::lock_guard<std::recursive_mutex> receptionLock(dataReceptionMutex); // we prevent other threads from stealing the response of our request
 
 	InputMessage answerMessage;
 
@@ -146,7 +151,7 @@ void ClientConnection::pushToQueue(const IPCInputMessage& msg) {
 IPCInputMessage ClientConnection::writeRequest(IPCOutputMessage& ipcMessage) {
 	IPCInputMessage answerMessage;
 	std::lock_guard<std::recursive_mutex> emissionLock(dataEmissionMutex);
-	std::lock_guard<std::recursive_mutex> receptionLock(dataReceptionMutex); // we prevent other threads to steal the response of our request
+	std::lock_guard<std::recursive_mutex> receptionLock(dataReceptionMutex); // we prevent other threads from stealing the response of our request
 
 	ipcMessage.assignRequestID();
 

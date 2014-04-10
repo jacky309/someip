@@ -27,7 +27,7 @@ void ServiceAnnouncer::onServiceRegistered(const Service& service) {
 				throw ConnectionException("Can't broadcast message");
 			}
 
-			log_info("Service published : ") << byteArray.toString();
+			log_info() << "Service published : " << byteArray.toString();
 		}
 	}
 }

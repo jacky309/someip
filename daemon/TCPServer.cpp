@@ -11,7 +11,7 @@ std::vector<IPV4Address> TCPServer::getIPAddresses() {
 	char host[NI_MAXHOST];
 
 	if (getifaddrs(&ifaddr) == -1) {
-		log_error("Error getting local IP addresses");
+		log_error() << "Error getting local IP addresses";
 	} else {
 		/* Walk through linked list, maintaining head pointer so we can free list later */
 		for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
@@ -29,12 +29,12 @@ std::vector<IPV4Address> TCPServer::getIPAddresses() {
 
 				s =
 					getnameinfo(ifa->ifa_addr,
-						    (family ==
-						     AF_INET) ? sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6),
-						    host, sizeof(host), NULL, 0, NI_NUMERICHOST);
+						    (family == AF_INET) ? sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6),
+						    host, sizeof(host), nullptr, 0,
+						    NI_NUMERICHOST);
 				if (s != 0) {
-					log_error( "getnameinfo() failed: %s\n", gai_strerror(s) );
-					exit(EXIT_FAILURE);
+					log_error() << "getnameinfo() failed: " << gai_strerror(s);
+					throw new ConnectionExceptionWithErrno("getnameinfo() failed");
 				}
 			}
 		}
@@ -45,10 +45,9 @@ std::vector<IPV4Address> TCPServer::getIPAddresses() {
 	return ipAddresses;
 }
 
-void TCPServer::initServerSocket() {
+void TCPServer::init() {
 
 	int tcpServerSocketHandle = 0;
-	m_port = getConfiguration().getDefaultLocalTCPPort();
 
 	if ( ( tcpServerSocketHandle = ::socket(AF_INET, SOCK_STREAM, 0) ) < 0 ) {
 		log_error("Failed to create socket");
@@ -66,7 +65,7 @@ void TCPServer::initServerSocket() {
 		for (int i = 0; i < 10; i++) {
 			sin.sin_port = htons(m_port);
 			if (::bind( tcpServerSocketHandle, (struct sockaddr*) &sin, sizeof(sin) ) != 0) {
-				log_error( "Failed to bind TCP server socket %d. Error : %s", m_port + i, strerror(errno) );
+				log_warn() << "Failed to bind TCP server socket " << m_port << ". Error : " << strerror(errno);
 				m_port++;
 			} else
 				break;
@@ -83,7 +82,7 @@ void TCPServer::initServerSocket() {
 
 	GIOChannel* tcpServerSocketChannel = g_io_channel_unix_new(tcpServerSocketHandle);
 
-	if ( !g_io_add_watch(tcpServerSocketChannel, (GIOCondition)(G_IO_IN | G_IO_HUP), onNewSocketConnection, this) ) {
+	if ( !g_io_add_watch(tcpServerSocketChannel, G_IO_IN | G_IO_HUP, onNewSocketConnection, this) ) {
 		log_error("Cannot add watch on TCP GIOChannel!");
 		throw ConnectionException("Failed to listen to TCP port");
 	}

@@ -27,8 +27,7 @@ using namespace SomeIP_utils;
 
 class DaemonApplication : public MainLoopApplication {
 public:
-	DaemonApplication(const DaemonConfiguration& configuration) :
-		m_dispatcher(configuration), m_configuration(configuration) {
+	DaemonApplication() {
 	}
 
 	Dispatcher& getDispatcher() {
@@ -36,15 +35,15 @@ public:
 	}
 
 	Dispatcher m_dispatcher;
-	const DaemonConfiguration& m_configuration;
+	//	const DaemonConfiguration& m_configuration;
 
 };
 
-static DaemonConfiguration configuration;
-
-const DaemonConfiguration& getConfiguration() {
-	return configuration;
-}
+//static DaemonConfiguration configuration;
+//
+//const DaemonConfiguration& getConfiguration() {
+//	return configuration;
+//}
 
 }
 
@@ -53,7 +52,7 @@ int main(int argc, const char** argv) {
 	using namespace SomeIP_Dispatcher;
 
 	CommandLineParser commandLineParser("Dispatcher", "", SOMEIP_PACKAGE_VERSION);
-	int tcpPortNumber = configuration.getDefaultLocalTCPPort();
+	int tcpPortNumber = TCPServer::DEFAULT_TCP_SERVER_PORT;
 	const char* activationConfigurationFolder = SOMEIP_ACTIVATION_CONFIGURATION_FOLDER;
 	const char* logFilePath = "/tmp/someip_dispatcher.log";
 
@@ -66,19 +65,18 @@ int main(int argc, const char** argv) {
 
 	SomeIPFileLoggingContext::openFile(logFilePath);
 
-	configuration.setDefaultLocalTCPPort(tcpPortNumber);
+	//	configuration.setDefaultLocalTCPPort(tcpPortNumber);
 
-	DaemonApplication app(configuration);
+	DaemonApplication app;
 
 	log_info("Daemon started. version: ") << SOMEIP_PACKAGE_VERSION << ". Logging to : " << logFilePath;
 
-	for ( auto& localIpAddress : TCPServer::getIPAddresses() ) {
-	log_debug() << "Local IP address : " << localIpAddress.toString();
-	}
+	for ( auto& localIpAddress : TCPServer::getIPAddresses() )
+		log_debug() << "Local IP address : " << localIpAddress.toString();
 
 	TCPManager tcpManager( app.getDispatcher() );
 
-	TCPServer tcpServer(app.getDispatcher(), tcpManager);
+	TCPServer tcpServer(app.getDispatcher(), tcpManager, tcpPortNumber);
 	tcpServer.init();
 
 	LocalServer localServer( app.getDispatcher() );

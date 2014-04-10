@@ -5,6 +5,10 @@
 
 namespace SomeIP_utils {
 
+inline GIOCondition operator|(const GIOCondition c1, const GIOCondition c2) {
+    return static_cast<GIOCondition>( static_cast<int>(c1) | static_cast<int>(c2) );
+}
+
 class GLibTimer {
 
 	std::function<void(void)> m_func;
@@ -163,7 +167,7 @@ public:
 
 	void enableOutputWatch() {
 		if (outputSourceID == UNREGISTERED_SOURCE)
-			outputSourceID = g_io_add_watch_full_with_context(channel, G_PRIORITY_DEFAULT, (GIOCondition)(G_IO_OUT),
+			outputSourceID = g_io_add_watch_full_with_context(channel, G_PRIORITY_DEFAULT, G_IO_OUT,
 									  onWritingPossibleGlibCallback, this, NULL,
 									  m_mainContext);
 	}
@@ -171,7 +175,7 @@ public:
 	void enableInputWatch() {
 		if (!isInputWatched) {
 			inputSourceID =
-				g_io_add_watch_full_with_context(channel, G_PRIORITY_DEFAULT, (GIOCondition)(G_IO_IN | G_IO_HUP),
+				g_io_add_watch_full_with_context(channel, G_PRIORITY_DEFAULT, G_IO_IN | G_IO_HUP,
 								 onSocketDataAvailableGlibCallback, this, NULL,
 								 m_mainContext);
 			isInputWatched = true;

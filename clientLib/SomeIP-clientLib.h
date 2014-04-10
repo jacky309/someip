@@ -1,6 +1,5 @@
 #pragma once
 
-#include <exception>
 #include <string>
 #include <string.h>
 #include <poll.h>
@@ -24,49 +23,20 @@ using namespace SomeIP_utils;
 LOG_IMPORT_CONTEXT(clientLibContext);
 
 
-class SafeMessageQueue {
-
-public:
-	SafeMessageQueue() {
-		queueHeadIndex = 0;
-	}
-
-	void push(const IPCInputMessage& msg) {
-		std::lock_guard<std::mutex> lock(m_mutex);
-		m_messageQueue.push_back( new IPCInputMessage(msg) );
-	}
-
-	const IPCInputMessage* pop() {
-		const IPCInputMessage* msg = NULL;
-		std::lock_guard<std::mutex> lock(m_mutex);
-		if ( !isEmpty() )
-			msg = m_messageQueue[queueHeadIndex++];
-		else {
-			queueHeadIndex = 0;
-			m_messageQueue.resize(0);
-		}
-
-		return msg;
-	}
-
-	bool isEmpty() {
-		return queueHeadIndex == m_messageQueue.size();
-	}
-
-private:
-	std::vector<IPCInputMessage*> m_messageQueue;
-	size_t queueHeadIndex;
-	std::mutex m_mutex;
-
-};
-
-
+/**
+ * This interface needs to be implemented to handle incoming messages
+ */
 class ClientConnectionListener : public MessageSink {
 public:
+	/**
+	 * Called when the connection to the dispatcher has been lost
+	 */
 	virtual void onDisconnected() = 0;
 };
 
-
+/**
+ * This class can be used to be notified of the availibilty/unavailability of a service
+ */
 class ServiceAvailabilityListener {
 public:
 	ServiceAvailabilityListener(SomeIP::ServiceID serviceID) {
@@ -105,7 +75,8 @@ private:
 };
 
 /**
- *
+ * This class maintains a list of available services and lets you register a listener to be notified whenever a new service
+ * has been reigstered or unregistered.
  */
 class ServiceRegistry {
 
@@ -118,16 +89,13 @@ public:
 	}
 
 	/**
-	 * Register a new service availability listener
+	 * Registers a new service availability listener
 	 */
 	void registerServiceAvailabilityListener(ServiceAvailabilityListener& listener) {
 		m_serviceAvailabilityListeners.push_back(&listener);
 	}
 
 private:
-	ServiceRegistry() {
-	}
-
 	void onServiceRegistered(SomeIP::ServiceID serviceID) {
 		m_availableServices.push_back(serviceID);
 		for (auto& listener : m_serviceAvailabilityListeners) {
@@ -157,28 +125,6 @@ public:
 	OutputMessageWithReport() :
 		OutputMessage() {
 	}
-};
-
-class RegistrationException : public std::exception {
-public:
-	RegistrationException() {
-	}
-
-	RegistrationException(const char* err, SomeIP::ServiceID& service) {
-		char message[strlen(err) + 20];
-		snprintf(message, sizeof(message), "%s, 0x%X", err, service);
-		m_err = message;
-	}
-
-	virtual ~RegistrationException() throw (){
-	}
-
-	const char* what() const throw (){
-		return m_err.c_str();
-	}
-
-private:
-	std::string m_err;
 };
 
 /**
@@ -214,7 +160,7 @@ public:
 	}
 
 	/**
-	 * Handle the data which has been received.
+	 * Handles the data which has been received.
 	 * @return : true if there is still some data to be processed
 	 */
 	bool dispatchIncomingMessages();
@@ -227,40 +173,44 @@ public:
 	}
 
 	/**
-	 * Connect to the dispatcher.
-	 * @exception ConnectionException is thrown if the connection can not be established
+	 * Connects to the dispatcher.
 	 */
 	SomeIPReturnCode connect(ClientConnectionListener& clientReceiveCb);
 
 	/**
-	 * Return true if the connection to the daemon is active
+	 * Returns true if the connection to the daemon is active
 	 */
 	bool isConnected() const {
 		return UDSConnection::isConnected();
 	}
 
 	/**
-	 * Register a new service.
+	 * Registers a new service.
 	 */
 	SomeIPReturnCode registerService(SomeIP::ServiceID serviceID);
 
 	/**
-	 * Unregister the given service
+	 * Unregisters the given service
 	 */
 	SomeIPReturnCode unregisterService(SomeIP::ServiceID serviceID);
 
 	/**
-	 * Subscribe to notifications for the given MessageID
+	 * Subscribes to notifications for the given MessageID
 	 */
 	SomeIPReturnCode subscribeToNotifications(SomeIP::MessageID messageID);
 
 	/**
-	 * Send the given message to the dispatcher.
+	 * Sends the given message to the dispatcher.
 	 */
 	SomeIPReturnCode sendMessage(OutputMessage& msg);
 
 	/**
-	 * Send the given message to the dispatcher and block until a response is received.
+	 * Send a ping message to the dispatcher
+	 */
+	SomeIPReturnCode sendPing();
+
+	/**
+	 * Sends the given message to the dispatcher and block until a response is received.
 	 */
 	InputMessage sendMessageBlocking(const OutputMessage& msg);
 
@@ -269,17 +219,47 @@ public:
 	 */
 	std::string getDaemonStateDump();
 
-	SomeIPReturnCode sendPing() {
-		IPCOutputMessage ipcMessage(IPCMessageType::PONG);
-		writeMessage(ipcMessage);
-		return SomeIPReturnCode::OK;
-	}
-
 	void setMainLoopInterface(MainLoopInterface& mainloopInterface) {
 		m_mainLoop = &mainloopInterface;
 	}
 
 private:
+	class SafeMessageQueue {
+
+public:
+		SafeMessageQueue() {
+			queueHeadIndex = 0;
+		}
+
+		void push(const IPCInputMessage& msg) {
+			std::lock_guard<std::mutex> lock(m_mutex);
+			m_messageQueue.push_back( new IPCInputMessage(msg) );
+		}
+
+		const IPCInputMessage* pop() {
+			const IPCInputMessage* msg = NULL;
+			std::lock_guard<std::mutex> lock(m_mutex);
+			if ( !isEmpty() )
+				msg = m_messageQueue[queueHeadIndex++];
+			else {
+				queueHeadIndex = 0;
+				m_messageQueue.resize(0);
+			}
+
+			return msg;
+		}
+
+		bool isEmpty() {
+			return ( queueHeadIndex == m_messageQueue.size() );
+		}
+
+private:
+		std::vector<IPCInputMessage*> m_messageQueue;
+		size_t queueHeadIndex;
+		std::mutex m_mutex;
+
+	};
+
 	std::string toString() const {
 		return "ClientConnection";
 	}
@@ -290,9 +270,10 @@ private:
 
 	IPCInputMessage writeRequest(IPCOutputMessage& ipcMessage);
 
-	void writeMessage(const IPCMessage& ipcMessage) {
+	SomeIPReturnCode writeMessage(const IPCMessage& ipcMessage) {
 		std::lock_guard<std::recursive_mutex> lock(dataEmissionMutex);
-		writeBlocking(ipcMessage);
+		auto code = writeBlocking(ipcMessage);
+		return ( (code == IPCOperationReport::OK) ? SomeIPReturnCode::OK : SomeIPReturnCode::ERROR );
 	}
 
 	bool enqueueIncomingMessages() {
@@ -318,7 +299,6 @@ private:
 	void onCongestionDetected() override;
 
 	void onDisconnected() override;
-
 
 	void swapInputMessage() {
 		//		log_info("swap");

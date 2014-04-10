@@ -1796,3 +1796,5 @@ GENERATE_LEGEND        = YES
 # the various graphs.
 
 DOT_CLEANUP            = YES
+
+#USE_MDFILE_AS_MAINPAGE = README.md

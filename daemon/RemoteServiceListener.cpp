@@ -21,7 +21,6 @@ void RemoteServiceListener::handleMessage() {
 	m_tcpManager.getServiceDiscoveryMessageDecoder().decodeMessage( array.getData(), array.size() );
 }
 
-
 void RemoteServiceListener::init() {
 
 	struct sockaddr_in addr;
@@ -40,8 +39,8 @@ void RemoteServiceListener::init() {
 
 	m_serverSocketChannel = g_io_channel_unix_new(m_broadcastFileDescriptor);
 
-	if ( !g_io_add_watch(m_serverSocketChannel, (GIOCondition)(G_IO_IN | G_IO_HUP), onMessageGlibCallback, this) ) {
-		log_error("Cannot add watch on GIOChannel");
+	if ( !g_io_add_watch(m_serverSocketChannel, G_IO_IN | G_IO_HUP, onMessageGlibCallback, this) ) {
+		log_error() << "Cannot add watch on GIOChannel";
 		throw ConnectionExceptionWithErrno("Cannot add watch on GIOChannel");
 	}
 

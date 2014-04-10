@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SomeIP-common.h"
+#include "GlibIO.h"
 
 #include "glib.h"
 #include <unistd.h>
@@ -146,7 +147,7 @@ public:
 			log_error("Error during signalfd() call");
 
 		GIOChannel* channel = g_io_channel_unix_new(unixSignalFileDescriptor);
-		g_io_add_watch(channel, (GIOCondition)(G_IO_IN | G_IO_HUP), onUnixSignalReceived, this);
+		g_io_add_watch(channel, G_IO_IN | G_IO_HUP, onUnixSignalReceived, this);
 #else
 		s_appInstance = this;
 

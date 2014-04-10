@@ -119,7 +119,7 @@ class Dispatcher {
 	static const int PING_DELAY = 5000;
 
 public:
-	Dispatcher(const DaemonConfiguration& configuration) :
+	Dispatcher() :
 		m_idleCallback([&]() {
 				       cleanDisconnectedClients();
 				       return false;

@@ -31,7 +31,7 @@ public:
 	ServiceAnnouncer(Dispatcher& dispatcher, TCPServer& tcpServer) :
 		m_dispatcher(dispatcher), m_timer([&]() {
 							  sendServiceList();
-						  }, 30000), m_tcpServer(tcpServer) {
+						  }, 3000), m_tcpServer(tcpServer) {
 	}
 
 	virtual ~ServiceAnnouncer() {

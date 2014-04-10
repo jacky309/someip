@@ -1,9 +1,10 @@
 /**
 
-\mainpage SomeIP
-
+\mainpag SomeIP
 
 \section Introduction
+
+\include "README.md"
 
 This documentation describes the Some/IP dispatcher and the related components.
 The purpose of this software is to provide a mean for applications to communicate:

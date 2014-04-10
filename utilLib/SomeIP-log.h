@@ -15,7 +15,7 @@
 #ifdef ENABLE_TRAFFIC_LOGGING
 #define log_traffic log_debug
 #else
-#define log_traffic(args ...) for (int _i_ = 0; _i_ > 1; _i_++) NullLogData()
+#define log_traffic(args ...) while (false) NullLogData()
 #endif
 
 class SomeIPFileLoggingContext : public logging::FileLogContext {

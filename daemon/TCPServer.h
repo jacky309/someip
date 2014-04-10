@@ -18,13 +18,17 @@
 
 namespace SomeIP_Dispatcher {
 
+typedef uint16_t TCPPort;
+
 class TCPServer : private SocketStreamServer {
 
 	LOG_DECLARE_CLASS_CONTEXT("TCPS", "TCPServer");
 
 public:
-	TCPServer(Dispatcher& dispatcher, TCPManager& tcpManager) :
-		m_dispatcher(dispatcher), m_tcpManager(tcpManager) {
+	static const TCPPort DEFAULT_TCP_SERVER_PORT = 10032;
+
+	TCPServer(Dispatcher& dispatcher, TCPManager& tcpManager, TCPPort port) :
+		m_dispatcher(dispatcher), m_tcpManager(tcpManager), m_port(port) {
 	}
 
 	virtual ~TCPServer() {
@@ -51,16 +55,12 @@ public:
 
 	static std::vector<IPV4Address> getIPAddresses();
 
-	void initServerSocket();
-
-	void init() {
-		initServerSocket();
-	}
+	void init();
 
 private:
 	Dispatcher& m_dispatcher;
 	TCPManager& m_tcpManager;
-	int m_port = -1;
+	TCPPort m_port = -1;
 };
 
 }
