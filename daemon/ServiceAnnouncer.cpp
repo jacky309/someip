@@ -2,62 +2,60 @@
 
 namespace SomeIP_Dispatcher {
 
+void ServiceAnnouncer::sendMessage(const SomeIPServiceDiscoveryMessage& serviceDiscoveryMessage) {
+
+	ByteArray byteArray;
+	NetworkSerializer s(byteArray);
+	serviceDiscoveryMessage.serialize(s);
+
+	if (sendto( m_broadcastFileDescriptor, byteArray.getData(), byteArray.size(), 0,
+		    (struct sockaddr*) &addr,
+		    sizeof(addr) ) < 0) {
+		throw ConnectionException("Can't broadcast message");
+	}
+
+	log_info() << "Service discovery message sent : " << byteArray.toString();
+
+}
+
 void ServiceAnnouncer::onServiceRegistered(const Service& service) {
 
 	if ( service.isLocal() ) {         // we don't publish remote services
 
-		for ( auto ipAddress : TCPServer::getIPAddresses() ) {
+		for ( auto ipAddress : m_tcpServer.getIPAddresses() ) {
 			SomeIPServiceDiscoveryMessage serviceDiscoveryMessage(true);
 
-			SomeIPServiceDiscoveryServiceOfferedEntry serviceEntry( serviceDiscoveryMessage,
-										service.getServiceID(),
-										TransportProtocol::TCP,
-										ipAddress,
-										m_tcpServer.getLocalTCPPort() );
+			SomeIPServiceDiscoveryServiceOfferedEntry serviceEntry(serviceDiscoveryMessage,
+									       service.getServiceID(),
+									       TransportProtocol::TCP,
+									       ipAddress.m_address,
+									       ipAddress.m_port);
 
 			serviceDiscoveryMessage.addEntry(serviceEntry);
 
-			ByteArray byteArray;
-			NetworkSerializer s(byteArray);
-			serviceDiscoveryMessage.serialize(s);
+			sendMessage(serviceDiscoveryMessage);
 
-			if (sendto( m_broadcastFileDescriptor, byteArray.getData(), byteArray.size(), 0,
-				    (struct sockaddr*) &addr,
-				    sizeof(addr) ) < 0) {
-				throw ConnectionException("Can't broadcast message");
-			}
-
-			log_info() << "Service published : " << byteArray.toString();
 		}
 	}
 }
 
+
 void ServiceAnnouncer::onServiceUnregistered(const Service& service) {
 	if ( service.isLocal() ) {
-		for ( auto ipAddress : TCPServer::getIPAddresses() ) {
+		for ( auto ipAddress : m_tcpServer.getIPAddresses() ) {
 
 			SomeIPServiceDiscoveryMessage serviceDiscoveryMessage(true);
 
-			SomeIPServiceDiscoveryServiceUnregisteredEntry serviceEntry( serviceDiscoveryMessage,
-										     service.getServiceID(),
-										     SomeIP::TransportProtocol::
-										     TCP, ipAddress,
-										     m_tcpServer.getLocalTCPPort() );
+			SomeIPServiceDiscoveryServiceUnregisteredEntry serviceEntry(serviceDiscoveryMessage,
+										    service.getServiceID(),
+										    SomeIP::TransportProtocol::
+										    TCP, ipAddress.m_address,
+										    ipAddress.m_port);
 
 			serviceDiscoveryMessage.addEntry(serviceEntry);
 
-			ByteArray byteArray;
-			NetworkSerializer s(byteArray);
-			serviceDiscoveryMessage.serialize(s);
+			sendMessage(serviceDiscoveryMessage);
 
-			if (sendto( m_broadcastFileDescriptor, byteArray.getData(), byteArray.size(), 0,
-				    (struct sockaddr*) &addr,
-				    sizeof(addr) )
-			    < 0) {
-				throw ConnectionException("Can't broadcast message");
-			}
-
-			log_info() << "Service unpublished :" << byteArray.toString();
 		}
 	}
 }
@@ -81,6 +79,12 @@ void ServiceAnnouncer::init() {
 	addr.sin_port = htons(SERVICE_DISCOVERY_UDP_PORT);
 
 	m_dispatcher.addServiceRegistrationListener(*this);
+
+	// send a query to know about services provided by other devices;
+	SomeIPServiceDiscoveryMessage serviceDiscoveryMessage(true);
+	SomeIPServiceDiscoveryServiceQueryEntry entry(0xFFFF);
+	serviceDiscoveryMessage.addEntry(entry);
+	sendMessage(serviceDiscoveryMessage);
 
 }
 

@@ -1,7 +1,6 @@
 #include "SomeIP-common.h"
 
 LOG_DEFINE_APP_IDS("sctl", "SomeIP ctl tool");
-LOG_DECLARE_DEFAULT_CONTEXT(mainContext, "ctl", "Main log context");
 
 #include "MainLoopApplication.h"
 #include "CommandLineParser.h"
@@ -11,6 +10,8 @@ LOG_DECLARE_DEFAULT_CONTEXT(mainContext, "ctl", "Main log context");
 #include <string>
 #include <boost/tokenizer.hpp>
 
+LOG_DECLARE_DEFAULT_CONTEXT(mainContext, "ctl", "Main log context");
+
 using namespace SomeIP;
 using namespace SomeIP_utils;
 using namespace SomeIP_Lib;
@@ -18,6 +19,9 @@ using namespace SomeIP_Lib;
 typedef std::function<void (const InputMessage&)> MessageReceivedCallbackFunction;
 
 class ControlApp : public MainLoopApplication, public SomeIPClient::ClientConnectionListener {
+
+	LOG_DECLARE_CLASS_CONTEXT("MAIN", "Main");
+
 public:
 	ControlApp(SomeIPClient::ClientConnection& connection) :
 		MainLoopApplication(), m_glibIntegration(connection, NULL) {

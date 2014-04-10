@@ -24,6 +24,9 @@ namespace SomeIP_utils {
  * \li Integration of logging back channel handling into the main loop
  */
 class MainLoopApplication {
+
+	LOG_DECLARE_CLASS_CONTEXT("MLAP", "MainLoopApplication");
+
 public:
 	MainLoopApplication() {
 	}
@@ -61,7 +64,7 @@ public:
 	}
 
 	GMainContext* getMainContext() {
-		return NULL;
+		return nullptr;
 	}
 
 	/**

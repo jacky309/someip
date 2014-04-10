@@ -20,7 +20,7 @@ namespace SomeIP_Dispatcher {
 
 typedef uint16_t TCPPort;
 
-class TCPServer : private SocketStreamServer {
+class TCPServer : private SocketStreamServer, private BlackListHostFilter {
 
 	LOG_DECLARE_CLASS_CONTEXT("TCPS", "TCPServer");
 
@@ -33,6 +33,8 @@ public:
 
 	virtual ~TCPServer() {
 	}
+
+	bool isBlackListed(const IPv4TCPServerIdentifier& server, ServiceID serviceID) const override;
 
 	static gboolean onNewSocketConnection(GIOChannel* gio, GIOCondition condition, gpointer data) {
 		TCPServer* server = static_cast<TCPServer*>(data);
@@ -53,11 +55,16 @@ public:
 		return m_port;
 	}
 
-	static std::vector<IPV4Address> getIPAddresses();
+	const std::vector<IPv4TCPServerIdentifier> getIPAddresses() const {
+		return m_activePorts;
+	}
 
-	void init();
+	static std::vector<IPV4Address> getAllIPAddresses();
+
+	void init(int portCount = 1);
 
 private:
+	std::vector<IPv4TCPServerIdentifier> m_activePorts;
 	Dispatcher& m_dispatcher;
 	TCPManager& m_tcpManager;
 	TCPPort m_port = -1;

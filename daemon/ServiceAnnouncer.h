@@ -30,14 +30,14 @@ class ServiceAnnouncer : public ServiceRegistrationListener {
 public:
 	ServiceAnnouncer(Dispatcher& dispatcher, TCPServer& tcpServer) :
 		m_dispatcher(dispatcher), m_timer([&]() {
-							  sendServiceList();
-						  }, 3000), m_tcpServer(tcpServer) {
+							  announceServices();
+						  }, 300000), m_tcpServer(tcpServer) {
 	}
 
 	virtual ~ServiceAnnouncer() {
 	}
 
-	void sendServiceList() {
+	void announceServices() {
 		for ( auto service : m_dispatcher.getServices() ) {
 			if ( service->isLocal() ) {
 				onServiceRegistered(*service);
@@ -48,6 +48,8 @@ public:
 	void onServiceRegistered(const Service& service);
 
 	void onServiceUnregistered(const Service& service);
+
+	void sendMessage(const SomeIPServiceDiscoveryMessage& serviceDiscoveryMessage);
 
 	void init();
 

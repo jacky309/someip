@@ -18,7 +18,7 @@ void RemoteServiceListener::handleMessage() {
 	assert( bytes <= static_cast<int>( array.size() ) );
 
 	array.resize(bytes);
-	m_tcpManager.getServiceDiscoveryMessageDecoder().decodeMessage( array.getData(), array.size() );
+	m_serviceDiscoveryDecoder.decodeMessage( array.getData(), array.size() );
 }
 
 void RemoteServiceListener::init() {
@@ -29,20 +29,33 @@ void RemoteServiceListener::init() {
 	if (m_broadcastFileDescriptor < 0)
 		throw ConnectionExceptionWithErrno("Can't create socket");
 
+	int so_reuseaddr = TRUE;
+	if (setsockopt( m_broadcastFileDescriptor, SOL_SOCKET, SO_REUSEADDR, &so_reuseaddr, sizeof (so_reuseaddr) ) != 0)
+		throw ConnectionExceptionWithErrno("Can't set SO_REUSEADDR");
+
 	memset( &addr, 0, sizeof(addr) );
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	addr.sin_port = htons(SERVICE_DISCOVERY_UDP_PORT);
 
-	if (::bind( m_broadcastFileDescriptor, (struct sockaddr*) &addr, sizeof(addr) ) != 0)
+	if (::bind( m_broadcastFileDescriptor, (struct sockaddr*) &addr, sizeof(addr) ) == 0) {
+
+		m_serverSocketChannel = g_io_channel_unix_new(m_broadcastFileDescriptor);
+
+		if ( !g_io_add_watch(m_serverSocketChannel, G_IO_IN | G_IO_HUP, onMessageGlibCallback, this) ) {
+			log_error() << "Cannot add watch on GIOChannel";
+			throw ConnectionExceptionWithErrno("Cannot add watch on GIOChannel");
+		}
+
+	} else
 		throw ConnectionExceptionWithErrno("Can't bind socket");
 
-	m_serverSocketChannel = g_io_channel_unix_new(m_broadcastFileDescriptor);
-
-	if ( !g_io_add_watch(m_serverSocketChannel, G_IO_IN | G_IO_HUP, onMessageGlibCallback, this) ) {
-		log_error() << "Cannot add watch on GIOChannel";
-		throw ConnectionExceptionWithErrno("Cannot add watch on GIOChannel");
-	}
-
 }
+
+gboolean RemoteServiceListener::onMessageGlibCallback(GIOChannel* gio, GIOCondition condition, gpointer data) {
+	RemoteServiceListener* server = static_cast<RemoteServiceListener*>(data);
+	server->handleMessage();
+	return true;
+}
+
 }

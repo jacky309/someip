@@ -3,6 +3,9 @@
 #include "ServiceDiscovery.h"
 
 namespace SomeIP_Lib {
+
+//LOG_DECLARE_CONTEXT(someIPLibContext, "SOLI", "SomeIP library");
+
 uint16_t OutputMessage::s_nextAvailableRequestID = 0x1000;
 std::mutex OutputMessage::s_nextAvailableRequestIDMutex;
 

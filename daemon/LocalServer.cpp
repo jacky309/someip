@@ -12,7 +12,7 @@
 
 namespace SomeIP_Dispatcher {
 
-void LocalServer::init() {
+void LocalServer::init(const char* socketPath) {
 
 #ifdef ENABLE_SYSTEMD
 	int systemdPassedSockets = sd_listen_fds(false);
@@ -22,9 +22,9 @@ void LocalServer::init() {
 		m_fileDescriptor = SD_LISTEN_FDS_START;
 		log_info() << "Got a file descriptor from systemd";
 	} else
-		initServerSocket();
+		initServerSocket(socketPath);
 #else
-	initServerSocket();
+	initServerSocket(socketPath);
 #endif
 
 	m_serverSocketChannel = g_io_channel_unix_new( getFileDescriptor() );
@@ -41,7 +41,7 @@ void LocalServer::init() {
 		//			throw ConnectionException("Cannot set the permission on the socket");
 	}
 
-	log_info() << "UNIX domain server socket listening on path" << getSocketPath();
+	log_info() << "UNIX domain server socket listening on path " << getSocketPath();
 
 }
 

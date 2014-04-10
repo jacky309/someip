@@ -76,7 +76,7 @@ private:
 
 /**
  * This class maintains a list of available services and lets you register a listener to be notified whenever a new service
- * has been reigstered or unregistered.
+ * has been registered or unregistered.
  */
 class ServiceRegistry {
 
@@ -137,6 +137,9 @@ class ClientConnection : private MessageSource, private UDSConnection {
 public:
 	using SocketStreamConnection::getFileDescriptor;
 	using SocketStreamConnection::disconnect;
+
+	static constexpr const char* DEFAULT_SERVER_SOCKET_PATH = "/tmp/someIPSocket";
+	static constexpr const char* ALTERNATIVE_SERVER_SOCKET_PATH = "/tmp/someIPSocket2";
 
 	struct MainLoopInterface {
 		virtual ~MainLoopInterface() {

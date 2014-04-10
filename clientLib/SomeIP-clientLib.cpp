@@ -37,7 +37,7 @@ SomeIPReturnCode ClientConnection::connect(ClientConnectionListener& clientRecei
 
 	swapInputMessage();
 
-	auto c = connectToServer();
+	auto c = connectToServer(DEFAULT_SERVER_SOCKET_PATH);
 
 	if ( !isError(c) )
 		log_info() << "Connected to the dispatcher";

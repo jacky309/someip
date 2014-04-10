@@ -94,6 +94,10 @@ public:
 					const IPv4ConfigurationOption* address,
 					const SomeIPServiceDiscoveryMessage& message) override;
 
+	void onFindServiceRequested(const SomeIPServiceDiscoveryServiceEntry& serviceEntry,
+				    const SomeIPServiceDiscoveryMessage& message) override {
+	};
+
 	void setupConnection() {
 		m_headerReader.setBuffer( m_headerBytes, sizeof(m_headerBytes) );
 		m_channelWatcher.setup( getFileDescriptor() );

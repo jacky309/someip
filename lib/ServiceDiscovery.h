@@ -7,7 +7,11 @@
 
 #include "serialization.h"
 
+#include "SomeIP-log.h"
+
 namespace SomeIP_Lib {
+
+//LOG_IMPORT_DEFAULT_CONTEXT(someIPLibContext);
 
 static const uint16_t SERVICE_DISCOVERY_UDP_PORT = 10102;
 
@@ -202,14 +206,14 @@ public:
 
 		{
 			LengthPlaceHolder<uint32_t, NetworkSerializer> entryLengthPlaceHolder(serializer, 0);
-			for (auto entry : m_entries) {
+			for (auto& entry : m_entries) {
 				boost::apply_visitor(SerializeVisitor(serializer), entry);
 			}
 		}
 
 		{
 			LengthPlaceHolder<uint32_t, NetworkSerializer> optionLengthPlaceHolder(serializer, 0);
-			for (auto option : m_options) {
+			for (auto& option : m_options) {
 				boost::apply_visitor(OptionSerializeVisitor(serializer), option);
 			}
 		}
@@ -250,7 +254,7 @@ public:
 				break;
 
 				default : {
-					log_warning("Unknown entry type : ") << static_cast<int>(type);
+					log_warning() << "Unknown entry type : " << static_cast<int>(type);
 				}
 				break;
 
@@ -341,6 +345,19 @@ public:
 	IPv4ConfigurationOption m_ipv4ConfigurationOption;
 };
 
+class SomeIPServiceDiscoveryServiceQueryEntry : public SomeIPServiceDiscoveryServiceEntry {
+public:
+	SomeIPServiceDiscoveryServiceQueryEntry(ServiceID serviceID) {
+		m_type = SomeIP::SomeIPServiceDiscoveryEntryHeader::Type::FindService;
+		m_serviceID = serviceID; // means all instances should be returned
+		m_majorVersion = 0xFF; // that means that services with any version shall be returned
+		m_minorVersion = 0xFFFFFFFF; // that means that services with any version shall be returned
+		m_instanceID = 0xFFFF; // Instance ID shall set to 0xFFFF, if all service instances shall be returned
+		m_ttl = 0xFFFFFFFF;    // We don't want the service to expire
+	}
+
+};
+
 class SomeIPServiceDiscoveryServiceUnregisteredEntry : public SomeIPServiceDiscoveryServiceEntry {
 public:
 	SomeIPServiceDiscoveryServiceUnregisteredEntry(SomeIPServiceDiscoveryMessage& serviceDiscoveryMessage,
@@ -393,9 +410,15 @@ public:
 	virtual void onRemoteServiceUnavailable(const SomeIPServiceDiscoveryServiceEntry& serviceEntry,
 						const IPv4ConfigurationOption* address,
 						const SomeIPServiceDiscoveryMessage& message) = 0;
+
+	virtual void onFindServiceRequested(const SomeIPServiceDiscoveryServiceEntry& serviceEntry,
+					    const SomeIPServiceDiscoveryMessage& message) = 0;
+
 };
 
 class ServiceDiscoveryMessageDecoder {
+
+	LOG_DECLARE_CLASS_CONTEXT("SDMD", "ServiceDiscoveryMessageDecoder");
 
 	ServiceDiscoveryMessageDecoder(const ServiceDiscoveryMessageDecoder& fdsf) = delete;
 
@@ -437,6 +460,13 @@ public:
 				}
 			}
 			break;
+
+			case SomeIP::SomeIPServiceDiscoveryEntryHeader::Type::FindService : {
+				log_info() << "Query";
+				m_serviceListener.m_listener.onFindServiceRequested(entry, m_message);
+			}
+			break;
+
 			default :
 				assert(false);
 				break;

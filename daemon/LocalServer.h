@@ -25,7 +25,6 @@ class LocalServer : private UDSServer {
 public:
 	LocalServer(Dispatcher& dispatcher) :
 		m_dispatcher(dispatcher) {
-		setSocketPath(DEFAULT_SERVER_SOCKET_PATH);
 	}
 
 	~LocalServer() {
@@ -51,7 +50,7 @@ public:
 		delete &client;
 	}
 
-	void init();
+	void init(const char* socketPath);
 
 private:
 	Dispatcher& m_dispatcher;

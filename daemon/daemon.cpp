@@ -1,7 +1,6 @@
 #include "SomeIP-common.h"
 
 LOG_DEFINE_APP_IDS("Some", "SomeIP daemon");
-LOG_DECLARE_DEFAULT_CONTEXT(mainContext, "main", "Main log context");
 
 #include "CommandLineParser.h"
 #include "config.h"
@@ -19,46 +18,30 @@ LOG_DECLARE_DEFAULT_CONTEXT(mainContext, "main", "Main log context");
 
 #include "Activation.h"
 
-using namespace SomeIP;
+#include "SomeIP-clientLib.h"
+
+//using namespace SomeIP;
 
 namespace SomeIP_Dispatcher {
 
-using namespace SomeIP_utils;
+LOG_DECLARE_DEFAULT_CONTEXT(mainContext, "main", "Main log context");
 
-class DaemonApplication : public MainLoopApplication {
-public:
-	DaemonApplication() {
-	}
-
-	Dispatcher& getDispatcher() {
-		return m_dispatcher;
-	}
-
-	Dispatcher m_dispatcher;
-	//	const DaemonConfiguration& m_configuration;
-
-};
-
-//static DaemonConfiguration configuration;
-//
-//const DaemonConfiguration& getConfiguration() {
-//	return configuration;
-//}
-
-}
-
-int main(int argc, const char** argv) {
-
-	using namespace SomeIP_Dispatcher;
+int run(int argc, const char** argv) {
 
 	CommandLineParser commandLineParser("Dispatcher", "", SOMEIP_PACKAGE_VERSION);
 	int tcpPortNumber = TCPServer::DEFAULT_TCP_SERVER_PORT;
+	int tcpPortTriesCount = 10;
+	bool disableLocalIPC = false;
 	const char* activationConfigurationFolder = SOMEIP_ACTIVATION_CONFIGURATION_FOLDER;
 	const char* logFilePath = "/tmp/someip_dispatcher.log";
+	const char* localSocketPath = SomeIPClient::ClientConnection::DEFAULT_SERVER_SOCKET_PATH;
 
 	commandLineParser.addOption(tcpPortNumber, "port", 'p', "TCP port number");
+	commandLineParser.addOption(tcpPortTriesCount, "portcount", 'u', "Number of consecutive TCP port to try");
 	commandLineParser.addOption(activationConfigurationFolder, "conf", 'c', "Auto-activation configuration folder");
 	commandLineParser.addOption(logFilePath, "log", 'l', "Log file path");
+	commandLineParser.addOption(disableLocalIPC, "ipc", 'i', "Disable local IPC");
+	commandLineParser.addOption(localSocketPath, "localPath", 's', "Local IPC socket path");
 
 	if ( commandLineParser.parse(argc, argv) )
 		exit(1);
@@ -67,28 +50,31 @@ int main(int argc, const char** argv) {
 
 	//	configuration.setDefaultLocalTCPPort(tcpPortNumber);
 
-	DaemonApplication app;
+	MainLoopApplication app;
+
+	Dispatcher dispatcher;
 
 	log_info("Daemon started. version: ") << SOMEIP_PACKAGE_VERSION << ". Logging to : " << logFilePath;
 
-	for ( auto& localIpAddress : TCPServer::getIPAddresses() )
+	TCPManager tcpManager(dispatcher);
+
+	TCPServer tcpServer(dispatcher, tcpManager, tcpPortNumber);
+	tcpServer.init(tcpPortTriesCount);
+
+	for ( auto& localIpAddress : tcpServer.getIPAddresses() )
 		log_debug() << "Local IP address : " << localIpAddress.toString();
 
-	TCPManager tcpManager( app.getDispatcher() );
+	LocalServer localServer(dispatcher);
+	if (!disableLocalIPC)
+		localServer.init(localSocketPath);
 
-	TCPServer tcpServer(app.getDispatcher(), tcpManager, tcpPortNumber);
-	tcpServer.init();
-
-	LocalServer localServer( app.getDispatcher() );
-	localServer.init();
-
-	RemoteServiceListener remoteServiceListener(app.getDispatcher(), tcpManager);
-	remoteServiceListener.init();
-
-	ServiceAnnouncer serviceAnnouncer(app.getDispatcher(), tcpServer);
+	ServiceAnnouncer serviceAnnouncer(dispatcher, tcpServer);
 	serviceAnnouncer.init();
 
-	WellKnownServiceManager wellKnownServiceManager( app.getDispatcher() );
+	RemoteServiceListener remoteServiceListener(dispatcher, tcpManager, serviceAnnouncer);
+	remoteServiceListener.init();
+
+	WellKnownServiceManager wellKnownServiceManager(dispatcher);
 	wellKnownServiceManager.init(activationConfigurationFolder);
 
 	app.run();
@@ -97,4 +83,10 @@ int main(int argc, const char** argv) {
 
 	return 0;
 
+}
+}
+
+
+int main(int argc, const char** argv) {
+	SomeIP_Dispatcher::run(argc, argv);
 }

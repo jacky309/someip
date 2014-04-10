@@ -6,7 +6,7 @@
 namespace SomeIP_utils {
 
 inline GIOCondition operator|(const GIOCondition c1, const GIOCondition c2) {
-    return static_cast<GIOCondition>( static_cast<int>(c1) | static_cast<int>(c2) );
+	return static_cast<GIOCondition>( static_cast<int>(c1) | static_cast<int>(c2) );
 }
 
 class GLibTimer {

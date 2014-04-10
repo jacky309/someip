@@ -31,9 +31,11 @@ void TCPManager::onRemoteServiceAvailable(const SomeIPServiceDiscoveryServiceEnt
 	IPv4TCPServerIdentifier serverID(address->m_address, address->m_port);
 
 	// ignore our own notifications
-	for ( auto localAddress : TCPServer::getIPAddresses() )
-		if (serverID.m_address == localAddress)
+	for ( auto filter : m_dispatcher.getBlackList() )
+		if ( filter->isBlackListed(serverID, serviceEntry.m_serviceID) ) {
+			log_debug() << "Ignoring service " << serverID.toString();
 			return;
+		}
 
 	// Check whether we already know that server
 	TCPClient& client = getOrCreateClient(serverID);
@@ -47,10 +49,11 @@ void TCPManager::onRemoteServiceAvailable(const SomeIPServiceDiscoveryServiceEnt
 
 	client.onServiceAvailable(serviceEntry.m_serviceID);
 
-	log_info("New remote service with serviceID:%i, InstanceID:%i is available on IP address: %s port:%i",
+	log_info("Remote service with serviceID:%i, InstanceID:%i is available on IP address: %s port:%i",
 		 serviceEntry.m_serviceID, serviceEntry.m_instanceID, address->m_address.toString().c_str(), address->m_port);
 
 }
+
 
 void TCPManager::onRemoteServiceUnavailable(const SomeIPServiceDiscoveryServiceEntry& serviceEntry,
 					    const IPv4ConfigurationOption* address,
@@ -59,9 +62,11 @@ void TCPManager::onRemoteServiceUnavailable(const SomeIPServiceDiscoveryServiceE
 	IPv4TCPServerIdentifier serverID(address->m_address, address->m_port);
 
 	// ignore our own notifications
-	for ( auto localAddress : TCPServer::getIPAddresses() )
-		if (serverID.m_address == localAddress)
+	for ( auto filter : m_dispatcher.getBlackList() )
+		if ( filter->isBlackListed(serverID) ) {
+			log_debug() << "Ignoring service " << serverID.toString();
 			return;
+		}
 
 	// Check whether we already know that server
 	TCPClient& client = getOrCreateClient(serverID);
@@ -75,7 +80,7 @@ void TCPManager::onRemoteServiceUnavailable(const SomeIPServiceDiscoveryServiceE
 
 	client.onServiceUnavailable(serviceEntry.m_serviceID);
 
-	log_info("New remote service with serviceID:%i, InstanceID:%i is NOT available on IP address: %s port:%i",
+	log_info("Remote service with serviceID:%i, InstanceID:%i is NOT available on IP address: %s port:%i",
 		 serviceEntry.m_serviceID, serviceEntry.m_instanceID, address->m_address.toString().c_str(), address->m_port);
 
 }

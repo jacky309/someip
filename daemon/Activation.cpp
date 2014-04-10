@@ -78,12 +78,26 @@ void WellKnownServiceManager::init(const char* configurationFolder) {
 
 	readConfiguration(configurationFolder);
 
+	getDispatcher().addBlackListFilter(*this);
+
 #ifdef ENABLE_SYSTEMD
 	m_activator.init();
 #endif
 
 }
 
+
+bool WellKnownServiceManager::isBlackListed(const IPv4TCPServerIdentifier& server, ServiceID serviceID) const {
+
+	// ignore our own services
+	for ( auto service : m_services )
+		if ( service->getServiceID() == serviceID ) {
+			log_debug() << "Local well knownservice with this ID" << serviceID;
+			return true;
+		}
+
+	return false;
+}
 
 void WellKnownServiceManager::readConfiguration(const char* folder) {
 

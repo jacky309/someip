@@ -70,4 +70,8 @@ struct IPv4TCPServerIdentifier {
 	TCPPort m_port;
 };
 
+struct BlackListHostFilter {
+	virtual bool isBlackListed(const IPv4TCPServerIdentifier& server, ServiceID serviceID = 0xFFFF) const = 0;
+};
+
 }

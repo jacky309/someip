@@ -90,7 +90,7 @@ private:
 
 };
 
-class WellKnownServiceManager {
+class WellKnownServiceManager : private BlackListHostFilter {
 
 	static constexpr const char* SERVICE_SECTION = "Service";
 	static constexpr const char* SERVICE_FILENAME_EXTENSION = "someip-service";
@@ -116,6 +116,8 @@ public:
 	void init(const char* configurationFolder);
 
 	void readConfiguration(const char* folder);
+
+	bool isBlackListed(const IPv4TCPServerIdentifier& server, ServiceID serviceID) const override;
 
 #ifdef ENABLE_SYSTEMD
 	SystemDActivator& getSystemDActivator() {

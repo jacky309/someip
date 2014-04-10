@@ -195,12 +195,22 @@ public:
 
 	void sendPingMessages();
 
+	void addBlackListFilter(const BlackListHostFilter& filter) {
+		m_blackList.push_back(&filter);
+	}
+
+	const std::vector<const BlackListHostFilter*> getBlackList() {
+		return m_blackList;
+	}
+
 private:
 	vector<Notification*> m_notifications;
 	vector<Service*> m_services;
 	vector<Client*> m_clients;
 	vector<Client*> m_disconnectedClients;
 	vector<ServiceRegistrationListener*> m_serviceRegistrationListeners;
+	vector<const BlackListHostFilter*> m_blackList;
+
 	int m_messageCounter;
 	GlibIdleCallback m_idleCallback;
 	GLibTimer m_pingTimer;

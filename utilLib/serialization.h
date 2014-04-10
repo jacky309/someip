@@ -92,8 +92,8 @@ public:
 
 		_BasicType networkOrderedValue = (convertToNetworkByteOrder ? NativeToNetworkOrder(basicValue) : basicValue);
 
-		log_verbose( "Writing simple type at index %zu , %s", payload_.size(),
-			     byteArrayToString( &networkOrderedValue, sizeof(networkOrderedValue) ).c_str() );
+		log_verbose() << "Writing simple type at index " << payload_.size() << ", " <<
+		byteArrayToString( &networkOrderedValue, sizeof(networkOrderedValue) );
 
 		writeRawData( reinterpret_cast<const char*>(&networkOrderedValue), sizeof(networkOrderedValue) );
 	}
@@ -105,8 +105,8 @@ public:
 
 		_BasicType networkOrderedValue = (convertToNetworkByteOrder ? NativeToNetworkOrder(basicValue) : basicValue);
 
-		log_verbose( "Writing simple type at index %zu , %s", position,
-			     byteArrayToString( &networkOrderedValue, sizeof(networkOrderedValue) ).c_str() );
+		log_verbose() << "Writing simple type at index " << position << " , " <<
+		byteArrayToString( &networkOrderedValue, sizeof(networkOrderedValue) );
 
 		writeRawDataAt(reinterpret_cast<const char*>(&networkOrderedValue), sizeof(networkOrderedValue), position);
 	}
@@ -120,14 +120,14 @@ public:
 	}
 
 	void skip(size_t length) {
-		log_verbose("Skipping %zu bytes", length);
+		log_verbose() << "Skipping " << length << " bytes";
 		payload_.skip(length);
 	}
 
 	void alignToBoundary(size_t alignBoundary) {
 		size_t paddingSize = payload_.size() % alignBoundary;
 		payload_.skip(paddingSize);
-		log_verbose("Inserted %zu bytes padding", paddingSize);
+		log_verbose() << "Inserted " << paddingSize << " bytes padding";
 	}
 
 protected:
@@ -214,7 +214,7 @@ public:
 	void alignToBoundary(size_t alignBoundary) {
 		size_t paddingSize = currentDataPosition_ % alignBoundary;
 		currentDataPosition_ += paddingSize;
-		log_verbose("Skipped %zu bytes padding", paddingSize);
+		log_verbose() << "Skipped " << paddingSize << " bytes padding";
 	}
 
 	const unsigned char* readRawData(size_t numBytesToRead) {
@@ -249,8 +249,8 @@ public:
 		auto p = readRawData( sizeof(Type) );
 		val = *( reinterpret_cast<const Type*>(p) );
 
-		log_verbose( "Reading simple type from index %zu, %s, currentDataPosition_", index,
-			     byteArrayToString( p, sizeof(val) ).c_str() );
+		log_verbose() << "Reading simple type from index " << index << " " <<
+		byteArrayToString( p, sizeof(val) ) << "currentDataPosition_";
 
 		if (convertToNetworkByteOrder)
 			val = NetworkToNativeOrder(val);

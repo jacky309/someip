@@ -1,8 +1,9 @@
 #include "TCPServer.h"
+#include "TCPManager.h"
 
 namespace SomeIP_Dispatcher {
 
-std::vector<IPV4Address> TCPServer::getIPAddresses() {
+std::vector<IPV4Address> TCPServer::getAllIPAddresses() {
 
 	std::vector<IPV4Address> ipAddresses;
 
@@ -45,12 +46,14 @@ std::vector<IPV4Address> TCPServer::getIPAddresses() {
 	return ipAddresses;
 }
 
-void TCPServer::init() {
+void TCPServer::init(int portCount) {
+
+	m_dispatcher.addBlackListFilter(*this);
 
 	int tcpServerSocketHandle = 0;
 
 	if ( ( tcpServerSocketHandle = ::socket(AF_INET, SOCK_STREAM, 0) ) < 0 ) {
-		log_error("Failed to create socket");
+		log_error() << "Failed to create socket";
 		throw ConnectionExceptionWithErrno("Failed to create socket");
 	}
 
@@ -60,20 +63,22 @@ void TCPServer::init() {
 	sin.sin_port = htons(m_port);
 	sin.sin_addr.s_addr = INADDR_ANY;
 
-	if (true) {
-		// we try to find an available TCP port to listen to
-		for (int i = 0; i < 10; i++) {
-			sin.sin_port = htons(m_port);
-			if (::bind( tcpServerSocketHandle, (struct sockaddr*) &sin, sizeof(sin) ) != 0) {
-				log_warn() << "Failed to bind TCP server socket " << m_port << ". Error : " << strerror(errno);
-				m_port++;
-			} else
-				break;
+	bool bindSuccessful = false;
+
+	// we try to find an available TCP port to listen to
+	for (int i = 0; i < portCount; i++) {
+		sin.sin_port = htons(m_port);
+		if (::bind( tcpServerSocketHandle, (struct sockaddr*) &sin, sizeof(sin) ) != 0) {
+			log_warn() << "Failed to bind TCP server socket " << m_port << ". Error : " << strerror(errno);
+			m_port++;
+		} else {
+			bindSuccessful = true;
+			break;
 		}
-	} else if (::bind( tcpServerSocketHandle, (struct sockaddr*) &sin, sizeof(sin) ) != 0) {
-		log_error( "Failed to bind TCP server socket %d. Error : %s", m_port, strerror(errno) );
-		throw ConnectionExceptionWithErrno("Failed to bind TCP server socket");
 	}
+
+	if (!bindSuccessful)
+		log_error() << "Failed to find a free port in the range " << m_port << "-" << m_port + portCount - 1;
 
 	if (::listen(tcpServerSocketHandle, SOMAXCONN) != 0) {
 		log_error( "Failed to listen to TCP port %i. Error : %s", m_port, strerror(errno) );
@@ -83,13 +88,27 @@ void TCPServer::init() {
 	GIOChannel* tcpServerSocketChannel = g_io_channel_unix_new(tcpServerSocketHandle);
 
 	if ( !g_io_add_watch(tcpServerSocketChannel, G_IO_IN | G_IO_HUP, onNewSocketConnection, this) ) {
-		log_error("Cannot add watch on TCP GIOChannel!");
+		log_error() << "Cannot add watch on TCP GIOChannel!";
 		throw ConnectionException("Failed to listen to TCP port");
 	}
 
-	log_info("TCP Server socket listening on port %d", m_port);
+	log_info() << "TCP Server socket listening on port " << m_port;
 
+	for ( auto address : getAllIPAddresses() ) {
+		m_activePorts.push_back( IPv4TCPServerIdentifier(address, m_port) );
+	}
 	setFileDescriptor(tcpServerSocketHandle);
 }
 
+
+bool TCPServer::isBlackListed(const IPv4TCPServerIdentifier& server, ServiceID serviceID) const {
+	// ignore our own services
+	for ( auto localAddress : m_activePorts )
+		if ( localAddress == server ) {
+			//			log_debug() << "Ignoring own service " << server.toString();
+			return true;
+		}
+
+	return false;
+}
 }

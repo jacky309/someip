@@ -233,16 +233,16 @@ struct SomeIPServiceDiscoveryEntryHeader {
 
 	enum class Type
 		: uint8_t {
-		FindService = 0x00, OfferService = 0x01, Subscribe = 0x06, SubscribeAck = 0x07
+		FindService = 0x00, OfferService = 0x01, Subscribe = 0x06, SubscribeAck = 0x07, Invalid = 0xFE
 	};
 
-	Type m_type;
+	Type m_type = Type::Invalid;
 
-	uint8_t m_indexFirstOptionRun;
-	uint8_t m_indexSecondOptionRun;
+	uint8_t m_indexFirstOptionRun = 0;
+	uint8_t m_indexSecondOptionRun = 0;
 
-	uint8_t m_1;
-	uint8_t m_2;
+	uint8_t m_1 = 0;
+	uint8_t m_2 = 0;
 
 	ServiceID m_serviceID;
 	InstanceID m_instanceID;
