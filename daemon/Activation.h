@@ -102,7 +102,7 @@ public:
 		m_dispatcher(dispatcher) {
 	}
 
-	~WellKnownServiceManager() {
+	virtual ~WellKnownServiceManager() {
 		for(auto service : m_services) {
 			m_dispatcher.unregisterService(*service);
 			delete service;

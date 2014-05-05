@@ -27,8 +27,22 @@ Dependencies
 
 The following packages need to be installed in order to be able to compile SomeIP
 - glib 2
-- PLog
 - GDBus (for systemD support)
+- maven (code generator)
+- PLog
+- unzip
+- wget
+
+On Ubuntu or debian, those dependencies can be installed with the following command: 
+	$ sudo apt-get install libglib2.0-dev maven libdbus-glib-1-dev unzip
+
+// TODO : add location of Plog 
+
+Build
+-----
+
+Here are instructions on how to build the package:
+- 
 
 
 Content
