@@ -61,7 +61,7 @@ struct IPCMessageHeader {
 };
 
 /**
- * Used to manipulate
+ *
  */
 class IPCMessage {
 public:

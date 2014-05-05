@@ -65,16 +65,15 @@ void ServiceAnnouncer::init() {
 	if ( ( m_broadcastFileDescriptor = socket(AF_INET, SOCK_DGRAM, 0) ) < 0 )
 		throw ConnectionExceptionWithErrno("Can't create Socket");
 
-	int broadcastEnable = 1;
+	int broadcastEnabled = 1;
 	int ret =
-		setsockopt( m_broadcastFileDescriptor, SOL_SOCKET, SO_BROADCAST, &broadcastEnable, sizeof(broadcastEnable) );
+		setsockopt( m_broadcastFileDescriptor, SOL_SOCKET, SO_BROADCAST, &broadcastEnabled, sizeof(broadcastEnabled) );
 	if (ret != 0)
 		throw ConnectionExceptionWithErrno("Can't broadcast message");
 
 	/* set up destination address */
 	memset( &addr, 0, sizeof(addr) );
 	addr.sin_family = AF_INET;
-	//		addr.sin_addr.s_addr = inet_addr(SomeIP::SERVICE_DISCOVERY_BROADCAST_GROUP);
 	addr.sin_addr.s_addr = INADDR_BROADCAST;
 	addr.sin_port = htons(SERVICE_DISCOVERY_UDP_PORT);
 

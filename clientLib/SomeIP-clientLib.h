@@ -208,7 +208,7 @@ public:
 	SomeIPReturnCode sendMessage(OutputMessage& msg);
 
 	/**
-	 * Send a ping message to the dispatcher
+	 * Sends a ping message to the dispatcher
 	 */
 	SomeIPReturnCode sendPing();
 

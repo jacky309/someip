@@ -44,10 +44,6 @@ inline EnumType string2Enum(const char* str) {
 
 #define RETURN_ENUM_NAME_IF_EQUAL(value, type, v) if (value == type::v) return # v
 
-//#define RETURN_ENUM_NAME_IF_EQUAL(value, v) if (value == v) return # v;
-
-//#define ARRAY_ELEMENT_COUNT(array) ( sizeof(array) / sizeof(array[0]) )
-
 /**
  * Remove the first occurrence of the given element from the vector
  */

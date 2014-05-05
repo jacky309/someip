@@ -39,8 +39,10 @@ public:
 	void onRemoteClientSubscription(const SomeIPServiceDiscoveryEventGroupEntry& serviceEntry,
 					const IPv4ConfigurationOption* address) override {
 
-		IPv4TCPServerIdentifier serverID(address->m_address, address->m_port);
+		IPv4TCPEndPoint serverID(address->m_address, address->m_port);
 		log_info() << "New subscription from device with address" << serverID.toString();
+
+		// TODO : implement
 	}
 
 	void onRemoteClientSubscriptionFinished(const SomeIPServiceDiscoveryEventGroupEntry& serviceEntry,

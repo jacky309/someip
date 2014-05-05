@@ -117,7 +117,7 @@ public:
 
 	void readConfiguration(const char* folder);
 
-	bool isBlackListed(const IPv4TCPServerIdentifier& server, ServiceID serviceID) const override;
+	bool isBlackListed(const IPv4TCPEndPoint& server, ServiceID serviceID) const override;
 
 #ifdef ENABLE_SYSTEMD
 	SystemDActivator& getSystemDActivator() {

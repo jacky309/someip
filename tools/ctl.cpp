@@ -77,8 +77,6 @@ int parseIntString(const std::string& str) {
 		if ( (str.substr(0, 2) == "0x") || (str.substr(0, 2) == "0X") )
 			stream >> std::hex;
 
-	log_debug()
-	<< str.substr(2);
 	int a;
 	stream >> a;
 	return a;
@@ -105,14 +103,20 @@ int main(int argc, const char** argv) {
 	MessageID messageToSubscribeTo = NO_MESSAGE_ID;
 	bool dumpDaemonState = false;
 	bool blockingMode = true;
+	int repeatDuration = 0;
 
-	CommandLineParser commandLineParser("Control tool", "message1 message2 ...", SOMEIP_PACKAGE_VERSION,
-					    "This tools lets you interact with the Some/IP daemon");
+	CommandLineParser commandLineParser(
+		"Control tool", "message1 message2 ...", SOMEIP_PACKAGE_VERSION,
+		"This tools lets you interact with the Some/IP daemon\n"
+		"Examples:\n\n"
+		"Send a message every 500 ms with serviceID=0x1234, MemberID=543, MessageType=REQUEST, payload=12345678 (hex)\n"
+		"someip_ctl 0x1234:543:REQUEST:12345678 -r 500"
+		);
 	commandLineParser.addOption(serviceToRegister, "service", 's', "A service to register");
 	commandLineParser.addOption(messageToSubscribeTo, "subscribe", 'n', "A message to subscribe to");
-	//	commandLineParser.addOption(messageToSend, "message", 'm', "A message to be sent.");
 	commandLineParser.addOption(blockingMode, "blocking", 'b', "Use blocking mode");
 	commandLineParser.addOption(dumpDaemonState, "dumpDaemonState", 'd', "Dump daemon state");
+	commandLineParser.addOption(repeatDuration, "repeatDelay", 'r', "Delay between 2 repetitions");
 
 	if ( commandLineParser.parse(argc, argv) ) {
 		commandLineParser.printHelp();
@@ -154,39 +158,49 @@ int main(int argc, const char** argv) {
 		std::cout << connection.getDaemonStateDump();
 	}
 
-	for (int i = 1; i < argc; i++) {
+	auto sendMessagesFunction = [&] () {
 
-		const char* messageToSend = argv[i];
-		auto v = tokenize(messageToSend, ':');
+		for (int i = 1; i < argc; i++) {
 
-		if (v.size() == 4) {
+			const char* messageToSend = argv[i];
+			auto v = tokenize(messageToSend, ':');
 
-			ServiceID serviceID = parseIntString(v[0]);
-			MemberID memberID = parseIntString(v[1]);
-			auto messageType = string2Enum<MessageType> (v[2]);
-			auto payloadString = v[3];
+			if (v.size() == 4) {
 
-			OutputMessage msg;
-			msg.getHeader().setServiceID(serviceID);
-			msg.getHeader().setMemberID(memberID);
-			msg.getHeader().setMessageType(messageType);
-			//			msg.getHeader().setRequestID(0x4321);
-			SomeIPOutputStream os = msg.getPayloadOutputStream();
-			auto bytes = parseHexPayloadString(payloadString);
-			for (size_t i = 0; i < bytes.size(); i++)
-				os.writeValue(bytes[i]);
+				ServiceID serviceID = parseIntString(v[0]);
+				MemberID memberID = parseIntString(v[1]);
+				auto messageType = string2Enum<MessageType> (v[2]);
+				auto payloadString = v[3];
 
-			log_info() << "Sending message : " << msg.toString();
+				OutputMessage msg;
+				msg.getHeader().setServiceID(serviceID);
+				msg.getHeader().setMemberID(memberID);
+				msg.getHeader().setMessageType(messageType);
+				SomeIPOutputStream os = msg.getPayloadOutputStream();
+				auto bytes = parseHexPayloadString(payloadString);
+				for (size_t i = 0; i < bytes.size(); i++)
+					os.writeValue(bytes[i]);
 
-			if (blockingMode) {
-				InputMessage answerMessage = connection.sendMessageBlocking(msg);
-				log_info() << "Answer : " << answerMessage.toString();
+				log_info() << "Sending message : " << msg.toString();
+
+				if (blockingMode) {
+					InputMessage answerMessage = connection.sendMessageBlocking(msg);
+					log_info() << "Answer : " << answerMessage.toString();
+				} else
+					connection.sendMessage(msg);
+
 			} else
-				connection.sendMessage(msg);
+				std::cerr << "Invalid message format";
 
-		} else
-			std::cerr << "Invalid message format";
+		}
+	};
 
+	sendMessagesFunction();
+
+	if (repeatDuration != 0) {
+		new GLibTimer([&]() {
+				      sendMessagesFunction();
+			      }, repeatDuration);
 	}
 
 	app.run();

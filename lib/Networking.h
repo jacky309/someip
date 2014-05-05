@@ -42,17 +42,17 @@ inline bool IPV4Address::isLocalAddress() {
 
 typedef uint16_t TCPPort;
 
-struct IPv4TCPServerIdentifier {
+struct IPv4TCPEndPoint {
 
-	IPv4TCPServerIdentifier() {
+	IPv4TCPEndPoint() {
 		m_port = 0;
 	}
 
-	IPv4TCPServerIdentifier(IPV4Address address, TCPPort port) :
+	IPv4TCPEndPoint(IPV4Address address, TCPPort port) :
 		m_address(address), m_port(port) {
 	}
 
-	bool operator==(const IPv4TCPServerIdentifier& right) const {
+	bool operator==(const IPv4TCPEndPoint& right) const {
 		if ( !(m_address == right.m_address) )
 			return false;
 		if ( !(m_port == right.m_port) )
@@ -71,7 +71,7 @@ struct IPv4TCPServerIdentifier {
 };
 
 struct BlackListHostFilter {
-	virtual bool isBlackListed(const IPv4TCPServerIdentifier& server, ServiceID serviceID = 0xFFFF) const = 0;
+	virtual bool isBlackListed(const IPv4TCPEndPoint& server, ServiceID serviceID = 0xFFFF) const = 0;
 };
 
 }

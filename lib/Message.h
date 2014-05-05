@@ -370,10 +370,10 @@ public:
 	}
 
 	int maxRTTDelay = 0;
-	bool m_pongPending = false;
 	struct timeval m_lastPingDate;
 	struct timezone tz;
 	SomeIP::ServiceID m_serviceID;
+	bool m_pongPending = false;
 
 };
 

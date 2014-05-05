@@ -34,7 +34,7 @@ public:
 	virtual ~TCPServer() {
 	}
 
-	bool isBlackListed(const IPv4TCPServerIdentifier& server, ServiceID serviceID) const override;
+	bool isBlackListed(const IPv4TCPEndPoint& server, ServiceID serviceID) const override;
 
 	static gboolean onNewSocketConnection(GIOChannel* gio, GIOCondition condition, gpointer data) {
 		TCPServer* server = static_cast<TCPServer*>(data);
@@ -55,7 +55,7 @@ public:
 		return m_port;
 	}
 
-	const std::vector<IPv4TCPServerIdentifier> getIPAddresses() const {
+	const std::vector<IPv4TCPEndPoint> getIPAddresses() const {
 		return m_activePorts;
 	}
 
@@ -64,7 +64,7 @@ public:
 	void init(int portCount = 1);
 
 private:
-	std::vector<IPv4TCPServerIdentifier> m_activePorts;
+	std::vector<IPv4TCPEndPoint> m_activePorts;
 	Dispatcher& m_dispatcher;
 	TCPManager& m_tcpManager;
 	TCPPort m_port = -1;

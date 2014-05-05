@@ -48,13 +48,11 @@ int run(int argc, const char** argv) {
 
 	SomeIPFileLoggingContext::openFile(logFilePath);
 
-	//	configuration.setDefaultLocalTCPPort(tcpPortNumber);
-
 	MainLoopApplication app;
 
 	Dispatcher dispatcher;
 
-	log_info("Daemon started. version: ") << SOMEIP_PACKAGE_VERSION << ". Logging to : " << logFilePath;
+	log_info() << "Daemon started. version: " << SOMEIP_PACKAGE_VERSION << ". Logging to : " << logFilePath;
 
 	TCPManager tcpManager(dispatcher);
 
@@ -79,7 +77,7 @@ int run(int argc, const char** argv) {
 
 	app.run();
 
-	log_info("Shutting down...");
+	log_info() << "Shutting down...";
 
 	return 0;
 

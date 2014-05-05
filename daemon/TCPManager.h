@@ -20,7 +20,7 @@ public:
 		m_dispatcher(dispatcher) {
 	}
 
-	TCPClient& getOrCreateClient(const IPv4TCPServerIdentifier& serverID);
+	TCPClient& getOrCreateClient(const IPv4TCPEndPoint& serverID);
 
 	void onRemoteServiceAvailable(const SomeIPServiceDiscoveryServiceEntry& serviceEntry,
 				      const IPv4ConfigurationOption* address,

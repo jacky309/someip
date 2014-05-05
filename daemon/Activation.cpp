@@ -87,7 +87,7 @@ void WellKnownServiceManager::init(const char* configurationFolder) {
 }
 
 
-bool WellKnownServiceManager::isBlackListed(const IPv4TCPServerIdentifier& server, ServiceID serviceID) const {
+bool WellKnownServiceManager::isBlackListed(const IPv4TCPEndPoint& server, ServiceID serviceID) const {
 
 	// ignore our own services
 	for ( auto service : m_services )

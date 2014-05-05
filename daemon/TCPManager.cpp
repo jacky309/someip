@@ -4,7 +4,7 @@
 
 namespace SomeIP_Dispatcher {
 
-TCPClient& TCPManager::getOrCreateClient(const IPv4TCPServerIdentifier& serverID) {
+TCPClient& TCPManager::getOrCreateClient(const IPv4TCPEndPoint& serverID) {
 
 	// Check whether we already know that server
 	TCPClient* client = NULL;
@@ -28,7 +28,7 @@ void TCPManager::onRemoteServiceAvailable(const SomeIPServiceDiscoveryServiceEnt
 					  const IPv4ConfigurationOption* address,
 					  const SomeIPServiceDiscoveryMessage& message) {
 
-	IPv4TCPServerIdentifier serverID(address->m_address, address->m_port);
+	IPv4TCPEndPoint serverID(address->m_address, address->m_port);
 
 	// ignore our own notifications
 	for ( auto filter : m_dispatcher.getBlackList() )
@@ -59,7 +59,7 @@ void TCPManager::onRemoteServiceUnavailable(const SomeIPServiceDiscoveryServiceE
 					    const IPv4ConfigurationOption* address,
 					    const SomeIPServiceDiscoveryMessage& message) {
 
-	IPv4TCPServerIdentifier serverID(address->m_address, address->m_port);
+	IPv4TCPEndPoint serverID(address->m_address, address->m_port);
 
 	// ignore our own notifications
 	for ( auto filter : m_dispatcher.getBlackList() )

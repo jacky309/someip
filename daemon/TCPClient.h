@@ -59,7 +59,7 @@ public:
 	/**
 	 * Constructor used to register a host offering one or several services
 	 */
-	TCPClient(Dispatcher& dispatcher, IPv4TCPServerIdentifier server, TCPManager& tcpManager) :
+	TCPClient(Dispatcher& dispatcher, IPv4TCPEndPoint server, TCPManager& tcpManager) :
 		Client(dispatcher), ServiceDiscoveryListener(*this), m_tcpManager(tcpManager), m_serviceDiscoveryDecoder(
 			*this), m_channelWatcher(*this) {
 		m_serverIdentifier = server;
@@ -104,7 +104,7 @@ public:
 		m_channelWatcher.enableWatch();
 	}
 
-	IPv4TCPServerIdentifier& getServerID() {
+	IPv4TCPEndPoint& getServerID() {
 		return m_serverIdentifier;
 	}
 
@@ -220,7 +220,7 @@ private:
 	}
 
 private:
-	IPv4TCPServerIdentifier m_serverIdentifier;
+	IPv4TCPEndPoint m_serverIdentifier;
 
 	MyInputMessage m_currentIncomingMessage;
 

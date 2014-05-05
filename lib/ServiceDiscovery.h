@@ -11,8 +11,6 @@
 
 namespace SomeIP_Lib {
 
-//LOG_IMPORT_DEFAULT_CONTEXT(someIPLibContext);
-
 static const uint16_t SERVICE_DISCOVERY_UDP_PORT = 10102;
 
 struct Serializable {
@@ -284,7 +282,7 @@ public:
 				break;
 
 				default : {
-					log_warning("Unknown entry type : ") << static_cast<int>(type);
+					log_warning() << "Unknown entry type : " << static_cast<int>(type);
 				}
 				break;
 
@@ -316,6 +314,7 @@ public:
 		return m_options.size() - 1;
 	}
 
+private:
 	static uint16_t s_nextUnicastSessionID;
 	static uint16_t s_nextMulticastSessionID;
 	static bool s_UnicastReboot;
@@ -342,7 +341,9 @@ public:
 		m_indexFirstOptionRun = m_indexSecondOptionRun = serviceDiscoveryMessage.addOption(m_ipv4ConfigurationOption);
 	}
 
+private:
 	IPv4ConfigurationOption m_ipv4ConfigurationOption;
+
 };
 
 class SomeIPServiceDiscoveryServiceQueryEntry : public SomeIPServiceDiscoveryServiceEntry {
@@ -374,7 +375,10 @@ public:
 		m_2 = 0;
 		m_indexFirstOptionRun = m_indexSecondOptionRun = serviceDiscoveryMessage.addOption(m_ipv4ConfigurationOption);;
 	}
+
+private:
 	IPv4ConfigurationOption m_ipv4ConfigurationOption;
+
 };
 
 class SomeIPServiceDiscoverySubscribeNotificationEntry : public SomeIPServiceDiscoveryEventGroupEntry {
@@ -436,7 +440,7 @@ public:
 
 		template<typename T>
 		const IPv4ConfigurationOption* operator()(const T& v) const {
-			return NULL;
+			return nullptr;
 		}
 	};
 
@@ -452,7 +456,7 @@ public:
 				IPv4AddressExtractor ext;
 				auto addressOption = boost::apply_visitor(ext,
 									  m_message.getOptions()[entry.m_indexFirstOptionRun]);
-				assert(addressOption != NULL);
+				assert(addressOption != nullptr);
 				if (entry.m_ttl != 0) {
 					m_serviceListener.m_listener.onRemoteServiceAvailable(entry, addressOption, m_message);
 				} else {
@@ -478,14 +482,14 @@ public:
 			case SomeIP::SomeIPServiceDiscoveryEntryHeader::Type::Subscribe : {
 				IPv4AddressExtractor ext;
 
-				const IPv4ConfigurationOption* addressOption = NULL;
+				const IPv4ConfigurationOption* addressOption = nullptr;
 
 				if (entry.m_1 != 0)
 					addressOption =
 						boost::apply_visitor(ext,
 								     m_message.getOptions()[entry.m_indexFirstOptionRun]);
 
-				//				assert(addressOption != NULL);
+				//				assert(addressOption != nullptr);
 				if (entry.m_ttl != 0) {
 					m_serviceListener.m_listener.onRemoteClientSubscription(entry, addressOption);
 				} else {
@@ -494,11 +498,13 @@ public:
 
 			}
 			break;
+
 			default :
 				assert(false);
 				break;
 
 			}
+
 		}
 
 		ServiceDiscoveryMessageDecoder& m_serviceListener;

@@ -86,7 +86,7 @@ class FrancaSomeIPGenerator implements IGenerator {
             }
         } catch (IllegalStateException e) {} //will be thrown only when the cli calls the francagenerator
         
-        doGenerate(fDeployedModel, deployedInterfaces, fileSystemAccess, res)
+        doGenerate(deployedInterfaces, fileSystemAccess)
         if(res != null) {
             var deflt = DefaultScope::INSTANCE.getNode(PreferenceConstants::SCOPE).get(PreferenceConstants::P_OUTPUT,
                 PreferenceConstants::DEFAULT_OUTPUT);
@@ -105,9 +105,7 @@ class FrancaSomeIPGenerator implements IGenerator {
 //		]
 //    }
 
-    def doGenerate(FDModel fDModel, List<FDInterface> deployedInterfaces,
-
-        IFileSystemAccess fileSystemAccess, IResource res) {
+    def public doGenerate(List<FDInterface> deployedInterfaces, IFileSystemAccess fileSystemAccess) {
         val defaultDeploymentAccessor = new DeploymentInterfacePropertyAccessorWrapper(null) as DeploymentInterfacePropertyAccessor
 
         deployedInterfaces.forEach [
@@ -131,7 +129,7 @@ class FrancaSomeIPGenerator implements IGenerator {
                 node = InstanceScope::INSTANCE.getNode(PreferenceConstants::SCOPE)
                 finalValue = node.get(PreferenceConstants::P_GENERATEPROXY, finalValue)
             }
-            finalValue = FPreferences::instance.getPreference(res, PreferenceConstants::P_GENERATEPROXY, finalValue)
+//            finalValue = FPreferences::instance.getPreference(res, PreferenceConstants::P_GENERATEPROXY, finalValue)
             if (finalValue.equals(booleanTrue)) {
                 it.generateSomeIPProxy(fileSystemAccess)
             }

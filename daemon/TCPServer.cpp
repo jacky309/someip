@@ -95,13 +95,13 @@ void TCPServer::init(int portCount) {
 	log_info() << "TCP Server socket listening on port " << m_port;
 
 	for ( auto address : getAllIPAddresses() ) {
-		m_activePorts.push_back( IPv4TCPServerIdentifier(address, m_port) );
+		m_activePorts.push_back( IPv4TCPEndPoint(address, m_port) );
 	}
 	setFileDescriptor(tcpServerSocketHandle);
 }
 
 
-bool TCPServer::isBlackListed(const IPv4TCPServerIdentifier& server, ServiceID serviceID) const {
+bool TCPServer::isBlackListed(const IPv4TCPEndPoint& server, ServiceID serviceID) const {
 	// ignore our own services
 	for ( auto localAddress : m_activePorts )
 		if ( localAddress == server ) {

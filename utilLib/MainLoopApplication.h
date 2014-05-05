@@ -71,16 +71,16 @@ public:
 	 *  Signal handler
 	 */
 	void processUnixSignal(int sig) {
-		log_info("Signal received");
+		log_info() << "Signal received";
 		switch (sig) {
 		case SIGABRT :
-			log_warning("Received SIGABRT");
+			log_warning() << "Received SIGABRT";
 			break;
 		case SIGPIPE :
-			log_warning("Received SIGPIPE. Client disconnected");
+			log_warning() << "Received SIGPIPE. Client disconnected";
 			break;
 		default :
-			log_warning("Initiating shutdown procedure after receiving signal %i...", sig);
+			log_warning() << "Initiating shutdown procedure after receiving signal " << sig;
 			exit();
 			break;
 		}
@@ -104,7 +104,7 @@ public:
 
 		int s = read( unixSignalFileDescriptor, &fdsi, sizeof(struct signalfd_siginfo) );
 		if ( s != sizeof(struct signalfd_siginfo) )
-			log_error("Error reading signal value");
+			log_error() << "Error reading signal value";
 
 		processUnixSignal(fdsi.ssi_signo);
 		return true;
