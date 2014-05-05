@@ -15,10 +15,10 @@
 	</properties>
 
 	<modules>
-		<module>${commonapi.rootlocation}/common-api-tools/org.genivi.commonapi.core</module>
-		<module>${commonapi.rootlocation}/common-api-dbus-tools/org.genivi.commonapi.dbus</module>
-		<module>./org.genivi.commonapi.someip</module>
+<!-- 		<module>${commonapi.rootlocation}/common-api-tools/org.genivi.commonapi.core</module> -->
+<!-- 		<module>${commonapi.rootlocation}/common-api-dbus-tools/org.genivi.commonapi.dbus</module> -->
 		<!-- <module>../common-api-qt-wrapper/codegen/org.genivi.commonapi.qt</module> -->
+		<module>./org.genivi.commonapi.someip</module>
 		<module>./common-api-command-line-codegen-plugin</module>
 	</modules>
 

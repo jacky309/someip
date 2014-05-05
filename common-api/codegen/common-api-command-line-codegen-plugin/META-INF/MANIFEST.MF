@@ -7,8 +7,6 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.genivi.commonapi.core,
- org.genivi.commonapi.someip,
- org.genivi.commonapi.dbus,
  org.eclipse.xtext,
  org.franca.core,
  org.franca.deploymodel.dsl,
@@ -17,4 +15,4 @@ Require-Bundle: org.eclipse.ui,
  org.franca.core.dsl
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
-Main-Class: commonapi.cmdline.StandaloneGen
+Main-Class: org.genivi.commonapi.cmdline.main.StandaloneGen

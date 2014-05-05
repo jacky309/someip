@@ -1,3 +1,0 @@
-ROOT_FOLDER=`dirname $0`/..
-echo "ROOT : $ROOT_FOLDER"
-java -classpath $ADDITIONAL_COMMONAPI_CODEGEN_CLASS_PATH:${ROOT_FOLDER}/share/commonAPI/common-api-command-line-codegen.jar:${ROOT_FOLDER}/share/commonAPI/codegen.jar:${ROOT_FOLDER}/share/commonAPI/codegen-someip.jar:${ROOT_FOLDER}/share/commonAPI/codegen-qt.jar:$ADDITIONAL_COMMONAPI_CODEGEN_CLASS_PATH:${ROOT_FOLDER}/include/franca_idls commonapi.cmdline.StandaloneGen "$@"
