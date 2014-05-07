@@ -1,1 +1,2 @@
-add_subdirectory(common-api-command-line-codegen-plugin)
+add_subdirectory(org.genivi.commonapi.someip)
+

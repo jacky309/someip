@@ -12,7 +12,6 @@ import static com.google.common.base.Preconditions.*
 import org.franca.core.franca.FModel
 import java.util.List
 import org.franca.deploymodel.dsl.fDeploy.FDInterface
-import java.util.LinkedList
 import org.franca.deploymodel.dsl.FDeployPersistenceManager
 import org.franca.deploymodel.core.FDModelExtender
 import org.franca.deploymodel.core.FDeployedInterface

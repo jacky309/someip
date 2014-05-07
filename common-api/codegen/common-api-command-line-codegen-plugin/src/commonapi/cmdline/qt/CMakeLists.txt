@@ -1,4 +1,0 @@
-
-install(FILES CommonAPIQtCodeGenConfig.cmake DESTINATION ${CMAKE_MODULES_DESTINATION_DIR}/CommonAPIQtCodeGen)
-
-install(FILES codegen-qt.jar DESTINATION ${JAR_DESTINATION_PATH})

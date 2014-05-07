@@ -9,7 +9,6 @@ import org.franca.core.franca.FModelElement
 import org.genivi.commonapi.core.generator.FrancaGeneratorExtensions
 import org.genivi.commonapi.core.deployment.DeploymentInterfacePropertyAccessor
 import org.franca.deploymodel.dsl.fDeploy.FDInterface
-import org.genivi.commonapi.core.generator.FTypeGenerator
 
 class FInterfaceSomeIPStubAdapterGenerator {
     @Inject private extension FrancaGeneratorExtensions
@@ -18,8 +17,12 @@ class FInterfaceSomeIPStubAdapterGenerator {
 
 	def generateSomeIPStubAdapter(FDInterface fDInterface, IFileSystemAccess fileSystemAccess) {
         var fInterface = fDInterface.target
+        System.out.println("Content from Xtend : ");
+        var s = fDInterface.generateSomeIPStubAdapterHeader(null);
+
         fileSystemAccess.generateFile(fInterface.someipStubAdapterHeaderPath, fDInterface.generateSomeIPStubAdapterHeader(null))
         fileSystemAccess.generateFile(fInterface.someipStubAdapterSourcePath, fDInterface.generateSomeIPStubAdapterSource(null))
+        System.out.println("Content from Xtend________ : " + s);
 	}
 
     def private generateSomeIPStubAdapterHeader(FDInterface fDInterface, DeploymentInterfacePropertyAccessor deploymentAccessor) '''
