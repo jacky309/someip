@@ -28,10 +28,12 @@ Dependencies
 The following packages need to be installed in order to be able to compile SomeIP
 - glib 2
 - GDBus (for systemD support)
-- maven (code generator)
-- PLog
+- maven (for the code generator)
 - unzip
 - wget
+- PLog
+- git@git.pelagicore.de:ipc/org-genivi-commonapi-cmdline.git
+- git@git.pelagicore.de:jacques.guillou/common-api-tools.git
 
 On Ubuntu or debian, those dependencies can be installed with the following command: 
 	$ sudo apt-get install libglib2.0-dev maven libdbus-glib-1-dev unzip
@@ -42,7 +44,15 @@ Build
 -----
 
 Here are instructions on how to build the package:
-- 
+- Download and install the "org-genivi-commonapi-cmdline" package, which contains the runtime needed for commonAPI command-line generators.
+	$ git clone git@git.pelagicore.de:ipc/org-genivi-commonapi-cmdline.git
+	$ cd org-genivi-commonapi-cmdline
+	$ cmake -DCMAKE_INSTALL_PREFIX=/My/Installation/Location
+	$ make install
+- Download and install the "common-api-tools" component, and build the "org.genivi.commonapi.core" package, which is needed to generate the API 
+	$ git clone git@git.pelagicore.de:jacques.guillou/common-api-tools.git
+	$ cd common-api-tools/org.genivi.commonapi.core
+	$ mvn install
 
 
 Content

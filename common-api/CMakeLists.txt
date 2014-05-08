@@ -5,4 +5,7 @@ INSTALL(FILES codegen/org.genivi.commonapi.someip/src/SomeIPSpecification.fdepl
 
 add_subdirectory (include)
 add_subdirectory (src)
-add_subdirectory (codegen)
+
+if(NOT DISABLE_CODE_GEN)
+	add_subdirectory (codegen)
+endif()

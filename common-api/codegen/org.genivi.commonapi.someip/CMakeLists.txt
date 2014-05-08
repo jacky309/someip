@@ -15,8 +15,6 @@ add_custom_target(
 	DEPENDS ${GENERATED_OUTPUT_JAR}
 )
 
-set(JAR_DESTINATION_PATH share/CommonAPICodeGen)
-
 # Install our generator 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${OUTPUT_JAR} DESTINATION ${JAR_DESTINATION_PATH})
 
