@@ -6,54 +6,18 @@ Introduction
 
 This documentation describes the Some/IP dispatcher and the related components.
 The purpose of this software is to provide a mean for applications to communicate:
-
+- With external devices using the SomeIP protocol, especially devices running AUTOSAR 4.1. See http://some-ip.com
 - With each other using a fast local IPC (Inter Process Communication)
-- With external devices using the SomeIP protocol. See http://some-ip.com
 
 
-Applications normally interact with the software using an API defined by the CommonAPI project (http://projects.genivi.org/commonapi), but they can also directly use the low-level API if CommonAPI is not suitable.
-Providing an interface based on CommonAPI means client applications (at least most parts of them) likely have no direct dependency to our package, but only to the CommonAPI package, which means current applications based on CommonAPI can very easily be changed to use our backend instead of any existing CommonAPI backend such as DBUS.
+Applications normally interact with the software using an API defined by the CommonAPI project (http://projects.genivi.org/commonapi), but they can also directly 
+use the low-level API if CommonAPI is not suitable.
+By providing an interface based on CommonAPI, this software enables client applications using CommonAPI to be very easily adapted to use the Some/IP backend instead
+of any other backend such as DBUS.
 
-Using the SomeIP backend instead of DBUS for local communication is likely to bring a significant performance improvement, especially for applications exchanging small messages at a high frequency. The performance gain would be mainly due to the following factors:
-
-- Simplicity of SomeIP's wire protocol.
-- Optimization of the serialization and deserialization
-
-In addition to the performance improvements, this package offers you the possibility to interact with external devices, using the Some/IP protocol, which is specified in AUTOSAR (4.1).
-
-
-Dependencies
-------------
-
-The following packages need to be installed in order to be able to compile SomeIP
-- glib 2
-- GDBus (for systemD support)
-- maven (for the code generator)
-- unzip
-- wget
-- PLog
-- git@git.pelagicore.de:ipc/org-genivi-commonapi-cmdline.git
-- git@git.pelagicore.de:jacques.guillou/common-api-tools.git
-
-On Ubuntu or debian, those dependencies can be installed with the following command: 
-	$ sudo apt-get install libglib2.0-dev maven libdbus-glib-1-dev unzip
-
-// TODO : add location of Plog 
-
-Build
------
-
-Here are instructions on how to build the package:
-- Download and install the "org-genivi-commonapi-cmdline" package, which contains the runtime needed for commonAPI command-line generators.
-	$ git clone git@git.pelagicore.de:ipc/org-genivi-commonapi-cmdline.git
-	$ cd org-genivi-commonapi-cmdline
-	$ cmake -DCMAKE_INSTALL_PREFIX=/My/Installation/Location
-	$ make install
-- Download and install the "common-api-tools" component, and build the "org.genivi.commonapi.core" package, which is needed to generate the API 
-	$ git clone git@git.pelagicore.de:jacques.guillou/common-api-tools.git
-	$ cd common-api-tools/org.genivi.commonapi.core
-	$ mvn install
-
+Used as local IPC, Some/IP is likely to provide better performance than DBUS in many situations which are relevant for automotive (especially small high frequency messages), due to the following:
+- Simplicity of SomeIP's wire protocol
+- High dispatching efficiency
 
 Content
 -------
@@ -66,10 +30,8 @@ This package is made of the following components:
 
 \tableofcontents
 
-FAQ
----
 
-- TODO
+\include INSTALL.md
 
 
 TODO
@@ -78,19 +40,15 @@ TODO
 - Validate protocol implementation against Some/IP specification
 - Add security features
 - Implement IPv6 support
-
-Possibility to configure a local "subnet" in order to include only selected hosts in the service discovery process.
+- Possibility to configure a local "subnet" in order to include only selected hosts in the service discovery process.
 Implement more unit tests
-
-Write documentation.
-Submit CommonAPI patches.
-
-- 
-- ...
 
 
 Change log
 ----------
 
-\include ChangeLog.txt
+\include ChangeLog.md
 
+
+FAQ
+---
