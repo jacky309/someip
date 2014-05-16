@@ -34,3 +34,15 @@ Here are instructions on how to build the package:
 	$ cd someip
 	$ cmake . -DCMAKE_INSTALL_PREFIX=/My/Installation/Location
 	$ make install
+- Build and install the CMake integration package
+	$ git clone git@git.pelagicore.de:ipc/common-api-command-line-codegen.git
+	$ cd common-api-command-line-codegen
+	$ cmake . -DCMAKE_INSTALL_PREFIX=/My/Installation/Location
+	$ make install
+- Example application
+	$ git clone git@git.pelagicore.de:jacques.guillou/common-api-someip-test-app.git
+	$ cd common-api-someip-test-app
+	$ cmake . -DCMAKE_INSTALL_PREFIX=/My/Installation/Location
+	$ make install
+
+

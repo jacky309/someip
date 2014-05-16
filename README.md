@@ -1,4 +1,4 @@
-My Main Page                         {#mainpage}
+Main Page                         {#mainpage}
 ============
 
 Introduction
