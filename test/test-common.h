@@ -2,7 +2,7 @@
 
 #include "gtest/gtest.h"
 
-#include "plog.h"
+#include "ivi-log.h"
 LOG_DEFINE_APP_IDS("SOTE", "Some/IP test");
 LOG_DECLARE_DEFAULT_CONTEXT(blabla, "LOG", "Main context");
 

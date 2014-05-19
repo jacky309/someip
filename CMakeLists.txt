@@ -18,8 +18,8 @@ endif()
 
 add_definitions(-DCOMMONAPI_INTERNAL_COMPILATION)
 
-find_package(PLog REQUIRED)
-set(LOGGING_LIBRARIES ${PLOG_LIBRARIES})
+find_package(IVILogging REQUIRED)
+set(LOGGING_LIBRARIES ${IVILOGGING_LIBRARIES})
 
 # Dependencies
 FIND_PACKAGE(PkgConfig REQUIRED)

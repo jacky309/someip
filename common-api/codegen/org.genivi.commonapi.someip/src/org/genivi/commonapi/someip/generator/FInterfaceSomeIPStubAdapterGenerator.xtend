@@ -17,12 +17,8 @@ class FInterfaceSomeIPStubAdapterGenerator {
 
 	def generateSomeIPStubAdapter(FDInterface fDInterface, IFileSystemAccess fileSystemAccess) {
         var fInterface = fDInterface.target
-        System.out.println("Content from Xtend : ");
-        var s = fDInterface.generateSomeIPStubAdapterHeader(null);
-
         fileSystemAccess.generateFile(fInterface.someipStubAdapterHeaderPath, fDInterface.generateSomeIPStubAdapterHeader(null))
         fileSystemAccess.generateFile(fInterface.someipStubAdapterSourcePath, fDInterface.generateSomeIPStubAdapterSource(null))
-        System.out.println("Content from Xtend________ : " + s);
 	}
 
     def private generateSomeIPStubAdapterHeader(FDInterface fDInterface, DeploymentInterfacePropertyAccessor deploymentAccessor) '''
@@ -85,22 +81,6 @@ namespace SomeIP_Lib {
         «fInterface.model.generateNamespaceBeginDeclaration»
         
         static CommonAPI::SomeIP::StubAdapterFactoryRegistration<«fInterface.someipStubAdapterClassName», «fInterface.name»> s_factory;
-        
-«««        std::shared_ptr<CommonAPI::SomeIP::SomeIPStubAdapter> create«fInterface.someipStubAdapterClassName»(
-«««                           const std::shared_ptr<CommonAPI::StubBase>& stubBase,
-«««        			       CommonAPI::SomeIP::SomeIPConnection& connection,
-«««                           const std::string& commonApiAddress
-«««//                           , CommonAPI::SomeIP::ServiceID serviceID
-«««                           ) {
-«««            return std::make_shared<«fInterface.someipStubAdapterClassName»>(stubBase, connection, commonApiAddress
-«««//            , serviceID
-«««            );
-«««        }
-«««
-«««        __attribute__((constructor)) void register«fInterface.someipStubAdapterClassName»(void) {
-«««            CommonAPI::SomeIP::SomeIPFactory::registerAdapterFactoryMethod(«fInterface.name»::getInterfaceId(),
-«««                                                                       &create«fInterface.someipStubAdapterClassName»);
-«««        }
 
         «fInterface.someipStubAdapterClassName»::«fInterface.someipStubAdapterClassName»(
                 const std::shared_ptr<CommonAPI::StubBase>& stub,
