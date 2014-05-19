@@ -99,6 +99,13 @@ public:
 		return m_isLocal;
 	}
 
+	/**
+	 * Returns true if the service already has a
+	 */
+	virtual bool isAssigned() {
+		return true;
+	}
+
 	virtual void sendMessage(DispatcherMessage& msg);
 
 	virtual void onNotificationSubscribed(SomeIP::MemberID memberID);

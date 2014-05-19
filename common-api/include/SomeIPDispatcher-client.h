@@ -153,9 +153,9 @@ public:
 		sendMessage(msg);
 	}
 
-	void registerService(SomeIPStubAdapter& service);
+	SomeIPReturnCode registerService(SomeIPStubAdapter& service);
 
-	void registerProxy(SomeIPProxy& proxy);
+	SomeIPReturnCode registerProxy(SomeIPProxy& proxy);
 
 	void unregisterService(ServiceID serviceID) {
 		getConnection().unregisterService(serviceID);

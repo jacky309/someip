@@ -106,10 +106,11 @@ void Dispatcher::cleanDisconnectedClients() {
 
 Service* Dispatcher::tryRegisterService(SomeIP::ServiceID serviceID, Client& client, bool isLocal) {
 
+	log_info() << "tryRegisterService " << serviceID << " from " << client.toString();
 	Service* service = getService(serviceID);
 
 	if (service != nullptr) {
-		// we are trying to register a well known or existing service => if the  try to set the client if the
+		// we are trying to register a well known or existing service
 		if (isLocal) {
 			if (service->setClient(client) == ReturnCode::OK) {
 				return service;
@@ -130,6 +131,11 @@ Service* Dispatcher::tryRegisterService(SomeIP::ServiceID serviceID, Client& cli
 		}
 	}
 
+	if (service->getClient() != &client) {
+		log_info() << "registration refused : " << serviceID;
+		return nullptr;
+	}
+
 	return service;
 }
 
@@ -137,14 +143,14 @@ ReturnCode Dispatcher::registerService(Service& service) {
 
 	for (auto& existingService : m_services) {
 		if ( existingService->isDuplicate( service.getServiceID() ) ) {
-			log_error( "Service already registered : %s", existingService->toString().c_str() );
+			log_error( ) << "Service already registered : " << existingService->toString().c_str();
 			return ReturnCode::DUPLICATE;
 		}
 	}
 
 	m_services.push_back(&service);
 
-	log_info( "Service registered : %s", service.toString().c_str() );
+	log_info( ) << "Service registered : " << service.toString().c_str();
 
 	// Notify clients
 	for (auto client : m_serviceRegistrationListeners) {

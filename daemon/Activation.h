@@ -78,6 +78,10 @@ public:
 		}
 	}
 
+	bool isAssigned() override {
+		return (m_state != ProcessState::STOPPED);
+	}
+
 private:
 	WellKnownServiceManager& m_serviceManager;
 

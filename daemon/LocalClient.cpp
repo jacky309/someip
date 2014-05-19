@@ -22,9 +22,9 @@ void LocalClient::handleIncomingIPCMessage(IPCInputMessage& inputMessage) {
 			  toString().c_str(), serviceID);
 		Service* service = registerService(serviceID, true);
 
-		sendPingMessage();
+//		sendPingMessage();
 
-		IPCReturnCode returnCode = (service != NULL) ? IPCReturnCode::OK : IPCReturnCode::ERROR;
+		IPCReturnCode returnCode = (service != nullptr) ? IPCReturnCode::OK : IPCReturnCode::ERROR;
 
 		IPCOutputMessage answer(inputMessage, returnCode);
 		writeNonBlocking(answer);
@@ -56,7 +56,7 @@ void LocalClient::handleIncomingIPCMessage(IPCInputMessage& inputMessage) {
 	break;
 
 	case IPCMessageType::PONG : {
-		log_debug( "PONG Message received from client %s", toString().c_str() );
+		log_debug() << "PONG Message received from client " << toString();
 		//			sendTestMessage();
 	}
 	break;
@@ -70,7 +70,7 @@ void LocalClient::handleIncomingIPCMessage(IPCInputMessage& inputMessage) {
 
 	case IPCMessageType::DUMP_STATE : {
 
-		log_debug("DUMP_STATE Message received from client") << toString();
+		log_debug() << "DUMP_STATE Message received from client " << toString();
 
 		IPCOutputMessage answer(inputMessage, IPCReturnCode::OK);
 		auto str = getDispatcher().dumpState();
@@ -81,7 +81,7 @@ void LocalClient::handleIncomingIPCMessage(IPCInputMessage& inputMessage) {
 	break;
 
 	default : {
-		log_error( "Unknown message type : %s", SomeIP_Lib::toString( inputMessage.getMessageType() ).c_str() );
+		log_error() << "Unknown message type : " << SomeIP_Lib::toString( inputMessage.getMessageType() );
 	}
 	break;
 	}

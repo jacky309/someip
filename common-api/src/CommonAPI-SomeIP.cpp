@@ -13,10 +13,13 @@ namespace SomeIP {
 
 LOG_DECLARE_CONTEXT(someIPCommonAPILogContext, "SOCA", "SomeIP Common-API");
 
-void SomeIPConnection::registerService(SomeIPStubAdapter& service) {
-	m_connection.registerService( service.getServiceID() );
-	m_serviceTable[service.getServiceID()] = &service;
-	// TODO : return error code
+SomeIPReturnCode SomeIPConnection::registerService(SomeIPStubAdapter& service) {
+	auto code = m_connection.registerService( service.getServiceID() );
+
+	if (!isError(code))
+		m_serviceTable[service.getServiceID()] = &service;
+
+	return code;
 }
 
 bool SomeIPConnection::registerService(const std::shared_ptr<StubBase>& stubBase,
@@ -34,17 +37,17 @@ bool SomeIPConnection::registerService(const std::shared_ptr<StubBase>& stubBase
 		return false;
 	}
 
-	bool isRegistrationSuccessful = true;
-	// TODO : handle error code
-	registerService( *stubAdapter.get() );
-	return isRegistrationSuccessful;
+	auto code = registerService( *stubAdapter.get() );
+
+	return !isError(code);
 
 }
 
-
-void SomeIPConnection::registerProxy(SomeIPProxy& proxy) {
+SomeIPReturnCode SomeIPConnection::registerProxy(SomeIPProxy& proxy) {
 	m_proxyTable[proxy.getServiceID()] = &proxy;
 	getConnection().getServiceRegistry().registerServiceAvailabilityListener(proxy);
+
+	return SomeIPReturnCode::OK;
 }
 
 MessageProcessingResult SomeIPConnection::processMessage(const InputMessage& message) {
