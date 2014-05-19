@@ -68,6 +68,8 @@ protected:
 					return SomeIPReturnCode::ERROR;
 				}
 			}
+			else
+				return SomeIPReturnCode::ERROR;
 		}
 
 		setFileDescriptor(fileDescriptor);

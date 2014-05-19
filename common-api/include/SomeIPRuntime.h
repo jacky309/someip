@@ -88,7 +88,7 @@ public:
 		m_mainLoopContext = mainLoopContext;
 	}
 
-	void initializeConnection();
+	SomeIPReturnCode initializeConnection();
 
 	std::vector<std::string> getAvailableServiceInstances(const std::string& serviceName,
 							      const std::string& serviceDomainName = "local") {

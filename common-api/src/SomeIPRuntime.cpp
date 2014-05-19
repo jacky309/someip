@@ -37,10 +37,13 @@ std::shared_ptr<Factory> SomeIPRuntime::createFactory(std::shared_ptr<MainLoopCo
 	return factory;
 }
 
-void SomeIPFactory::initializeConnection() {
+SomeIPReturnCode SomeIPFactory::initializeConnection() {
 	SomeIPConnection& connection = m_runtime->getSomeIPConnection();
 	if ( !connection.isConnected() ) {
-		connection.connect();
+		auto returnCode = connection.connect();
+
+		if (isError(returnCode))
+			return returnCode;
 
 		MainLoopContext& mainLoopContext = *m_mainLoopContext.get();
 		mainLoopContext.registerWatch( &connection.getWatch() );
@@ -61,6 +64,8 @@ void SomeIPFactory::initializeConnection() {
 		//								     }).setup();
 
 	}
+
+	return SomeIPReturnCode::OK;
 }
 
 std::shared_ptr<Proxy> SomeIPFactory::createProxy(const char* interfaceId, const std::string& participantId,
@@ -68,7 +73,10 @@ std::shared_ptr<Proxy> SomeIPFactory::createProxy(const char* interfaceId, const
 
 	for (auto it = registeredProxyFactoryFunctions.begin(); it != registeredProxyFactoryFunctions.end(); ++it) {
 		if (it->first == interfaceId) {
-			initializeConnection();
+			auto returnCode = initializeConnection();
+
+			if (isError(returnCode))
+				return nullptr;
 
 			SomeIPConnection& connection = m_runtime->getSomeIPConnection();
 
@@ -89,7 +97,10 @@ std::shared_ptr<SomeIPStubAdapter> SomeIPFactory::createAdapter(const std::share
 
 	for (auto it = registeredAdapterFactoryFunctions.begin(); it != registeredAdapterFactoryFunctions.end(); ++it) {
 		if (it->first == interfaceId) {
-			initializeConnection();
+			auto returnCode = initializeConnection();
+
+			if (isError(returnCode))
+				return nullptr;
 
 			SomeIPConnection& connection = m_runtime->getSomeIPConnection();
 

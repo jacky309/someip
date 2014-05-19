@@ -123,8 +123,8 @@ public:
 		return m_watch;
 	}
 
-	void connect() {
-		m_connection.connect(*this);
+	SomeIPReturnCode connect() {
+		return m_connection.connect(*this);
 	}
 
 	bool isConnected() {

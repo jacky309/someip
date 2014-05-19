@@ -8,13 +8,14 @@ The following packages need to be installed in order to be able to compile SomeI
 - maven (for the code generator)
 - unzip
 - wget
+- boost
 
 On Ubuntu or debian, those dependencies can be installed with the following command: 
-	$ sudo apt-get install libglib2.0-dev maven libdbus-glib-1-dev unzip
+	$ sudo apt-get install libglib2.0-dev maven libdbus-glib-1-dev unzip libboost-dev 
 
 Additionally, you need to download those packages:
+- Common API 2.1.4 http://git.projects.genivi.org/ipc/common-api-runtime.git
 - IVI-Log. https://github.com/Pelagicore/ivi-logging.git
-
 - Common API command line generator launcher : https://github.com/Pelagicore/org.genivi.commonapi.cmdline.git
 - Common API Tools fork : https://github.com/Pelagicore/common-api-tools.git
 
