@@ -16,7 +16,7 @@ LOG_DECLARE_CONTEXT(someIPCommonAPILogContext, "SOCA", "SomeIP Common-API");
 SomeIPReturnCode SomeIPConnection::registerService(SomeIPStubAdapter& service) {
 	auto code = m_connection.registerService( service.getServiceID() );
 
-	if (!isError(code))
+	if ( !isError(code) )
 		m_serviceTable[service.getServiceID()] = &service;
 
 	return code;

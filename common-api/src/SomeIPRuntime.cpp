@@ -42,7 +42,7 @@ SomeIPReturnCode SomeIPFactory::initializeConnection() {
 	if ( !connection.isConnected() ) {
 		auto returnCode = connection.connect();
 
-		if (isError(returnCode))
+		if ( isError(returnCode) )
 			return returnCode;
 
 		MainLoopContext& mainLoopContext = *m_mainLoopContext.get();
@@ -75,7 +75,7 @@ std::shared_ptr<Proxy> SomeIPFactory::createProxy(const char* interfaceId, const
 		if (it->first == interfaceId) {
 			auto returnCode = initializeConnection();
 
-			if (isError(returnCode))
+			if ( isError(returnCode) )
 				return nullptr;
 
 			SomeIPConnection& connection = m_runtime->getSomeIPConnection();
@@ -99,7 +99,7 @@ std::shared_ptr<SomeIPStubAdapter> SomeIPFactory::createAdapter(const std::share
 		if (it->first == interfaceId) {
 			auto returnCode = initializeConnection();
 
-			if (isError(returnCode))
+			if ( isError(returnCode) )
 				return nullptr;
 
 			SomeIPConnection& connection = m_runtime->getSomeIPConnection();

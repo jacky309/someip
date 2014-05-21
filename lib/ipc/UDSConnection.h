@@ -67,8 +67,7 @@ protected:
 					log_error() << "Failed to connect to daemon via socket " << uds_socket_path;
 					return SomeIPReturnCode::ERROR;
 				}
-			}
-			else
+			} else
 				return SomeIPReturnCode::ERROR;
 		}
 

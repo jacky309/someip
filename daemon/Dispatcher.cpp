@@ -143,14 +143,14 @@ ReturnCode Dispatcher::registerService(Service& service) {
 
 	for (auto& existingService : m_services) {
 		if ( existingService->isDuplicate( service.getServiceID() ) ) {
-			log_error( ) << "Service already registered : " << existingService->toString().c_str();
+			log_error() << "Service already registered : " << existingService->toString().c_str();
 			return ReturnCode::DUPLICATE;
 		}
 	}
 
 	m_services.push_back(&service);
 
-	log_info( ) << "Service registered : " << service.toString().c_str();
+	log_info() << "Service registered : " << service.toString().c_str();
 
 	// Notify clients
 	for (auto client : m_serviceRegistrationListeners) {

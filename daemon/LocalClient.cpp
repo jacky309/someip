@@ -22,7 +22,7 @@ void LocalClient::handleIncomingIPCMessage(IPCInputMessage& inputMessage) {
 			  toString().c_str(), serviceID);
 		Service* service = registerService(serviceID, true);
 
-//		sendPingMessage();
+		//		sendPingMessage();
 
 		IPCReturnCode returnCode = (service != nullptr) ? IPCReturnCode::OK : IPCReturnCode::ERROR;
 

@@ -3,12 +3,12 @@
 #include "ivi-logging.h"
 
 #ifdef ENABLE_DLT_LOGGING
-#include "log-dlt.h"
+#include "ivi-logging-dlt.h"
 #endif
 
-#include "log-console.h"
-#include "log-file.h"
-#include "log-null.h"
+#include "ivi-logging-console.h"
+#include "ivi-logging-file.h"
+#include "ivi-logging-null.h"
 
 #define ENABLE_TRAFFIC_LOGGING
 
@@ -25,7 +25,7 @@ public:
 		setLogLevel(logging::LogLevel::Info);
 	}
 
-	FILE* getFile(logging::ConsoleLogData& data) override {
+	FILE* getFile(logging::StreamLogData& data) override {
 		return m_file;
 	}
 
