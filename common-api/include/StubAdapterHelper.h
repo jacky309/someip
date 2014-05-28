@@ -91,9 +91,9 @@ protected:
 				 MessageProcessingResult::Processed_Error);
 		} else {
 			log_error("Can not find member with MemberID=0x%X", interfaceMemberName);
-			log_info("Available member IDs:");
+			log_info() << "Available member IDs:";
 			for (auto& i : stubDispatcherTable_) {
-				log_info("0x%X", i.first);
+				log_info().writeFormatted("0x%X", i.first);
 			}
 		}
 
@@ -214,7 +214,7 @@ private:
 				SerializableArguments<_InArgs ...>::deserialize(inputStream, std::get<_InArgIndices>(
 											argTuple) ...);
 			if ( inputStream.hasMoreData() )
-				log_warning( "Payload was not read completely. Message : %s", message.toString().c_str() );
+				log_warning() << "Payload was not read completely. Message : " << message.toString();
 			if (!success)
 				return false;
 		}

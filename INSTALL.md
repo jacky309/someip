@@ -40,7 +40,6 @@ Here are instructions on how to build the package:
 	$ make install
 
 
-
 Build examples
 --------------
 
@@ -52,8 +51,10 @@ Follow these steps to build the example application:
 	$ make install
 - Example application
 	$ git clone https://github.com/Pelagicore/common-api-someip-test-app.git
-	$ cd common-api-someip-test-app
-	$ cmake . -DCMAKE_INSTALL_PREFIX=/My/Installation/Location
-	$ make install
+	Check the README file of that repository for installation instructions
 
-	
+
+Starting the example application
+--------------------------------
+
+Please check the README file from the example repository : https://raw.githubusercontent.com/Pelagicore/common-api-someip-test-app/master/README.md
