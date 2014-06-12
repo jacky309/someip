@@ -16,7 +16,7 @@ On Ubuntu or debian, those dependencies can be installed with the following comm
 Additionally, you need to download those packages:
 - Common API 2.1.4 http://git.projects.genivi.org/ipc/common-api-runtime.git
 - IVI-Log. https://github.com/Pelagicore/ivi-logging.git
-- Common API command line generator launcher : https://github.com/Pelagicore/org.genivi.commonapi.cmdline.git
+- Common API command line generator launcher : https://github.com/Pelagicore/common-api-cmdline.git
 - Common API Tools fork : https://github.com/Pelagicore/common-api-tools.git
 
 
@@ -25,9 +25,9 @@ Build
 -----
 
 Here are instructions on how to build the package:
-- Download and install the "org-genivi-commonapi-cmdline" package, which contains the runtime needed for commonAPI command-line generators.
-	$ git clone https://github.com/Pelagicore/org.genivi.commonapi.cmdline.git
-	$ cd org-genivi-commonapi-cmdline
+- Download and install the "common-api-cmdline" package, which contains the runtime needed for commonAPI command-line generators.
+	$ git clone https://github.com/Pelagicore/common-api-cmdline.git
+	$ cd common-api-cmdline
 	$ cmake -DCMAKE_INSTALL_PREFIX=/My/Installation/Location
 	$ make install
 - Download and install the "common-api-tools" component, and build the "org.genivi.commonapi.core" package, which is needed by the Some/IP generator to generate the API of your stubs/proxies
