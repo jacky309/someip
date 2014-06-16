@@ -35,7 +35,7 @@ SomeIPReturnCode ClientConnection::connect(ClientConnectionListener& clientRecei
 
 	messageReceivedCallback = &clientReceiveCb;
 
-	swapInputMessage();
+	newInputMessage();
 
 	auto c = connectToServer(DEFAULT_SERVER_SOCKET_PATH);
 
@@ -176,7 +176,7 @@ IPCInputMessage ClientConnection::writeRequest(IPCOutputMessage& ipcMessage) {
 }
 
 void ClientConnection::dispatchQueuedMessages() {
-	const IPCInputMessage* msg = NULL;
+	const IPCInputMessage* msg = nullptr;
 	//		log_debug("dispatchQueuedMessages");
 	do {
 		{
@@ -184,11 +184,11 @@ void ClientConnection::dispatchQueuedMessages() {
 			msg = m_queue.pop();
 		}
 
-		if (msg != NULL) {
+		if (msg != nullptr) {
 			handleConstIncomingIPCMessage(*msg);
 			delete msg;
 		}
-	} while (msg != NULL);
+	} while (msg != nullptr);
 }
 
 void ClientConnection::handleConstIncomingIPCMessage(const IPCInputMessage& inputMessage) {
@@ -252,13 +252,13 @@ IPCOperationReport ClientConnection::readIncomingMessagesBlocking(IPCMessageRece
 
 	do {
 
-		IPCInputMessage* msg = NULL;
+		IPCInputMessage* msg = nullptr;
 
 		{
 			std::unique_lock<std::recursive_mutex> receptionLock(dataReceptionMutex);
 			returnIfError( readBlocking(*m_currentInputMessage) );
 			msg = m_currentInputMessage;
-			swapInputMessage();
+			newInputMessage();
 		}
 
 		bKeepProcessing = dispatchFunction(*msg);
@@ -276,18 +276,18 @@ bool ClientConnection::readIncomingMessages(IPCMessageReceivedCallbackFunction d
 
 	do {
 
-		IPCInputMessage* msg = NULL;
+		IPCInputMessage* msg = nullptr;
 
 		{
 			std::unique_lock<std::recursive_mutex> receptionLock(dataReceptionMutex);
 			readNonBlocking(*m_currentInputMessage);
 			if ( m_currentInputMessage->isComplete() ) {
 				msg = m_currentInputMessage;
-				swapInputMessage();
+				newInputMessage();
 			}
 		}
 
-		if (msg != NULL) {
+		if (msg != nullptr) {
 			bKeepProcessing = dispatchFunction(*msg);
 			delete msg;
 

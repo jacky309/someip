@@ -297,6 +297,8 @@ public:
 
 };
 
+//#define ENABLE_PING
+
 class PingSender : public MessageSink {
 
 	LOG_DECLARE_CLASS_CONTEXT("PING", "Ping sender");
@@ -307,7 +309,7 @@ public:
 		if (!m_pongPending) {
 			m_serviceID = serviceID;
 			OutputMessage msg( SomeIP::getMessageID(serviceID, SomeIP::PING_MEMBER_ID) );
-			msg.getHeader().setMessageType(SomeIP::SomeIPHeader::MessageType::REQUEST);
+			msg.getHeader().setMessageType(SomeIP::MessageType::REQUEST);
 			gettimeofday(&m_lastPingDate, &tz);
 			msg.getPayloadOutputStream();
 			sinkFunction(msg);

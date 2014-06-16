@@ -119,6 +119,10 @@ public:
 		m_watch(clientConnection) {
 	}
 
+	~SomeIPConnection() {
+		m_connection.disconnect();
+	}
+
 	Watch& getWatch() {
 		return m_watch;
 	}

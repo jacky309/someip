@@ -89,8 +89,8 @@ MessageProcessingResult SomeIPProxy::processMessage(const InputMessage& message)
 }
 
 void SomeIPStubAdapter::init() {
-	getConnection().registerService(*this);
-	m_isRegistered = true;
+	//	getConnection().registerService(*this);
+	//	m_isRegistered = true;
 }
 
 SomeIPReturnCode SomeIPStubAdapter::sendMessage(OutputMessage& msg) {
@@ -98,10 +98,10 @@ SomeIPReturnCode SomeIPStubAdapter::sendMessage(OutputMessage& msg) {
 }
 
 void SomeIPStubAdapter::deinit() {
-	if(m_isRegistered) {
-		getConnection().unregisterService( getServiceID() );
-		m_isRegistered = false;
-	}
+//	if(m_isRegistered) {
+//		getConnection().unregisterService( getServiceID() );
+//		m_isRegistered = false;
+//	}
 }
 
 }

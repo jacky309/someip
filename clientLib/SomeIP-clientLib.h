@@ -303,8 +303,7 @@ private:
 
 	void onDisconnected() override;
 
-	void swapInputMessage() {
-		//		log_info("swap");
+	void newInputMessage() {
 		IPCInputMessage* msg = new IPCInputMessage();
 		setInputMessage(*msg);
 	}

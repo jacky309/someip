@@ -40,6 +40,10 @@ public:
 		m_connection( std::make_shared<SomeIPConnection> (m_clientLibConnection) ) {
 	}
 
+	~SomeIPRuntime() {
+		log_debug("Destroying SomeIPRuntime");
+	}
+
 	static std::shared_ptr<SomeIPRuntime> getInstance();
 	static std::shared_ptr<Runtime> getInstanceAsGenericRuntime();
 

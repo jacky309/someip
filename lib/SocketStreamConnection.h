@@ -91,6 +91,7 @@ public:
 
 	void disconnect() {
 		if ( isConnected() ) {
+			//			log_debug() << "Disconnecting";
 			close( getFileDescriptor() );
 			setFileDescriptor(UNINITIALIZED_FILE_DESCRIPTOR);
 			onDisconnected();
@@ -148,8 +149,7 @@ protected:
 	virtual std::string toString() const = 0;
 
 	void enqueueData(const void* data, size_t length) {
-		if (length == 4)
-			log_verbose( "Appended data to outgoing buffer : %s", byteArrayToString(data, length).c_str() );
+		//		if (length == 4) log_verbose( "Appended data to outgoing buffer : %s", byteArrayToString(data, length).c_str() );
 
 		m_dataToBeSent.append(data, length);
 		onCongestionDetected();

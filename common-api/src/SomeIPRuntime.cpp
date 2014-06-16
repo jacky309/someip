@@ -45,8 +45,47 @@ SomeIPReturnCode SomeIPFactory::initializeConnection() {
 		if ( isError(returnCode) )
 			return returnCode;
 
-		MainLoopContext& mainLoopContext = *m_mainLoopContext.get();
-		mainLoopContext.registerWatch( &connection.getWatch() );
+		MainLoopContext* mainLoopContext = m_mainLoopContext.get();
+		if (mainLoopContext != nullptr)
+			mainLoopContext->registerWatch( &connection.getWatch() );
+		else {
+			log_warning() <<
+			"You are not using any main loop integration. Our recommendation is to use a main loop integration so that the dispatching of incoming messages is done by your main thread.";
+			auto receiveThread = new std::thread( [&] () {
+
+								      while( connection.getConnection().isConnected() ) {
+
+									      std::array<struct pollfd, 1> fds;
+									      int timeout_msecs = -1;
+
+									      fds[0].fd =
+										      connection.getConnection().
+										      getFileDescriptor();
+									      fds[0].events = POLLIN | POLLPRI | POLLHUP |
+											      POLLERR;
+
+									      auto ret =
+										      poll(fds.data(), fds.size(), timeout_msecs);
+
+									      if (ret > 0) {
+										      if(fds[0].revents & POLLIN) {
+											      connection.getConnection().
+											      dispatchIncomingMessages();
+										      } else if (fds[0].revents & POLLHUP) {
+											      log_warn() <<
+											      "Wake up disconnected";
+											      connection.getConnection().
+											      disconnect();
+										      }
+									      } else if (ret < 0)   {
+										      log_error() <<
+										      "Error during poll(). Terminating reception thread";
+										      connection.getConnection().disconnect();
+									      }
+								      }
+
+							      });
+		}
 
 		// TODO
 		//		SomeIPClient::defaultContextGlibIntegrationSingleton([&]() {

@@ -145,6 +145,9 @@ public:
 			return IPCReturnCode::OK;
 
 		}
+
+		return IPCReturnCode::OK;
+
 	}
 
 	//	void setSocketPath(const char* path) {		uds_socket_path = path;	}
