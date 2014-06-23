@@ -47,10 +47,6 @@ class FInterfaceSomeIPProxyGenerator {
 
         «fInterface.model.generateNamespaceBeginDeclaration»
         
-//        const char* «fInterface.name»::getInterfaceId() {
-//            return "«fInterface.fullyQualifiedName»";
-//        }
-
         class «fInterface.someipProxyClassName»: virtual public «fInterface.proxyBaseClassName», virtual public CommonAPI::SomeIP::SomeIPProxy {
          public:
             «fInterface.someipProxyClassName»(CommonAPI::SomeIP::SomeIPConnection& someipProxyconnection,

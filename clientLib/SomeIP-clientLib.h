@@ -22,7 +22,6 @@ using namespace SomeIP_utils;
 
 LOG_IMPORT_CONTEXT(clientLibContext);
 
-
 /**
  * This interface needs to be implemented to handle incoming messages
  */
@@ -33,6 +32,8 @@ public:
 	 */
 	virtual void onDisconnected() = 0;
 };
+
+
 
 /**
  * This class can be used to be notified of the availibilty/unavailability of a service
@@ -114,7 +115,7 @@ private:
 	std::vector<SomeIP::ServiceID> m_availableServices;
 	std::vector<ServiceAvailabilityListener*> m_serviceAvailabilityListeners;
 
-	friend class ClientConnection;
+	friend class ClientDaemonConnection;
 };
 
 class OutputMessageWithReport : public OutputMessage {
@@ -127,19 +128,12 @@ public:
 	}
 };
 
-/**
- * This is the main class to be used to connect to the dispatcher
- */
-class ClientConnection : private MessageSource, private UDSConnection {
-
-	LOG_SET_CLASS_CONTEXT(clientLibContext);
+class ClientConnection {
 
 public:
-	using SocketStreamConnection::getFileDescriptor;
-	using SocketStreamConnection::disconnect;
 
-	static constexpr const char* DEFAULT_SERVER_SOCKET_PATH = "/tmp/someIPSocket";
-	static constexpr const char* ALTERNATIVE_SERVER_SOCKET_PATH = "/tmp/someIPSocket2";
+	virtual ~ClientConnection() {
+	}
 
 	struct MainLoopInterface {
 		virtual ~MainLoopInterface() {
@@ -148,10 +142,84 @@ public:
 		virtual void addIdleCallback(std::function<void()> callBackFunction) = 0;
 	};
 
-	ClientConnection() : m_endPoint(*this) {
+	/**
+	 * Handles the data which has been received.
+	 * @return : true if there is still some data to be processed
+	 */
+	virtual bool dispatchIncomingMessages() = 0;
+
+	virtual void disconnect() = 0;
+
+	virtual	void setMainLoopInterface(MainLoopInterface& mainloopInterface) = 0;
+
+	virtual int getFileDescriptor() const = 0;
+
+	/**
+	 * Registers a new service.
+	 */
+	virtual SomeIPReturnCode registerService(SomeIP::ServiceID serviceID) = 0;
+
+	/**
+	 * Unregisters the given service
+	 */
+	virtual SomeIPReturnCode unregisterService(SomeIP::ServiceID serviceID) = 0;
+
+	/**
+	 * Subscribes to notifications for the given MessageID
+	 */
+	virtual SomeIPReturnCode subscribeToNotifications(SomeIP::MessageID messageID) = 0;
+
+	/**
+	 * Sends the given message to the dispatcher.
+	 */
+	virtual SomeIPReturnCode sendMessage(OutputMessage& msg) = 0;
+
+	/**
+	 * Sends a ping message to the dispatcher
+	 */
+	virtual SomeIPReturnCode sendPing() = 0;
+
+	/**
+	 * Sends the given message to the dispatcher and block until a response is received.
+	 */
+	virtual InputMessage sendMessageBlocking(const OutputMessage& msg) = 0;
+
+	/**
+	 * Connects to the dispatcher.
+	 */
+	virtual SomeIPReturnCode connect(ClientConnectionListener& clientReceiveCb) = 0;
+
+	/**
+	 * Returns true if the connection to the daemon is active
+	 */
+	virtual bool isConnected() const  = 0;
+
+	/**
+	 * Returns true if some data has been received
+	 */
+	virtual bool hasIncomingMessages() = 0;
+
+	virtual ServiceRegistry& getServiceRegistry() = 0;
+
+};
+
+
+/**
+ * This is the main class to be used to connect to the dispatcher
+ */
+class ClientDaemonConnection : public ClientConnection, private MessageSource, private UDSConnection {
+
+	LOG_SET_CLASS_CONTEXT(clientLibContext);
+
+public:
+
+	static constexpr const char* DEFAULT_SERVER_SOCKET_PATH = "/tmp/someIPSocket";
+	static constexpr const char* ALTERNATIVE_SERVER_SOCKET_PATH = "/tmp/someIPSocket2";
+
+	ClientDaemonConnection() : m_endPoint(*this) {
 	}
 
-	~ClientConnection() {
+	~ClientDaemonConnection() {
 		disconnect();
 	}
 
@@ -162,23 +230,31 @@ public:
 		return ( ( !m_queue.isEmpty() ) || hasAvailableBytes() );
 	}
 
+	int getFileDescriptor() const {
+		return SocketStreamConnection::getFileDescriptor();
+	}
+
+	void disconnect() {
+		SocketStreamConnection::disconnect();
+	}
+
 	/**
 	 * Handles the data which has been received.
 	 * @return : true if there is still some data to be processed
 	 */
-	bool dispatchIncomingMessages();
+	bool dispatchIncomingMessages() override;
 
 	/**
 	 * Returns the service registry instance
 	 */
-	ServiceRegistry& getServiceRegistry() {
+	ServiceRegistry& getServiceRegistry() override {
 		return m_registry;
 	}
 
 	/**
 	 * Connects to the dispatcher.
 	 */
-	SomeIPReturnCode connect(ClientConnectionListener& clientReceiveCb);
+	SomeIPReturnCode connect(ClientConnectionListener& clientReceiveCb) override;
 
 	/**
 	 * Returns true if the connection to the daemon is active
@@ -190,12 +266,12 @@ public:
 	/**
 	 * Registers a new service.
 	 */
-	SomeIPReturnCode registerService(SomeIP::ServiceID serviceID);
+	SomeIPReturnCode registerService(SomeIP::ServiceID serviceID) override;
 
 	/**
 	 * Unregisters the given service
 	 */
-	SomeIPReturnCode unregisterService(SomeIP::ServiceID serviceID);
+	SomeIPReturnCode unregisterService(SomeIP::ServiceID serviceID) override;
 
 	/**
 	 * Subscribes to notifications for the given MessageID

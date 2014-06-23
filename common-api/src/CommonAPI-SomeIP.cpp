@@ -106,15 +106,15 @@ void SomeIPStubAdapter::deinit() {
 
 }
 
-std::unordered_map<std::string, SomeIPFactory::ProxyFactoryFunction> SomeIPFactory::registeredProxyFactoryFunctions;
-std::unordered_map<std::string, SomeIPFactory::AdapterFactoryFunction> SomeIPFactory::registeredAdapterFactoryFunctions;
+//std::unordered_map<std::string, SomeIPFactory::ProxyFactoryFunction> SomeIPFactory::registeredProxyFactoryFunctions;
+//std::unordered_map<std::string, SomeIPFactory::AdapterFactoryFunction> SomeIPFactory::registeredAdapterFactoryFunctions;
 
-void SomeIPFactory::registerAdapterFactoryMethod(const std::string& interfaceID, AdapterFactoryFunction function) {
+void SomeIPRuntime::registerAdapterFactoryMethod(const std::string& interfaceID, AdapterFactoryFunction function) {
 	log_info("Registering stubadapter factory for interface: ") << interfaceID;
 	registeredAdapterFactoryFunctions.insert({interfaceID, function});
 }
 
-void SomeIPFactory::registerProxyFactoryMethod(const std::string& interfaceID, ProxyFactoryFunction function) {
+void SomeIPRuntime::registerProxyFactoryMethod(const std::string& interfaceID, ProxyFactoryFunction function) {
 	log_info("Registering proxy factory for interface: ") << interfaceID;
 	registeredProxyFactoryFunctions.insert({interfaceID, function});
 }

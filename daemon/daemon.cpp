@@ -20,8 +20,6 @@ LOG_DEFINE_APP_IDS("Some", "SomeIP daemon");
 
 #include "SomeIP-clientLib.h"
 
-//using namespace SomeIP;
-
 namespace SomeIP_Dispatcher {
 
 LOG_DECLARE_DEFAULT_CONTEXT(mainContext, "main", "Main log context");
@@ -34,7 +32,7 @@ int run(int argc, const char** argv) {
 	bool disableLocalIPC = false;
 	const char* activationConfigurationFolder = SOMEIP_ACTIVATION_CONFIGURATION_FOLDER;
 	const char* logFilePath = "/tmp/someip_dispatcher.log";
-	const char* localSocketPath = SomeIPClient::ClientConnection::DEFAULT_SERVER_SOCKET_PATH;
+	const char* localSocketPath = SomeIPClient::ClientDaemonConnection::DEFAULT_SERVER_SOCKET_PATH;
 
 	commandLineParser.addOption(tcpPortNumber, "port", 'p', "TCP port number");
 	commandLineParser.addOption(tcpPortTriesCount, "portcount", 'u', "Number of consecutive TCP port to try");

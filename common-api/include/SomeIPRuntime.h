@@ -16,22 +16,39 @@ using namespace CommonAPI;
 class SomeIPClientID : public CommonAPI::ClientId {
 
 public:
+	SomeIPClientID(ClientIdentifier id) {
+		m_clientIdentifier = id;
+	}
+
 	~SomeIPClientID() override {
 	}
 
 	bool operator==(ClientId& clientIdToCompare) override {
-		return true;
+		return (m_clientIdentifier == static_cast<SomeIPClientID&>(clientIdToCompare).m_clientIdentifier);
 	}
 
 	std::size_t hashCode() override {
 		return 1;
 	}
 
+private:
+	ClientIdentifier m_clientIdentifier;
 };
 
 inline std::shared_ptr<ClientId> getSomeIPClientID(const InputMessage& msg) {
-	return std::make_shared<SomeIPClientID>();
+	return std::make_shared<SomeIPClientID>(msg.getClientIdentifier());
 }
+
+typedef std::shared_ptr<SomeIPStubAdapter> (*AdapterFactoryFunction)(const std::shared_ptr<StubBase>& service,
+								     SomeIPConnection& connection,
+								     const std::string& commonApiAddress
+                                                                     //								       , ServiceID serviceID
+								     );
+
+typedef std::shared_ptr<SomeIPProxy> (*ProxyFactoryFunction)(SomeIPConnection& someipProxyConnection,
+							     const std::string& commonApiAddress
+                                                             //			, CommonAPI::SomeIP::ServiceID serviceID
+							     );
 
 class SomeIPRuntime : public Runtime {
 
@@ -61,29 +78,34 @@ public:
 		//		assert(false);
 	}
 
-	static const CommonAPI::MiddlewareInfo middlewareInfo_;
-
 	SomeIPConnection& getSomeIPConnection() {
 		return *( m_connection.get() );
 	}
 
+	void registerAdapterFactoryMethod(const std::string& interfaceID, AdapterFactoryFunction function);
+
+	void registerProxyFactoryMethod(const std::string& interfaceID, ProxyFactoryFunction function);
+
+	static const CommonAPI::MiddlewareInfo middlewareInfo_;
+
+	std::unordered_map<std::string, ProxyFactoryFunction>& getProxyFactories() {
+		return registeredProxyFactoryFunctions;
+	}
+
+	std::unordered_map<std::string, AdapterFactoryFunction>& getAdapterFactories() {
+		return registeredAdapterFactoryFunctions;
+	}
+
 private:
-	SomeIPClient::ClientConnection m_clientLibConnection;
+	SomeIPClient::ClientDaemonConnection m_clientLibConnection;
 	std::shared_ptr<SomeIPConnection> m_connection;
+
+	std::unordered_map<std::string, ProxyFactoryFunction> registeredProxyFactoryFunctions;
+	std::unordered_map<std::string, AdapterFactoryFunction> registeredAdapterFactoryFunctions;
+
 };
 
 class SomeIPFactory : public Factory {
-
-	typedef std::shared_ptr<SomeIPStubAdapter> (*AdapterFactoryFunction)(const std::shared_ptr<StubBase>& service,
-									     SomeIPConnection& connection,
-									     const std::string& commonApiAddress
-	                                                                     //								       , ServiceID serviceID
-									     );
-
-	typedef std::shared_ptr<SomeIPProxy> (*ProxyFactoryFunction)(SomeIPConnection& someipProxyConnection,
-								     const std::string& commonApiAddress
-	                                                             //			, CommonAPI::SomeIP::ServiceID serviceID
-								     );
 
 public:
 	SomeIPFactory(std::shared_ptr<SomeIPRuntime> runtime, std::shared_ptr<MainLoopContext> mainLoopContext) :
@@ -136,7 +158,6 @@ public:
 		return false;
 	}
 
-
 	/**
 	 * \brief Get all instances of a specific service name available. Asynchronous call.
 	 *
@@ -149,7 +170,6 @@ public:
 					       const std::string& serviceDomainName = "local") override {
 		assert(false);
 	}
-
 
 	/**
 	 * \brief Tells whether a particular service instance is available. Asynchronous call.
@@ -178,14 +198,7 @@ public:
 		assert(false);
 	}
 
-	static void registerAdapterFactoryMethod(const std::string& interfaceID, AdapterFactoryFunction function);
-
-	static void registerProxyFactoryMethod(const std::string& interfaceID, ProxyFactoryFunction function);
-
 private:
-	static std::unordered_map<std::string, ProxyFactoryFunction> registeredProxyFactoryFunctions;
-	static std::unordered_map<std::string, AdapterFactoryFunction> registeredAdapterFactoryFunctions;
-
 	std::shared_ptr<SomeIPRuntime> m_runtime;
 	std::shared_ptr<MainLoopContext> m_mainLoopContext;
 };

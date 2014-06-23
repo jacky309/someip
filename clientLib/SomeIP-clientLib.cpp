@@ -5,7 +5,7 @@ namespace SomeIPClient {
 LOG_DECLARE_CONTEXT(clientLibContext, "SOCL", "SomeIP Client lib");
 
 
-std::string ClientConnection::getDaemonStateDump() {
+std::string ClientDaemonConnection::getDaemonStateDump() {
 	IPCOutputMessage msg(IPCMessageType::DUMP_STATE);
 	IPCInputMessage returnMessage = writeRequest(msg);
 
@@ -20,7 +20,7 @@ std::string ClientConnection::getDaemonStateDump() {
 	return s;
 }
 
-bool ClientConnection::dispatchIncomingMessages() {
+bool ClientDaemonConnection::dispatchIncomingMessages() {
 	dispatchQueuedMessages();
 	return readIncomingMessages([&] (IPCInputMessage & msg) {
 					    onIPCInputMessage(msg);
@@ -28,7 +28,7 @@ bool ClientConnection::dispatchIncomingMessages() {
 				    });
 }
 
-SomeIPReturnCode ClientConnection::connect(ClientConnectionListener& clientReceiveCb) {
+SomeIPReturnCode ClientDaemonConnection::connect(ClientConnectionListener& clientReceiveCb) {
 
 	if ( isConnected() )
 		return SomeIPReturnCode::ALREADY_CONNECTED;
@@ -45,7 +45,7 @@ SomeIPReturnCode ClientConnection::connect(ClientConnectionListener& clientRecei
 	return c;
 }
 
-SomeIPReturnCode ClientConnection::registerService(SomeIP::ServiceID serviceID) {
+SomeIPReturnCode ClientDaemonConnection::registerService(SomeIP::ServiceID serviceID) {
 	IPCOutputMessage msg(IPCMessageType::REGISTER_SERVICE);
 	msg << serviceID;
 	IPCInputMessage returnMessage = writeRequest(msg);
@@ -58,7 +58,7 @@ SomeIPReturnCode ClientConnection::registerService(SomeIP::ServiceID serviceID) 
 	return SomeIPReturnCode::OK;
 }
 
-SomeIPReturnCode ClientConnection::unregisterService(SomeIP::ServiceID serviceID) {
+SomeIPReturnCode ClientDaemonConnection::unregisterService(SomeIP::ServiceID serviceID) {
 	IPCOutputMessage msg(IPCMessageType::UNREGISTER_SERVICE);
 	msg << serviceID;
 	IPCInputMessage returnMessage = writeRequest(msg);
@@ -71,7 +71,7 @@ SomeIPReturnCode ClientConnection::unregisterService(SomeIP::ServiceID serviceID
 	return SomeIPReturnCode::OK;
 }
 
-SomeIPReturnCode ClientConnection::subscribeToNotifications(SomeIP::MessageID messageID) {
+SomeIPReturnCode ClientDaemonConnection::subscribeToNotifications(SomeIP::MessageID messageID) {
 	log_debug("Subscribing to notifications 0x%X", messageID);
 	IPCOutputMessage msg(IPCMessageType::SUBSCRIBE_NOTIFICATION);
 	msg << messageID;
@@ -80,7 +80,7 @@ SomeIPReturnCode ClientConnection::subscribeToNotifications(SomeIP::MessageID me
 	return SomeIPReturnCode::OK;
 }
 
-SomeIPReturnCode ClientConnection::sendMessage(OutputMessage& msg) {
+SomeIPReturnCode ClientDaemonConnection::sendMessage(OutputMessage& msg) {
 	const IPCMessage& ipcMessage = msg.getIPCMessage();
 	writeMessage(ipcMessage);
 	log_traffic() << "Message sent : " << msg.toString();
@@ -88,12 +88,12 @@ SomeIPReturnCode ClientConnection::sendMessage(OutputMessage& msg) {
 }
 
 
-SomeIPReturnCode ClientConnection::sendPing() {
+SomeIPReturnCode ClientDaemonConnection::sendPing() {
 	IPCOutputMessage ipcMessage(IPCMessageType::PONG);
 	return writeMessage(ipcMessage);
 }
 
-InputMessage ClientConnection::sendMessageBlocking(const OutputMessage& msg) {
+InputMessage ClientDaemonConnection::sendMessageBlocking(const OutputMessage& msg) {
 	assert( msg.getHeader().isRequestWithReturn() );
 	assert(msg.getClientIdentifier() == 0);
 
@@ -107,7 +107,7 @@ InputMessage ClientConnection::sendMessageBlocking(const OutputMessage& msg) {
 	return waitForAnswer(msg);
 }
 
-InputMessage ClientConnection::waitForAnswer(const OutputMessage& requestMsg) {
+InputMessage ClientDaemonConnection::waitForAnswer(const OutputMessage& requestMsg) {
 	std::lock_guard<std::recursive_mutex> receptionLock(dataReceptionMutex); // we prevent other threads from stealing the response of our request
 
 	InputMessage answerMessage;
@@ -136,7 +136,7 @@ InputMessage ClientConnection::waitForAnswer(const OutputMessage& requestMsg) {
 	return answerMessage;
 }
 
-void ClientConnection::pushToQueue(const IPCInputMessage& msg) {
+void ClientDaemonConnection::pushToQueue(const IPCInputMessage& msg) {
 	m_queue.push(msg);
 
 	log_verbose() << "Message pushed : " << msg.toString().c_str();
@@ -148,7 +148,7 @@ void ClientConnection::pushToQueue(const IPCInputMessage& msg) {
 
 }
 
-IPCInputMessage ClientConnection::writeRequest(IPCOutputMessage& ipcMessage) {
+IPCInputMessage ClientDaemonConnection::writeRequest(IPCOutputMessage& ipcMessage) {
 	IPCInputMessage answerMessage;
 	std::lock_guard<std::recursive_mutex> emissionLock(dataEmissionMutex);
 	std::lock_guard<std::recursive_mutex> receptionLock(dataReceptionMutex); // we prevent other threads from stealing the response of our request
@@ -175,7 +175,7 @@ IPCInputMessage ClientConnection::writeRequest(IPCOutputMessage& ipcMessage) {
 	return answerMessage;
 }
 
-void ClientConnection::dispatchQueuedMessages() {
+void ClientDaemonConnection::dispatchQueuedMessages() {
 	const IPCInputMessage* msg = nullptr;
 	//		log_debug("dispatchQueuedMessages");
 	do {
@@ -191,7 +191,7 @@ void ClientConnection::dispatchQueuedMessages() {
 	} while (msg != nullptr);
 }
 
-void ClientConnection::handleConstIncomingIPCMessage(const IPCInputMessage& inputMessage) {
+void ClientDaemonConnection::handleConstIncomingIPCMessage(const IPCInputMessage& inputMessage) {
 
 	IPCInputMessageReader reader(inputMessage);
 
@@ -246,7 +246,7 @@ void ClientConnection::handleConstIncomingIPCMessage(const IPCInputMessage& inpu
 }
 
 
-IPCOperationReport ClientConnection::readIncomingMessagesBlocking(IPCMessageReceivedCallbackFunction dispatchFunction) {
+IPCOperationReport ClientDaemonConnection::readIncomingMessagesBlocking(IPCMessageReceivedCallbackFunction dispatchFunction) {
 
 	bool bKeepProcessing;
 
@@ -270,7 +270,7 @@ IPCOperationReport ClientConnection::readIncomingMessagesBlocking(IPCMessageRece
 	return IPCOperationReport::OK;
 }
 
-bool ClientConnection::readIncomingMessages(IPCMessageReceivedCallbackFunction dispatchFunction) {
+bool ClientDaemonConnection::readIncomingMessages(IPCMessageReceivedCallbackFunction dispatchFunction) {
 
 	bool bKeepProcessing = true;
 
@@ -300,7 +300,7 @@ bool ClientConnection::readIncomingMessages(IPCMessageReceivedCallbackFunction d
 }
 
 
-void ClientConnection::onCongestionDetected() {
+void ClientDaemonConnection::onCongestionDetected() {
 	enqueueIncomingMessages();
 
 	// we block until we can read or write to the socket
@@ -311,7 +311,7 @@ void ClientConnection::onCongestionDetected() {
 
 }
 
-void ClientConnection::onDisconnected() {
+void ClientDaemonConnection::onDisconnected() {
 	log_warning() << "Disconnected from server";
 	messageReceivedCallback->onDisconnected();
 }

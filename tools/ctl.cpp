@@ -123,7 +123,7 @@ int main(int argc, const char** argv) {
 		exit(1);
 	}
 
-	SomeIPClient::ClientConnection connection;
+	SomeIPClient::ClientDaemonConnection connection;
 	ControlApp app(connection);
 
 	log_info() << "Control app started. version: " << SOMEIP_PACKAGE_VERSION;

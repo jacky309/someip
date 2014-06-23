@@ -16,15 +16,13 @@ struct SomeIPRegistration {
 		Runtime::registerRuntimeLoader(SomeIPRuntime::middlewareInfo_.middlewareName_,
 					       &SomeIPRuntime::getInstanceAsGenericRuntime);
 	}
+	static SomeIPRegistration s_instance;
 };
-static SomeIPRegistration registration__;
+
+SomeIPRegistration SomeIPRegistration::s_instance;
 
 std::shared_ptr<SomeIPRuntime> SomeIPRuntime::getInstance() {
-	static std::shared_ptr<SomeIPRuntime> singleton_( std::make_shared<SomeIPRuntime>() );
-	if (!singleton_) {
-		//		SomeIPRuntime s;
-		//		singleton_ = std::make_shared<SomeIPRuntime>();
-	}
+	static auto singleton_( std::make_shared<SomeIPRuntime>() );
 	return singleton_;
 }
 
@@ -110,7 +108,7 @@ SomeIPReturnCode SomeIPFactory::initializeConnection() {
 std::shared_ptr<Proxy> SomeIPFactory::createProxy(const char* interfaceId, const std::string& participantId,
 						  const std::string& serviceName, const std::string& domain) {
 
-	for (auto it = registeredProxyFactoryFunctions.begin(); it != registeredProxyFactoryFunctions.end(); ++it) {
+	for (auto it = m_runtime->getProxyFactories().begin(); it != m_runtime->getProxyFactories().end(); ++it) {
 		if (it->first == interfaceId) {
 			auto returnCode = initializeConnection();
 
@@ -134,7 +132,7 @@ std::shared_ptr<SomeIPStubAdapter> SomeIPFactory::createAdapter(const std::share
 								const std::string& participantId, const std::string& serviceName,
 								const std::string& domain) {
 
-	for (auto it = registeredAdapterFactoryFunctions.begin(); it != registeredAdapterFactoryFunctions.end(); ++it) {
+	for (auto it = m_runtime->getAdapterFactories().begin(); it != m_runtime->getAdapterFactories().end(); ++it) {
 		if (it->first == interfaceId) {
 			auto returnCode = initializeConnection();
 

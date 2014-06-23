@@ -12,7 +12,7 @@ class ProxyFactoryRegistration {
 
 public:
 	ProxyFactoryRegistration() {
-		SomeIPFactory::registerProxyFactoryMethod(InterfaceType::getInterfaceId(), &createSomeIPProxy);
+		SomeIPRuntime::getInstance()->registerProxyFactoryMethod(InterfaceType::getInterfaceId(), &createSomeIPProxy);
 	}
 
 	static std::shared_ptr<SomeIPProxy> createSomeIPProxy(SomeIPConnection& someipProxyConnection,
@@ -30,13 +30,13 @@ class StubAdapterFactoryRegistration {
 
 public:
 	StubAdapterFactoryRegistration() {
-		CommonAPI::SomeIP::SomeIPFactory::registerAdapterFactoryMethod(InterfaceType::getInterfaceId(),
+		SomeIPRuntime::getInstance()->registerAdapterFactoryMethod(InterfaceType::getInterfaceId(),
 									       &createSomeIPStubAdapter);
 	}
 
-	static std::shared_ptr<CommonAPI::SomeIP::SomeIPStubAdapter> createSomeIPStubAdapter(
+	static std::shared_ptr<SomeIPStubAdapter> createSomeIPStubAdapter(
 		const std::shared_ptr<CommonAPI::StubBase>& stubBase,
-		CommonAPI::SomeIP::SomeIPConnection& connection,
+		SomeIPConnection& connection,
 		const std::string& commonApiAddress) {
 		log_debug("Creating stub adapter");
 		return std::make_shared<StubAdapterType>(stubBase, connection, commonApiAddress);
