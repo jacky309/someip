@@ -51,17 +51,17 @@ public:
 	/**
 	 * Constructor used when a remote client connects to us
 	 */
-	TCPClient(Dispatcher& dispatcher, int fileDescriptor, TCPManager& tcpManager) :
-		Client(dispatcher), m_tcpManager(tcpManager), m_serviceDiscoveryDecoder(*this), m_channelWatcher(*this) {
+	TCPClient(Dispatcher& dispatcher, int fileDescriptor, TCPManager& tcpManager, MainLoopContext& mainContext) :
+		Client(dispatcher), m_tcpManager(tcpManager), m_serviceDiscoveryDecoder(*this), m_channelWatcher(*this, mainContext) {
 		setFileDescriptor(fileDescriptor);
 	}
 
 	/**
 	 * Constructor used to register a host offering one or several services
 	 */
-	TCPClient(Dispatcher& dispatcher, IPv4TCPEndPoint server, TCPManager& tcpManager) :
+	TCPClient(Dispatcher& dispatcher, IPv4TCPEndPoint server, TCPManager& tcpManager, MainLoopContext& mainContext) :
 		Client(dispatcher), ServiceDiscoveryListener(*this), m_tcpManager(tcpManager), m_serviceDiscoveryDecoder(
-			*this), m_channelWatcher(*this) {
+			*this), m_channelWatcher(*this, mainContext) {
 		m_serverIdentifier = server;
 	}
 

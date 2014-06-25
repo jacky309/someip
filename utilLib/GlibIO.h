@@ -14,7 +14,7 @@ class GLibTimer {
 	std::function<void(void)> m_func;
 
 public:
-	GLibTimer(std::function<void(void)> func, int duration, GMainContext* mainContext = NULL) :
+	GLibTimer(std::function<void(void)> func, int duration, GMainContext* mainContext) :
 		m_func(func) {
 		m_mainContext = mainContext;
 		setDuration(duration);
@@ -66,7 +66,7 @@ private:
 	}
 
 	GMainContext* m_mainContext;
-	GSource* m_source = NULL;
+	GSource* m_source = nullptr;
 	int m_duration;
 	int m_time;
 };
@@ -78,7 +78,7 @@ class GlibIdleCallback {
 public:
 	typedef std::function<bool (void)> CallbackFunction;
 
-	GlibIdleCallback(CallbackFunction func, GMainContext* mainContext = NULL) :
+	GlibIdleCallback(CallbackFunction func, GMainContext* mainContext) :
 		m_func(func) {
 		m_mainContext = mainContext;
 	}
@@ -137,27 +137,30 @@ struct GlibChannelListener {
 class GlibChannelWatcher {
 
 public:
-	GlibChannelWatcher(GlibChannelListener& listener, GMainContext* mainContext = NULL) :
+	GlibChannelWatcher(GlibChannelListener& listener, GMainContext* mainContext) :
 		m_mainContext(mainContext), m_listener(listener) {
 	}
 
 	~GlibChannelWatcher() {
 		disableWatch();
-		g_io_channel_unref(channel);
+		if (m_channel != nullptr)
+			g_io_channel_unref(m_channel);
 	}
 
 	void setup(int fileDescriptor) {
-		channel = g_io_channel_unix_new(fileDescriptor);
+		m_channel = g_io_channel_unix_new(fileDescriptor);
 	}
 
 	void disableInputWatch() {
 		if (inputSourceID != UNREGISTERED_SOURCE)
 			g_source_remove(inputSourceID);
+		inputSourceID = UNREGISTERED_SOURCE;
 	}
 
 	void disableOutputWatch() {
 		if (outputSourceID != UNREGISTERED_SOURCE)
 			g_source_remove(outputSourceID);
+		outputSourceID = UNREGISTERED_SOURCE;
 	}
 
 	void disableWatch() {
@@ -167,18 +170,18 @@ public:
 
 	void enableOutputWatch() {
 		if (outputSourceID == UNREGISTERED_SOURCE)
-			outputSourceID = g_io_add_watch_full_with_context(channel, G_PRIORITY_DEFAULT, G_IO_OUT,
+			outputSourceID = g_io_add_watch_full_with_context(m_channel, G_PRIORITY_DEFAULT, G_IO_OUT,
 									  onWritingPossibleGlibCallback, this, NULL,
 									  m_mainContext);
 	}
 
 	void enableInputWatch() {
-		if (!isInputWatched) {
+		if (!m_isInputWatched) {
 			inputSourceID =
-				g_io_add_watch_full_with_context(channel, G_PRIORITY_DEFAULT, G_IO_IN | G_IO_HUP,
+				g_io_add_watch_full_with_context(m_channel, G_PRIORITY_DEFAULT, G_IO_IN | G_IO_HUP,
 								 onSocketDataAvailableGlibCallback, this, NULL,
 								 m_mainContext);
-			isInputWatched = true;
+			m_isInputWatched = true;
 		}
 	}
 
@@ -249,12 +252,12 @@ public:
 	}
 
 private:
-	bool isInputWatched = false;
+	bool m_isInputWatched = false;
 	//	bool isOutputWatched = false;
 	gint inputSourceID = UNREGISTERED_SOURCE;
 	gint outputSourceID = UNREGISTERED_SOURCE;
 
-	GIOChannel* channel = NULL;
+	GIOChannel* m_channel = nullptr;
 	GMainContext* m_mainContext;
 	GlibChannelListener& m_listener;
 };

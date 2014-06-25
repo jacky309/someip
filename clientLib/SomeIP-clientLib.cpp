@@ -5,19 +5,18 @@ namespace SomeIPClient {
 LOG_DECLARE_CONTEXT(clientLibContext, "SOCL", "SomeIP Client lib");
 
 
-std::string ClientDaemonConnection::getDaemonStateDump() {
+SomeIPReturnCode ClientDaemonConnection::getDaemonStateDump(std::string& dump) {
 	IPCOutputMessage msg(IPCMessageType::DUMP_STATE);
 	IPCInputMessage returnMessage = writeRequest(msg);
 
-	if (returnMessage.getReturnCode() == IPCReturnCode::ERROR)
-		return "";
+	if (returnMessage.isError())
+		return SomeIPReturnCode::DISCONNECTED;
 
 	IPCInputMessageReader reader(returnMessage);
 
-	std::string s;
-	reader >> s;
+	reader >> dump;
 
-	return s;
+	return SomeIPReturnCode::OK;
 }
 
 bool ClientDaemonConnection::dispatchIncomingMessages() {
@@ -50,12 +49,12 @@ SomeIPReturnCode ClientDaemonConnection::registerService(SomeIP::ServiceID servi
 	msg << serviceID;
 	IPCInputMessage returnMessage = writeRequest(msg);
 
-	if (returnMessage.getReturnCode() == IPCReturnCode::ERROR)
+	if (returnMessage.isError())
 		return SomeIPReturnCode::ERROR;
-	else
+	else {
 		log_info("Successfully registered service 0x%X", serviceID);
-
-	return SomeIPReturnCode::OK;
+		return SomeIPReturnCode::OK;
+	}
 }
 
 SomeIPReturnCode ClientDaemonConnection::unregisterService(SomeIP::ServiceID serviceID) {
@@ -63,28 +62,26 @@ SomeIPReturnCode ClientDaemonConnection::unregisterService(SomeIP::ServiceID ser
 	msg << serviceID;
 	IPCInputMessage returnMessage = writeRequest(msg);
 
-	if (returnMessage.getReturnCode() == IPCReturnCode::ERROR)
+	if (returnMessage.isError())
 		return SomeIPReturnCode::ERROR;
-	else
+	else {
 		log_info("Successfully unregistered service 0x%X", serviceID);
-
-	return SomeIPReturnCode::OK;
+		return SomeIPReturnCode::OK;
+	}
 }
 
 SomeIPReturnCode ClientDaemonConnection::subscribeToNotifications(SomeIP::MessageID messageID) {
 	log_debug("Subscribing to notifications 0x%X", messageID);
 	IPCOutputMessage msg(IPCMessageType::SUBSCRIBE_NOTIFICATION);
 	msg << messageID;
-	writeMessage(msg);
-
-	return SomeIPReturnCode::OK;
+	return writeMessage(msg);
 }
 
 SomeIPReturnCode ClientDaemonConnection::sendMessage(OutputMessage& msg) {
 	const IPCMessage& ipcMessage = msg.getIPCMessage();
-	writeMessage(ipcMessage);
-	log_traffic() << "Message sent : " << msg.toString();
-	return SomeIPReturnCode::OK;
+	auto ret = writeMessage(ipcMessage);
+	log_traffic() << "Message sent : " << msg;
+	return ret;
 }
 
 

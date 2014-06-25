@@ -23,8 +23,8 @@ class LocalServer : private UDSServer {
 	LOG_DECLARE_CLASS_CONTEXT("LoSe", "LocalServer");
 
 public:
-	LocalServer(Dispatcher& dispatcher) :
-		m_dispatcher(dispatcher) {
+	LocalServer(Dispatcher& dispatcher, MainLoopContext& mainLoopContext) :
+		m_dispatcher(dispatcher), m_mainLoopContext(mainLoopContext) {
 	}
 
 	~LocalServer() {
@@ -41,7 +41,7 @@ public:
 	}
 
 	void createNewClientConnection(int fileDescriptor) override {
-		LocalClient* newClient = new LocalClient(m_dispatcher, fileDescriptor);
+		LocalClient* newClient = new LocalClient(m_dispatcher, fileDescriptor, m_mainLoopContext);
 		newClient->registerClient();
 		log_debug() << "New client : " << newClient->toString();
 	}
@@ -55,6 +55,7 @@ public:
 private:
 	Dispatcher& m_dispatcher;
 	GIOChannel* m_serverSocketChannel = nullptr;
+	MainLoopContext& m_mainLoopContext;
 };
 
 }

@@ -2,9 +2,12 @@
 #include "SomeIP-Serialization.h"
 #include "SomeIP-clientLib.h"
 
+#include "GlibClientConnection.h"
+
 #include "test-common.h"
 
 #include "MainLoopApplication.h"
+#include "Message.h"
 
 static const SomeIP::ServiceID TEST_SERVICE_ID = 0x543F;
 
@@ -15,7 +18,7 @@ void sendMessageWithExpectedAnswer(OutputMessage& outputMsg, OutputMessage& expe
 
 	using namespace SomeIPClient;
 
-	ClientConnection connection;
+	ClientDaemonConnection connection;
 
 	log_info("Sending message : ") << outputMsg;
 	log_info("Expected message : ") << expectedMsg;
@@ -70,19 +73,21 @@ TEST_F(SomeIPTest, ConnectionCleanup) {
 	using namespace SomeIPClient;
 
 	{
-	ClientConnection connection;
+		ClientDaemonConnection connection;
 
 	TestSink sink([&](const InputMessage &msg) {
 		      });
 
 	connection.connect(sink);
+	log_error() << "TTTTTTT" << connection.isConnected();
+	EXPECT_TRUE(connection.isConnected());
 	GLibIntegration glibIntegration(connection);
 	glibIntegration.setup();
-	connection.registerService(TEST_SERVICE_ID);
+	EXPECT_FALSE(isError(connection.registerService(TEST_SERVICE_ID)));
 	}
 
 	{
-		ClientConnection connection;
+		ClientDaemonConnection connection;
 
 		OutputMessage outputMsg = createTestOutputMessage(TEST_SERVICE_ID, SomeIP::MessageType::REQUEST,
 								  MESSAGE_SIZE);
@@ -133,7 +138,7 @@ struct TestConnection {
 
 	}
 
-	SomeIPClient::ClientConnection connection;
+	SomeIPClient::ClientDaemonConnection connection;
 	TestSink sink;
 	SomeIPClient::GLibIntegration glibIntegration;
 
@@ -173,7 +178,7 @@ TEST_F(SomeIPTest, SendSelf) {
 
 	using namespace SomeIPClient;
 
-	ClientConnection connection;
+	ClientDaemonConnection connection;
 
 	OutputMessage testOutputMsg = createTestOutputMessage(TEST_SERVICE_ID, SomeIP::MessageType::REQUEST,
 							      MESSAGE_SIZE);

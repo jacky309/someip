@@ -63,8 +63,8 @@ public:
 		g_main_loop_quit(m_mainLoop);
 	}
 
-	GMainContext* getMainContext() {
-		return nullptr;
+	GMainContext*& getMainContext() {
+		return m_mainContext;
 	}
 
 	/**
@@ -169,7 +169,8 @@ public:
 
 	}
 
-	GMainLoop* m_mainLoop = NULL;
+	GMainLoop* m_mainLoop = nullptr;
+	GMainContext* m_mainContext = nullptr;
 	//	LogMainLoopIntegration m_logMainLoopIntegration;
 };
 

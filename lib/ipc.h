@@ -165,6 +165,10 @@ public:
 		m_isError = true;
 	}
 
+	bool isError() {
+		return m_isError;
+	}
+
 	bool isResponseOf(const IPCOutputMessage& outputMessage) const;
 
 	size_t getLength() const {

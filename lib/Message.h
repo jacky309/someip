@@ -417,21 +417,23 @@ protected:
 
 private:
 	MessageSource& m_source;
-
-private:
 	SomeIP::ServiceID m_serviceID;
 
 };
 
+template<typename LogDataType, typename =
+		 typename std::enable_if<std::is_base_of<logging::LogDataCommon, LogDataType>::value>::type>
+LogDataType& operator<<(LogDataType& log, const SomeIP_Lib::OutputMessage& s) {
+	log << s.toString();
+	return log;
+}
 
-//inline LogData& operator<<(LogData& log, const OutputMessage& v) {
-//	log << v.toString();
-//	return log;
-//}
-//
-//inline LogData& operator<<(LogData& log, const InputMessage& v) {
-//	log << v.toString();
-//	return log;
-//}
+template<typename LogDataType, typename =
+		 typename std::enable_if<std::is_base_of<logging::LogDataCommon, LogDataType>::value>::type>
+LogDataType& operator<<(LogDataType& log, const SomeIP_Lib::InputMessage& s) {
+	log << s.toString();
+	return log;
+}
 
 }
+

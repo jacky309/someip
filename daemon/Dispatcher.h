@@ -126,13 +126,13 @@ class Dispatcher {
 	static const int PING_DELAY = 5000;
 
 public:
-	Dispatcher() :
+	Dispatcher(MainLoopContext& mainLoopContext) :
 		m_idleCallback([&]() {
 				       cleanDisconnectedClients();
 				       return false;
-			       }), m_pingTimer([&]() {
+			       }, mainLoopContext), m_pingTimer([&]() {
 						       sendPingMessages();
-					       }, PING_DELAY) {
+					       }, PING_DELAY, mainLoopContext) {
 		m_messageCounter = 0;
 	}
 

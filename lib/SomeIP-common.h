@@ -3,10 +3,13 @@
 #include "SomeIP-Config.h"
 #include "SomeIP.h"
 #include "utilLib/SomeIP-log.h"
+#include "glib.h"
 
 namespace SomeIP_Lib {
 using namespace SomeIP;
 using namespace SomeIP_utils;
+
+typedef GMainContext* MainLoopContext;
 
 enum class SomeIPReturnCode {
 	OK, DISCONNECTED, ERROR, ALREADY_CONNECTED

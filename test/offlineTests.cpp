@@ -2,9 +2,12 @@
 #include "SomeIP-Serialization.h"
 #include "SomeIP-clientLib.h"
 
+#include "GlibClientConnection.h"
+
 #include "test-common.h"
 
 #include "MainLoopApplication.h"
+#include "Message.h"
 
 class MyClass {
 
@@ -43,7 +46,7 @@ void sendMessageWithExpectedAnswer(     //SomeIPClient::ClientConnection& connec
 
 	using namespace SomeIPClient;
 
-	ClientConnection connection;
+	ClientDaemonConnection connection;
 
 	CommonAPI::Version v;
 

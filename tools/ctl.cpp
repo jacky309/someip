@@ -4,7 +4,7 @@ LOG_DEFINE_APP_IDS("sctl", "SomeIP ctl tool");
 
 #include "MainLoopApplication.h"
 #include "CommandLineParser.h"
-#include "SomeIP-clientLib.h"
+#include "GlibClientConnection.h"
 #include "GlibIO.h"
 #include <iostream>
 #include <string>
@@ -24,13 +24,15 @@ class ControlApp : public MainLoopApplication, public SomeIPClient::ClientConnec
 
 public:
 	ControlApp(SomeIPClient::ClientConnection& connection) :
-		MainLoopApplication(), m_glibIntegration(connection, NULL) {
+		MainLoopApplication(), m_glibIntegration(connection) {
 		connection.connect(*this);
+		if (!connection.isConnected())
+			throw new ConnectionException("Not connected");
 		m_glibIntegration.setup();
 	}
 
 	MessageProcessingResult processMessage(const InputMessage& msg) {
-		log_info() << "Message received : " << msg.toString();
+		log_info() << "Message received : " << msg;
 		for (auto& listener : m_messageListeners) {
 			listener(msg);
 		}
@@ -152,10 +154,12 @@ int main(int argc, const char** argv) {
 
 	if (dumpDaemonState) {
 		new GLibTimer([&]() {
-				      std::cout << connection.getDaemonStateDump();
-			      }, 1000);
+			std::string s;
+			if (!isError(connection.getDaemonStateDump(s)))
+				std::cout << s << std::endl;
+		}, 1000, app.getMainContext());
 
-		std::cout << connection.getDaemonStateDump();
+//		std::cout << connection.getDaemonStateDump();
 	}
 
 	auto sendMessagesFunction = [&] () {
@@ -181,16 +185,16 @@ int main(int argc, const char** argv) {
 				for (size_t i = 0; i < bytes.size(); i++)
 					os.writeValue(bytes[i]);
 
-				log_info() << "Sending message : " << msg.toString();
+				log_info() << "Sending message : " << msg;
 
 				if (blockingMode) {
 					InputMessage answerMessage = connection.sendMessageBlocking(msg);
-					log_info() << "Answer : " << answerMessage.toString();
+					log_info() << "Answer : " << answerMessage;
 				} else
 					connection.sendMessage(msg);
 
 			} else
-				std::cerr << "Invalid message format";
+				std::cerr << "Invalid message format" << std::endl;
 
 		}
 	};
@@ -200,7 +204,7 @@ int main(int argc, const char** argv) {
 	if (repeatDuration != 0) {
 		new GLibTimer([&]() {
 				      sendMessagesFunction();
-			      }, repeatDuration);
+			      }, repeatDuration, app.getMainContext());
 	}
 
 	app.run();

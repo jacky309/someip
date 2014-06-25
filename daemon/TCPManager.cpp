@@ -16,7 +16,7 @@ TCPClient& TCPManager::getOrCreateClient(const IPv4TCPEndPoint& serverID) {
 
 	// no matching client found => create a new one
 	if (client == NULL) {
-		client = new TCPClient(m_dispatcher, serverID, *this);
+		client = new TCPClient(m_dispatcher, serverID, *this, m_mainLoopContext);
 		m_clients.push_back(client);
 		client->registerClient();
 	}

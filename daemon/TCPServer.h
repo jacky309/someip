@@ -27,8 +27,8 @@ class TCPServer : private SocketStreamServer, private BlackListHostFilter {
 public:
 	static const TCPPort DEFAULT_TCP_SERVER_PORT = 10032;
 
-	TCPServer(Dispatcher& dispatcher, TCPManager& tcpManager, TCPPort port) :
-		m_dispatcher(dispatcher), m_tcpManager(tcpManager), m_port(port) {
+	TCPServer(Dispatcher& dispatcher, TCPManager& tcpManager, TCPPort port, MainLoopContext& mainContext) :
+		m_dispatcher(dispatcher), m_tcpManager(tcpManager), m_port(port), m_mainContext(mainContext) {
 	}
 
 	virtual ~TCPServer() {
@@ -42,7 +42,7 @@ public:
 	}
 
 	void createNewClientConnection(int fileDescriptor) override {
-		TCPClient* newClient = new TCPClient(m_dispatcher, fileDescriptor, m_tcpManager);
+		TCPClient* newClient = new TCPClient(m_dispatcher, fileDescriptor, m_tcpManager, m_mainContext);
 		log_debug( "New client : %s", newClient->toString().c_str() );
 		newClient->registerClient();
 	}
@@ -68,6 +68,7 @@ private:
 	Dispatcher& m_dispatcher;
 	TCPManager& m_tcpManager;
 	TCPPort m_port = -1;
+	MainLoopContext& m_mainContext;
 };
 
 }

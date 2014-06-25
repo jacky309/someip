@@ -16,8 +16,8 @@ class TCPManager {
 	LOG_DECLARE_CLASS_CONTEXT("TCPM", "TCPManager");
 
 public:
-	TCPManager(Dispatcher& dispatcher) :
-		m_dispatcher(dispatcher) {
+	TCPManager(Dispatcher& dispatcher, MainLoopContext& mainLoopContext) :
+		m_dispatcher(dispatcher), m_mainLoopContext(mainLoopContext) {
 	}
 
 	TCPClient& getOrCreateClient(const IPv4TCPEndPoint& serverID);
@@ -30,10 +30,10 @@ public:
 					const IPv4ConfigurationOption* address,
 					const SomeIPServiceDiscoveryMessage& message);
 
-
 private:
 	std::vector<TCPClient*> m_clients;
 	Dispatcher& m_dispatcher;
+	MainLoopContext& m_mainLoopContext;
 
 };
 

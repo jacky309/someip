@@ -28,10 +28,10 @@ class ServiceAnnouncer : public ServiceRegistrationListener {
 	LOG_DECLARE_CLASS_CONTEXT("SeAn", "Service announcer");
 
 public:
-	ServiceAnnouncer(Dispatcher& dispatcher, TCPServer& tcpServer) :
+	ServiceAnnouncer(Dispatcher& dispatcher, TCPServer& tcpServer, MainLoopContext& mainLoopContext) :
 		m_dispatcher(dispatcher), m_timer([&]() {
 							  announceServices();
-						  }, 300000), m_tcpServer(tcpServer) {
+						  }, 300000, mainLoopContext), m_tcpServer(tcpServer) {
 	}
 
 	virtual ~ServiceAnnouncer() {

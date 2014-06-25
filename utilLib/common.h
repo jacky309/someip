@@ -11,6 +11,8 @@
 
 #include <assert.h>
 
+#include "ivi-logging.h"
+
 namespace SomeIP_utils {
 
 std::string byteArrayToString(const void* buffer, size_t length);
@@ -203,6 +205,13 @@ private:
 	unsigned char m_staticData[1024];
 	size_t m_length = 0;
 };
+
+template<typename LogDataType, typename =
+		 typename std::enable_if<std::is_base_of<logging::LogDataCommon, LogDataType>::value>::type>
+LogDataType& operator<<(LogDataType& log, const ByteArray& s) {
+	log << s.toString();
+	return log;
+}
 
 typedef ByteArray ResizeableByteArray;
 

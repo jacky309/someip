@@ -30,7 +30,7 @@ IPCOperationReport SocketStreamConnection::readBytesBlocking(void* buffer, size_
 
 		if (n < 0)
 			if (errno != EAGAIN) {
-				log_error("Error reading from socket");
+				log_error() << "Error reading from socket";
 				usleep(1000 * 10);
 				disconnect();
 				return IPCOperationReport::DISCONNECTED;
@@ -58,9 +58,7 @@ IPCOperationReport SocketStreamConnection::readAvailableData(void* buffer, size_
 			disconnect();
 			return IPCOperationReport::DISCONNECTED;
 		}
-	}
-
-	if (n >= 0) {
+	} else {
 		readBytes = n;
 	}
 
@@ -125,7 +123,7 @@ IPCOperationReport SocketStreamConnection::writeBytesBlocking(const void* buffer
 
 	}
 
-	log_verbose( "Bytes written : %s", byteArrayToString(buffer, length).c_str() );
+	log_verbose( ) << "Bytes written : " << byteArrayToString(buffer, length);
 
 	return IPCOperationReport::OK;
 }
@@ -159,7 +157,7 @@ IPCOperationReport UDSConnection::writeBlocking(const IPCMessage& msg) {
 	// write payload
 	returnIfError( writeBytesBlocking( msg.getPayload().getData(), msg.getPayload().size() ) );
 
-	log_verbose( "Written IPCMessage : %s", msg.toString().c_str() );
+	log_traffic( ) << "Written IPCMessage : " << msg.toString();
 
 	return IPCOperationReport::OK;
 }
@@ -216,7 +214,7 @@ IPCOperationReport SocketStreamConnection::writeBytesNonBlocking(const void* dat
 		switch (errno) {
 
 		case EAGAIN :
-			log_info( "Congestion detected fileDescriptor: %i", getFileDescriptor() );
+			log_info() << "Congestion detected fileDescriptor: " << getFileDescriptor();
 			bCongestionDetected = true;
 			writtenBytesCount = 0;
 			break;
@@ -227,11 +225,11 @@ IPCOperationReport SocketStreamConnection::writeBytesNonBlocking(const void* dat
 			break;
 
 		case EBADF :
-			log_error( "Bad file descriptor %i", getFileDescriptor() );
+			log_error( ) << "Bad file descriptor " << getFileDescriptor();
 			break;
 
 		default :
-			log_error( "Unknown error : %i . %s", errno, toString().c_str() );
+			log_error( ) << "Unknown error : " << errno << " . " << toString();
 			disconnect();
 			return IPCOperationReport::DISCONNECTED;
 			break;

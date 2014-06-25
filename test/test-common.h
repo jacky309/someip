@@ -2,12 +2,11 @@
 
 #include "gtest/gtest.h"
 
-#include "ivi-log.h"
-LOG_DEFINE_APP_IDS("SOTE", "Some/IP test");
+#include "ivi-logging.h"
+
 LOG_DECLARE_DEFAULT_CONTEXT(blabla, "LOG", "Main context");
 
 using namespace SomeIP_Lib;
-using namespace pelagicore;
 
 class TestSink : public SomeIPClient::ClientConnectionListener {
 public:

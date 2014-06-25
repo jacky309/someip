@@ -29,8 +29,8 @@ protected:
 public:
 	using SocketStreamConnection::isConnected;
 
-	LocalClient(Dispatcher& dispatcher, int fd) :
-		Client(dispatcher), m_channelWatcher(*this) {
+	LocalClient(Dispatcher& dispatcher, int fd, MainLoopContext& context) :
+		Client(dispatcher), m_channelWatcher(*this, context) {
 		setInputMessage(m_inputMessage);
 		setFileDescriptor(fd);
 	}

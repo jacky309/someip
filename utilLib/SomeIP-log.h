@@ -54,4 +54,5 @@ typedef logging::LogContextT<
 #endif
 			 , SomeIPFileLoggingContext::LogDataType> > LogContext;
 
+
 #include "SomeIP-Config.h"

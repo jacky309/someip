@@ -7,7 +7,6 @@
 
 #include "SomeIP-common.h"
 #include "SomeIP.h"
-#include "utilLib/GlibIO.h"
 
 #include "ipc.h"
 
@@ -128,6 +127,9 @@ public:
 	}
 };
 
+/**
+ * Interface to be used by client application to connect to the dispatcher. The dispatcher can either be local
+ */
 class ClientConnection {
 
 public:
@@ -205,7 +207,7 @@ public:
 
 
 /**
- * This is the main class to be used to connect to the dispatcher
+ * This is the main class to be used to connect to the daemon dispatcher
  */
 class ClientDaemonConnection : public ClientConnection, private MessageSource, private UDSConnection {
 
@@ -296,7 +298,7 @@ public:
 	/**
 	 * Returns a dump of the daemon's internal state, which can be useful for diagnostic.
 	 */
-	std::string getDaemonStateDump();
+	SomeIPReturnCode getDaemonStateDump(std::string& dump);
 
 	void setMainLoopInterface(MainLoopInterface& mainloopInterface) {
 		m_mainLoop = &mainloopInterface;
@@ -407,64 +409,6 @@ private:
 	std::recursive_mutex dataReceptionMutex;
 	std::recursive_mutex dataEmissionMutex;
 
-};
-
-
-/**
- * This class integrates the dispatching of messages into a Glib main loop.
- */
-class GLibIntegration : public GlibChannelListener, private ClientConnection::MainLoopInterface {
-
-	LOG_SET_CLASS_CONTEXT(clientLibContext);
-
-public:
-	GLibIntegration(ClientConnection& connection, GMainContext* context = NULL) :
-		m_connection(connection), m_channelWatcher(*this, context), m_idleCallBack(
-			[&]() {
-				m_idleCallbackFunction();
-				return false;
-			}) {
-		m_connection.setMainLoopInterface(*this);
-	}
-
-	~GLibIntegration() {
-		onDisconnected();
-	}
-
-	void setup() {
-		m_channelWatcher.setup( m_connection.getFileDescriptor() );
-		m_channelWatcher.enableWatch();
-	}
-
-private:
-	void addIdleCallback(std::function<void()> callBackFunction) {
-		std::lock_guard<std::mutex> lock(m_mutex);
-		m_idleCallbackFunction = callBackFunction;
-		m_idleCallBack.activate();
-	}
-
-	void onDisconnected() override {
-		m_connection.disconnect();
-	}
-
-	WatchStatus onWritingPossible() override {
-		return WatchStatus::STOP_WATCHING;
-	}
-
-	WatchStatus onIncomingDataAvailable() override {
-		m_connection.dispatchIncomingMessages();
-		return WatchStatus::KEEP_WATCHING;
-	}
-
-	std::function<void()> m_idleCallbackFunction;
-
-	ClientConnection& m_connection;
-
-	std::mutex m_mutex;
-
-	GlibChannelWatcher m_channelWatcher;
-
-	GlibIdleCallback m_idleCallBack;
 };
 
 }

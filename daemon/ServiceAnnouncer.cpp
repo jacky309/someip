@@ -11,10 +11,13 @@ void ServiceAnnouncer::sendMessage(const SomeIPServiceDiscoveryMessage& serviceD
 	if (sendto( m_broadcastFileDescriptor, byteArray.getData(), byteArray.size(), 0,
 		    (struct sockaddr*) &addr,
 		    sizeof(addr) ) < 0) {
-		throw ConnectionException("Can't broadcast message");
+		log_error() << "Can't send service discovery message : " << byteArray;
+	}
+	else
+	{
+		log_info() << "Service discovery message sent : " << byteArray;
 	}
 
-	log_info() << "Service discovery message sent : " << byteArray.toString();
 
 }
 
