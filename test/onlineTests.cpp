@@ -2,7 +2,7 @@
 #include "SomeIP-Serialization.h"
 #include "SomeIP-clientLib.h"
 
-#include "GlibClientConnection.h"
+#include "GlibMainLoopInterfaceImplementation.h"
 
 #include "test-common.h"
 
@@ -33,7 +33,7 @@ void sendMessageWithExpectedAnswer(OutputMessage& outputMsg, OutputMessage& expe
 						      expectedMsg.getPayload(), expectedMsg.getPayloadLength() ) );
 		});
 
-	GLibIntegration glibIntegration(connection);
+	GlibMainLoopInterfaceImplementation glibIntegration;
 	connection.setMainLoopInterface(glibIntegration);
 
 	connection.connect(sink);
@@ -70,7 +70,7 @@ struct TestConnection {
 
 	TestConnection() :
 		sink([&](const InputMessage &msg) {
-		     }), glibIntegration(connection) {
+		     }) {
 	}
 
 	void init() {
@@ -80,8 +80,6 @@ struct TestConnection {
 
 		connection.setMainLoopInterface(glibIntegration);
 		connection.connect(sink);
-
-		glibIntegration.setup();
 
 		connection.registerService(TEST_SERVICE_ID);
 
@@ -94,7 +92,7 @@ struct TestConnection {
 
 	SomeIPClient::ClientDaemonConnection connection;
 	TestSink sink;
-	SomeIPClient::GLibIntegration glibIntegration;
+	SomeIPClient::GlibMainLoopInterfaceImplementation glibIntegration;
 
 };
 
@@ -119,10 +117,9 @@ TEST_F(SomeIPTest, SendSelf) {
 			connection.sendMessage(returnMessage);
 		});
 
-	GLibIntegration glibIntegration(connection);
+	GlibMainLoopInterfaceImplementation glibIntegration;
 	connection.setMainLoopInterface(glibIntegration);
 	connection.connect(sink);
-	glibIntegration.setup();
 
 	connection.registerService(TEST_SERVICE_ID);
 
@@ -153,10 +150,9 @@ TEST_F(SomeIPTest, SendSelf2) {
 			connection.sendMessage(returnMessage);
 		});
 
-	GLibIntegration glibIntegration(connection);
+	GlibMainLoopInterfaceImplementation glibIntegration;
 	connection.setMainLoopInterface(glibIntegration);
 	connection.connect(sink);
-	glibIntegration.setup();
 
 	connection.registerService(TEST_SERVICE_ID);
 
@@ -225,13 +221,12 @@ TEST_F(SomeIPTest, ConnectionCleanup) {
 	TestSink sink([&](const InputMessage &msg) {
 		      });
 
-	GLibIntegration glibIntegration(connection);
+	GlibMainLoopInterfaceImplementation glibIntegration;
 	connection.setMainLoopInterface(glibIntegration);
 
 	connection.connect(sink);
 
 	EXPECT_TRUE( connection.isConnected() );
-	glibIntegration.setup();
 	EXPECT_FALSE( isError( connection.registerService(TEST_SERVICE_ID) ) );
 	}
 
@@ -246,11 +241,10 @@ TEST_F(SomeIPTest, ConnectionCleanup) {
 				      EXPECT_EQ(msg, outputMsg);
 			      });
 
-		GLibIntegration glibIntegration(connection);
+		GlibMainLoopInterfaceImplementation glibIntegration;
 		connection.setMainLoopInterface(glibIntegration);
 
 		connection.connect(sink);
-		glibIntegration.setup();
 
 		connection.registerService(TEST_SERVICE_ID);
 

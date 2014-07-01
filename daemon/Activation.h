@@ -7,8 +7,6 @@
 #include "LocalClient.h"
 #include "SomeIP.h"
 
-#include "glib.h"
-
 #ifdef ENABLE_SYSTEMD
 #include "dbus/dbus-glib.h"
 #endif

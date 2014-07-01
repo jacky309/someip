@@ -17,7 +17,6 @@ class TCPManager;
  */
 class TCPClient : public Client,
 	private SocketStreamConnection,
-	//	private GlibChannelListener,
 	private ServiceDiscoveryListener {
 
 	LOG_DECLARE_CLASS_CONTEXT("TCPC", "TCPClient");
@@ -167,7 +166,7 @@ public:
 		// minimize latency by ensuring that the data is always sent immediately
 		int on = 1;
 		if ( setsockopt( fd, SOL_SOCKET, TCP_NODELAY, &on, sizeof(on) ) )
-			log_error( "Can't enable TCP_NODELAY on the socket. Error : %s", strerror(errno) );
+			log_error() << "Can't enable TCP_NODELAY on the socket. Error : " << strerror(errno);
 	}
 
 	void connect();

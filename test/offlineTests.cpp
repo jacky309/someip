@@ -2,7 +2,7 @@
 #include "SomeIP-Serialization.h"
 #include "SomeIP-clientLib.h"
 
-#include "GlibClientConnection.h"
+#include "GlibMainLoopInterfaceImplementation.h"
 
 #include "test-common.h"
 
@@ -61,12 +61,13 @@ void sendMessageWithExpectedAnswer(     //SomeIPClient::ClientConnection& connec
 						      expectedMsg.getPayload(), expectedMsg.getPayloadLength() ) );
 		});
 
+	GlibMainLoopInterfaceImplementation glibIntegration;
+	connection.setMainLoopInterface(glibIntegration);
+
 	connection.connect(sink);
 
 	EXPECT_EQ(connection.isConnected(), true);
 
-	GLibIntegration glibIntegration(connection);
-	glibIntegration.setup();
 	MainLoopApplication app;
 
 	connection.sendMessage(outputMsg);

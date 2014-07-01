@@ -16,88 +16,8 @@ class SomeIPProxy;
 
 class SomeIPConnection : private SomeIPClient::ClientConnectionListener, public CommonAPI::ServicePublisher,
 	public MainLoopInterface {
+
 	LOG_SET_CLASS_CONTEXT(someIPCommonAPILogContext);
-
-	class SomeIPConnectionWatch;
-
-	class SomeIPDispatchSource : public DispatchSource {
-public:
-		SomeIPDispatchSource(SomeIPClient::ClientConnection& connection) :
-			m_connection(connection) {
-		}
-
-		bool check() {
-			// TODO : optimize that function, since we seem to be called very frequently with a QML UI
-			return m_connection.hasIncomingMessages();
-		}
-
-		bool dispatch() {
-			m_connection.dispatchIncomingMessages();
-			m_prepared = false;
-			return false;
-		}
-
-		bool prepare(int64_t& timeout) {
-			timeout = 0;
-			m_prepared = true;
-			return false;
-		}
-
-private:
-		SomeIPClient::ClientConnection& m_connection;
-		bool m_prepared = true;
-
-	};
-
-	class SomeIPConnectionWatch : public CommonAPI::Watch {
-
-		SomeIPConnectionWatch(SomeIPClient::ClientConnection& connection) :
-			m_connection(connection), m_dispatchSource(connection) {
-			m_dependentDispatchSources.push_back(&m_dispatchSource);
-		}
-
-		/**
-		 * \brief Dispatches the watch.
-		 *
-		 * Should only be called once the associated file descriptor has events ready.
-		 *
-		 * @param eventFlags The events that shall be retrieved from the file descriptor.
-		 */
-		void dispatch(unsigned int eventFlags) override {
-			m_connection.dispatchIncomingMessages();
-		}
-
-		/**
-		 * \brief Returns the file descriptor that is managed by this watch.
-		 *
-		 * @return The associated file descriptor.
-		 */
-		const pollfd& getAssociatedFileDescriptor() override {
-			m_pollfd.events = POLLERR | POLLHUP | POLLIN;
-			m_pollfd.revents = 0;
-			m_pollfd.fd = m_connection.getFileDescriptor();
-			return m_pollfd;
-		}
-
-		/**
-		 * \brief Returns a vector of all dispatch sources that depend on the watched file descriptor.
-		 *
-		 * The returned vector will not be empty if and only if there are any sources
-		 * that depend on availability of data of the watched file descriptor. Whenever this
-		 * Watch is dispatched, those sources likely also need to be dispatched.
-		 */
-		const std::vector<DispatchSource*>& getDependentDispatchSources() override {
-			return m_dependentDispatchSources;
-		}
-
-private:
-		pollfd m_pollfd;
-		std::vector<DispatchSource*> m_dependentDispatchSources;
-		SomeIPClient::ClientConnection& m_connection;
-		SomeIPDispatchSource m_dispatchSource;
-
-		friend class SomeIPConnection;
-	};
 
 	class CommonAPIIdleMainLoopHook : public IdleMainLoopHook {
 
@@ -130,7 +50,7 @@ private:
 
 	class CommonAPIWatchMainLoopHook : public WatchMainLoopHook, private Watch {
 public:
-		CommonAPIWatchMainLoopHook(CallBackFunction callBackFunction, struct pollfd& fd,
+		CommonAPIWatchMainLoopHook(CallBackFunction callBackFunction, const pollfd& fd,
 					   std::shared_ptr<MainLoopContext> mainLoopContext) :
 			m_mainLoopContext(mainLoopContext), m_fd(fd) {
 			m_callBack = callBackFunction;
@@ -164,13 +84,13 @@ public:
 private:
 		CallBackFunction m_callBack;
 		std::shared_ptr<MainLoopContext> m_mainLoopContext;
-		struct pollfd& m_fd;
+		const pollfd& m_fd;
 		std::vector<DispatchSource*> m_dependentSources;
 	};
 
 public:
-	SomeIPConnection(SomeIPClient::ClientConnection* clientConnection) : m_connection(clientConnection),
-		m_watch( getConnection() ) {
+	SomeIPConnection(SomeIPClient::ClientConnection* clientConnection) : m_connection(clientConnection) {
+		//,		m_watch( getConnection() )
 	}
 
 	~SomeIPConnection() {
@@ -188,12 +108,9 @@ public:
 											      m_mainLoopContext) );
 	}
 
-	std::unique_ptr<WatchMainLoopHook> addWatch(WatchMainLoopHook::CallBackFunction callBackFunction, pollfd& fd) override {
+	std::unique_ptr<WatchMainLoopHook> addWatch(WatchMainLoopHook::CallBackFunction callBackFunction,
+						    const pollfd& fd) override {
 		return std::unique_ptr<WatchMainLoopHook>( new CommonAPIWatchMainLoopHook(callBackFunction, fd, m_mainLoopContext) );
-	}
-
-	Watch& getWatch() {
-		return m_watch;
 	}
 
 	SomeIPReturnCode connect(std::shared_ptr<MainLoopContext> mainLoopContext) {
@@ -272,8 +189,6 @@ private:
 	std::unordered_map<ServiceID, SomeIPStubAdapter*> m_serviceTable;
 	std::unordered_map<ServiceID, SomeIPProxy*> m_proxyTable;
 	std::unordered_map<RequestID, MessageSink*> m_messageHandlers;
-
-	SomeIPConnectionWatch m_watch;
 
 	std::shared_ptr<MainLoopContext> m_mainLoopContext;
 

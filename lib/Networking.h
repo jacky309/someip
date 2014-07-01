@@ -71,6 +71,10 @@ struct IPv4TCPEndPoint {
 };
 
 struct BlackListHostFilter {
+
+	virtual ~BlackListHostFilter() {
+	}
+
 	virtual bool isBlackListed(const IPv4TCPEndPoint& server, ServiceID serviceID = 0xFFFF) const = 0;
 };
 

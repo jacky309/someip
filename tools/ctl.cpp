@@ -4,8 +4,9 @@ LOG_DEFINE_APP_IDS("sctl", "SomeIP ctl tool");
 
 #include "MainLoopApplication.h"
 #include "CommandLineParser.h"
-#include "GlibClientConnection.h"
-#include "GlibIO.h"
+#include "GlibMainLoopInterfaceImplementation.h"
+#include "SomeIP-clientLib.h"
+
 #include <iostream>
 #include <string>
 #include <boost/tokenizer.hpp>
@@ -24,11 +25,11 @@ class ControlApp : public MainLoopApplication, public SomeIPClient::ClientConnec
 
 public:
 	ControlApp(SomeIPClient::ClientConnection& connection) :
-		MainLoopApplication(), m_glibIntegration(connection) {
+		MainLoopApplication() {
+		connection.setMainLoopInterface(m_glibIntegration);
 		connection.connect(*this);
 		if ( !connection.isConnected() )
 			throw new ConnectionException("Not connected");
-		m_glibIntegration.setup();
 	}
 
 	MessageProcessingResult processMessage(const InputMessage& msg) {
@@ -47,7 +48,7 @@ public:
 		m_messageListeners.push_back(listener);
 	}
 
-	SomeIPClient::GLibIntegration m_glibIntegration;
+	SomeIPClient::GlibMainLoopInterfaceImplementation m_glibIntegration;
 
 	std::vector<MessageReceivedCallbackFunction> m_messageListeners;
 };

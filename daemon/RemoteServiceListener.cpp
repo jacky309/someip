@@ -40,22 +40,24 @@ void RemoteServiceListener::init() {
 
 	if (::bind( m_broadcastFileDescriptor, (struct sockaddr*) &addr, sizeof(addr) ) == 0) {
 
-		m_serverSocketChannel = g_io_channel_unix_new(m_broadcastFileDescriptor);
+		pollfd fd;
+		fd.fd = m_broadcastFileDescriptor;
+		fd.events = POLLIN;
+		m_inputDataWatcher = m_mainLoopContext.addWatch([&] () {
+									handleMessage();
+								}, fd);
+		m_inputDataWatcher->enable();
 
-		if ( !g_io_add_watch(m_serverSocketChannel, G_IO_IN | G_IO_HUP, onMessageGlibCallback, this) ) {
-			log_error() << "Cannot add watch on GIOChannel";
-			throw ConnectionExceptionWithErrno("Cannot add watch on GIOChannel");
-		}
+		//		m_serverSocketChannel = g_io_channel_unix_new(m_broadcastFileDescriptor);
+
+		//		if ( !g_io_add_watch(m_serverSocketChannel, G_IO_IN | G_IO_HUP, onMessageGlibCallback, this) ) {
+		//			log_error() << "Cannot add watch on GIOChannel";
+		//			throw ConnectionExceptionWithErrno("Cannot add watch on GIOChannel");
+		//		}
 
 	} else
 		throw ConnectionExceptionWithErrno("Can't bind socket");
 
-}
-
-gboolean RemoteServiceListener::onMessageGlibCallback(GIOChannel* gio, GIOCondition condition, gpointer data) {
-	RemoteServiceListener* server = static_cast<RemoteServiceListener*>(data);
-	server->handleMessage();
-	return true;
 }
 
 }

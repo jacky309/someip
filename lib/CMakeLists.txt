@@ -38,6 +38,7 @@ INSTALL(TARGETS someip_lib
 
 
 set(INCLUDE_FILES
+	SomeIP-log.h
 	SomeIP-common.h
 	SomeIP.h
 	SomeIP-Serialization.h

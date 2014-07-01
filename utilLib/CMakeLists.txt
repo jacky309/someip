@@ -3,7 +3,6 @@ set(INCLUDE_FILES
 common.h
 serialization.h
 MainLoopApplication.h
-SomeIP-log.h
 GlibIO.h
 CommandLineParser.h
 )

@@ -2,12 +2,12 @@
 
 #include "SomeIP-Config.h"
 #include "SomeIP.h"
-#include "utilLib/SomeIP-log.h"
-#include "glib.h"
+#include "SomeIP-log.h"
 #include <poll.h>
 #include <memory>
 
 namespace SomeIP_Lib {
+
 using namespace SomeIP;
 using namespace SomeIP_utils;
 
@@ -53,7 +53,7 @@ struct MainLoopInterface {
 	virtual std::unique_ptr<TimeOutMainLoopHook> addTimeout(TimeOutMainLoopHook::CallBackFunction,
 								int durationInMilliseconds) = 0;
 
-	virtual std::unique_ptr<WatchMainLoopHook> addWatch(WatchMainLoopHook::CallBackFunction, pollfd& fd) = 0;
+	virtual std::unique_ptr<WatchMainLoopHook> addWatch(WatchMainLoopHook::CallBackFunction, const pollfd& fd) = 0;
 
 };
 

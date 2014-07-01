@@ -76,7 +76,7 @@ pid_t getPidFromFiledescriptor(int fd) {
 	struct ucred peercred;
 	socklen_t so_len = sizeof(peercred);
 	if (getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &peercred, &so_len) == -1) {
-		log_error("Cannot get PID of client process!");
+		log_error() << "Cannot get PID of client process!";
 		return 0;
 	}
 	return peercred.pid;

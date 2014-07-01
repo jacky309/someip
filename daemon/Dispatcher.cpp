@@ -18,7 +18,7 @@ void Dispatcher::dispatchMessage(DispatcherMessage& msg, Client& client) {
 	if (m_messageCounter++ % 10000 == 0)
 		log_info("Message count : ") << m_messageCounter;
 
-	log_traffic( "Message received from client %s : %s", client.toString().c_str(), msg.toString().c_str() );
+	log_traffic() << "Message received from client " << client.toString() << " : " << msg;
 
 	auto& header = msg.getHeader();
 
@@ -143,14 +143,14 @@ ReturnCode Dispatcher::registerService(Service& service) {
 
 	for (auto& existingService : m_services) {
 		if ( existingService->isDuplicate( service.getServiceID() ) ) {
-			log_error() << "Service already registered : " << existingService->toString().c_str();
+			log_error() << "Service already registered : " << existingService->toString();
 			return ReturnCode::DUPLICATE;
 		}
 	}
 
 	m_services.push_back(&service);
 
-	log_info() << "Service registered : " << service.toString().c_str();
+	log_info() << "Service registered : " << service.toString();
 
 	// Notify clients
 	for (auto client : m_serviceRegistrationListeners) {

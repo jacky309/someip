@@ -7,8 +7,6 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
-#include "glib.h"
-
 #include "SomeIP-common.h"
 
 #include "ipc.h"

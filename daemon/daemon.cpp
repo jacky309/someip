@@ -20,7 +20,7 @@ LOG_DEFINE_APP_IDS("Some", "SomeIP daemon");
 
 #include "SomeIP-clientLib.h"
 
-#include "GlibClientConnection.h"
+#include "GlibMainLoopInterfaceImplementation.h"
 
 namespace SomeIP_Dispatcher {
 
@@ -52,7 +52,7 @@ int run(int argc, const char** argv) {
 
 	//	auto& mainLoopContext = app.getMainContext();
 
-	GlibMainLoopContext mainLoopContext( app.getMainContext() );
+	GlibMainLoopInterfaceImplementation mainLoopContext( app.getMainContext() );
 
 	Dispatcher dispatcher(mainLoopContext);
 
@@ -73,7 +73,7 @@ int run(int argc, const char** argv) {
 	ServiceAnnouncer serviceAnnouncer(dispatcher, tcpServer, mainLoopContext);
 	serviceAnnouncer.init();
 
-	RemoteServiceListener remoteServiceListener(dispatcher, tcpManager, serviceAnnouncer);
+	RemoteServiceListener remoteServiceListener(dispatcher, tcpManager, serviceAnnouncer, mainLoopContext);
 	remoteServiceListener.init();
 
 	WellKnownServiceManager wellKnownServiceManager(dispatcher);

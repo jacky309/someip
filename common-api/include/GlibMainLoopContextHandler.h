@@ -8,9 +8,6 @@
 
 namespace CommonAPI {
 
-/**
- * That class can be used to
- */
 class GlibMainLoopContextHandler {
 
 public:
@@ -38,10 +35,6 @@ public:
 	}
 
 private:
-	void init() {
-		doSubscriptions();
-	}
-
 	static gboolean gTimeoutDispatcher(void* userData) {
 		return static_cast<CommonAPI::DispatchSource*>(userData)->dispatch();
 	}
@@ -135,7 +128,7 @@ public:
 		g_main_context_wakeup(m_mainContext);
 	}
 
-	void doSubscriptions() {
+	void init() {
 		m_mainLoopContext->subscribeForTimeouts(
 			std::bind(&GlibMainLoopContextHandler::timeoutAddedCallback, this, std::placeholders::_1,
 				  std::placeholders::_2),

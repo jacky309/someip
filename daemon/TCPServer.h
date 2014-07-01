@@ -6,8 +6,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "glib.h"
-
 #include "SomeIP-common.h"
 
 #include "ipc.h"

@@ -1,8 +1,5 @@
 #pragma once
 
-
-#include "glib.h"
-
 #include "SomeIP-common.h"
 
 #include "ipc.h"
@@ -21,12 +18,13 @@ class RemoteServiceListener : public ServiceDiscoveryListener {
 	LOG_DECLARE_CLASS_CONTEXT("RSL", "Remote service listener");
 
 public:
-	RemoteServiceListener(Dispatcher& dispatcher, TCPManager& tcpManager, ServiceAnnouncer& serviceAnnouncer) :
-		m_serviceDiscoveryDecoder(*this), m_tcpManager(tcpManager), m_serviceAnnouncer(serviceAnnouncer) {
+	RemoteServiceListener(Dispatcher& dispatcher, TCPManager& tcpManager, ServiceAnnouncer& serviceAnnouncer,
+			      MainLoopInterface& mainLoopContext) :
+		m_serviceDiscoveryDecoder(*this), m_tcpManager(tcpManager), m_serviceAnnouncer(serviceAnnouncer),
+		m_mainLoopContext(mainLoopContext) {
 	}
 
 	~RemoteServiceListener() {
-		g_io_channel_unref(m_serverSocketChannel);
 	}
 
 	void init();
@@ -66,15 +64,15 @@ public:
 private:
 	void handleMessage();
 
-	static gboolean onMessageGlibCallback(GIOChannel* gio, GIOCondition condition, gpointer data);
-
 	ServiceDiscoveryMessageDecoder m_serviceDiscoveryDecoder;
 
 	int m_broadcastFileDescriptor = -1;
 
-	GIOChannel* m_serverSocketChannel = nullptr;
 	TCPManager& m_tcpManager;
 	ServiceAnnouncer& m_serviceAnnouncer;
+	MainLoopInterface& m_mainLoopContext;
+
+	std::unique_ptr<WatchMainLoopHook> m_inputDataWatcher;
 
 };
 

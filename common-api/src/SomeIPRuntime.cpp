@@ -57,7 +57,7 @@ SomeIPReturnCode SomeIPFactory::initializeConnection() {
 		if ( isError(returnCode) )
 			return returnCode;
 
-		m_mainLoopContext->registerWatch( &connection.getWatch() );
+		//		m_mainLoopContext->registerWatch( &connection.getWatch() );
 
 		// TODO
 		//		SomeIPClient::defaultContextGlibIntegrationSingleton([&]() {

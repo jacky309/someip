@@ -1,15 +1,17 @@
 #pragma once
 
-#include "SomeIP-clientLib.h"
-#include "utilLib/GlibIO.h"
+#include "GlibIO.h"
 
 namespace SomeIP_utils {
 
 using namespace SomeIP_Lib;
 
-class GlibMainLoopContext : public MainLoopInterface {
+/**
+ * That class implements the MainLoopInterface using glib's main loop functions
+ */
+class GlibMainLoopInterfaceImplementation : public MainLoopInterface {
 public:
-	GlibMainLoopContext(GMainContext* context) : m_context(context) {
+	GlibMainLoopInterfaceImplementation(GMainContext* context = nullptr) : m_context(context) {
 	}
 
 	class GLibIdle : public IdleMainLoopHook {
@@ -40,7 +42,7 @@ private:
 
 	class GLibFileDescriptorWatch : public WatchMainLoopHook {
 public:
-		GLibFileDescriptorWatch(CallBackFunction callBackFunction, pollfd& fd,
+		GLibFileDescriptorWatch(CallBackFunction callBackFunction, const pollfd& fd,
 					GMainContext* context) : m_mainContext(context), m_fd(fd) {
 			m_callBack = callBackFunction;
 			m_channel = g_io_channel_unix_new(fd.fd);
@@ -143,49 +145,13 @@ private:
 		return std::unique_ptr<TimeOutMainLoopHook>( new GLibTimeOut(callBackFunction, durationInMilliseconds, m_context) );
 	}
 
-	std::unique_ptr<WatchMainLoopHook> addWatch(WatchMainLoopHook::CallBackFunction callBackFunction, pollfd& fd) override {
+	std::unique_ptr<WatchMainLoopHook> addWatch(WatchMainLoopHook::CallBackFunction callBackFunction,
+						    const pollfd& fd) override {
 		return std::unique_ptr<WatchMainLoopHook>( new GLibFileDescriptorWatch(callBackFunction, fd, m_context) );
 	}
 
 private:
 	GMainContext* m_context;
-
-};
-
-}
-
-
-namespace SomeIPClient {
-
-/**
- * This class integrates the dispatching of messages into a Glib main loop.
- */
-class GLibIntegration : // public GlibChannelListener,
-	public GlibMainLoopContext {
-
-	LOG_SET_CLASS_CONTEXT(clientLibContext);
-
-public:
-	GLibIntegration(ClientConnection& connection, GMainContext* context = nullptr) : GlibMainLoopContext(context),
-		m_connection(connection) {
-		m_connection.setMainLoopInterface(*this);
-		m_timeout = addTimeout([&]() {
-					       log_info() << "Timeout";
-				       }, 10000);
-	}
-
-	~GLibIntegration() {
-	}
-
-	void setup() {
-		//		m_channelWatcher.setup( m_connection.getFileDescriptor() );
-		//		m_channelWatcher.enableWatch();
-	}
-
-private:
-	ClientConnection& m_connection;
-	std::mutex m_mutex;
-	std::unique_ptr<TimeOutMainLoopHook> m_timeout;
 
 };
 

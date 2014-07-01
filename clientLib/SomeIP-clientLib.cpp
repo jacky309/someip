@@ -29,6 +29,9 @@ bool ClientDaemonConnection::dispatchIncomingMessages() {
 
 SomeIPReturnCode ClientDaemonConnection::connect(ClientConnectionListener& clientReceiveCb) {
 
+	if (m_mainLoop == nullptr)
+		log_error() << "You need to provide a main loop integration object (setMainLoopInterface()) before calling connect()";
+
 	if ( isConnected() )
 		return SomeIPReturnCode::ALREADY_CONNECTED;
 
@@ -38,26 +41,25 @@ SomeIPReturnCode ClientDaemonConnection::connect(ClientConnectionListener& clien
 
 	auto c = connectToServer(DEFAULT_SERVER_SOCKET_PATH);
 
-	if ( !isError(c) )
+	if ( !isError(c) ) {
 		log_info() << "Connected to the dispatcher";
 
-	assert(m_mainLoop != nullptr);
+		struct pollfd fd;
+		fd.fd = getFileDescriptor();
+		fd.revents = 0;
+		fd.events = POLLIN;
+		m_inputDataWatch = m_mainLoop->addWatch([&] () {
+								dispatchIncomingMessages();
+							}, fd);
 
-	struct pollfd fd;
-	fd.fd = getFileDescriptor();
-	fd.revents = 0;
-	fd.events = POLLIN;
-	m_inputDataWatch = m_mainLoop->addWatch([&] () {
-							dispatchIncomingMessages();
-						}, fd);
+		m_inputDataWatch->enable();
 
-	m_inputDataWatch->enable();
-
-	fd.events = POLLHUP;
-	m_disconnectionWatch = m_mainLoop->addWatch([&] () {
-							    onDisconnected();
-						    }, fd);
-	m_disconnectionWatch->enable();
+		fd.events = POLLHUP;
+		m_disconnectionWatch = m_mainLoop->addWatch([&] () {
+									onDisconnected();
+								}, fd);
+		m_disconnectionWatch->enable();
+	}
 
 	return c;
 }
