@@ -9,12 +9,17 @@ inline GIOCondition operator|(const GIOCondition c1, const GIOCondition c2) {
 	return static_cast<GIOCondition>( static_cast<int>(c1) | static_cast<int>(c2) );
 }
 
+inline GIOCondition& operator|=(GIOCondition& c1, const GIOCondition c2) {
+	c1 = c1 | c2;
+	return c1;
+}
+
 class GLibTimer {
 
 	std::function<void(void)> m_func;
 
 public:
-	GLibTimer(std::function<void(void)> func, int duration, GMainContext* mainContext) :
+	GLibTimer(std::function<void(void)> func, int duration, GMainContext* mainContext = nullptr) :
 		m_func(func) {
 		m_mainContext = mainContext;
 		setDuration(duration);

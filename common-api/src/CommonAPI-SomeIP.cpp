@@ -14,7 +14,7 @@ namespace SomeIP {
 LOG_DECLARE_CONTEXT(someIPCommonAPILogContext, "SOCA", "SomeIP Common-API");
 
 SomeIPReturnCode SomeIPConnection::registerService(SomeIPStubAdapter& service) {
-	auto code = m_connection.registerService( service.getServiceID() );
+	auto code = getConnection().registerService( service.getServiceID() );
 
 	if ( !isError(code) )
 		m_serviceTable[service.getServiceID()] = &service;
@@ -98,10 +98,10 @@ SomeIPReturnCode SomeIPStubAdapter::sendMessage(OutputMessage& msg) {
 }
 
 void SomeIPStubAdapter::deinit() {
-//	if(m_isRegistered) {
-//		getConnection().unregisterService( getServiceID() );
-//		m_isRegistered = false;
-//	}
+	//	if(m_isRegistered) {
+	//		getConnection().unregisterService( getServiceID() );
+	//		m_isRegistered = false;
+	//	}
 }
 
 }

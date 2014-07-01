@@ -2,7 +2,7 @@
 
 #include <CommonAPI/Stub.h>
 #include "Message.h"
-#include "SomeIPDispatcher-client.h"
+#include "SomeIPConnection.h"
 
 namespace CommonAPI {
 namespace SomeIP {

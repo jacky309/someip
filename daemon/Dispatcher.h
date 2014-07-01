@@ -127,12 +127,12 @@ class Dispatcher {
 
 public:
 	Dispatcher(MainLoopContext& mainLoopContext) :
-		m_idleCallback([&]() {
-				       cleanDisconnectedClients();
-				       return false;
-			       }, mainLoopContext), m_pingTimer([&]() {
-						       sendPingMessages();
-					       }, PING_DELAY, mainLoopContext) {
+		m_idleCallback( mainLoopContext.addIdleCallback([&]() {
+									cleanDisconnectedClients();
+									return false;
+								}) ), m_pingTimer( mainLoopContext.addTimeout([&]() {
+														      sendPingMessages();
+													      }, PING_DELAY) ) {
 		m_messageCounter = 0;
 	}
 
@@ -219,8 +219,9 @@ private:
 	vector<const BlackListHostFilter*> m_blackList;
 
 	int m_messageCounter;
-	GlibIdleCallback m_idleCallback;
-	GLibTimer m_pingTimer;
+
+	std::unique_ptr<IdleMainLoopHook> m_idleCallback;
+	std::unique_ptr<TimeOutMainLoopHook> m_pingTimer;
 
 };
 

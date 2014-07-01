@@ -30,7 +30,7 @@ public:
 	using SocketStreamConnection::isConnected;
 
 	LocalClient(Dispatcher& dispatcher, int fd, MainLoopContext& context) :
-		Client(dispatcher), m_channelWatcher(*this, context) {
+		Client(dispatcher), m_mainLoopContext(context) {
 		setInputMessage(m_inputMessage);
 		setFileDescriptor(fd);
 	}
@@ -84,15 +84,19 @@ public:
 	}
 
 	void onServiceRegistered(const Service& service) override {
-		IPCOutputMessage msg(IPCMessageType::SERVICES_REGISTERED);
-		msg << service.getServiceID();
-		writeNonBlocking(msg);
+		if ( isConnected() ) {
+			IPCOutputMessage msg(IPCMessageType::SERVICES_REGISTERED);
+			msg << service.getServiceID();
+			writeNonBlocking(msg);
+		}
 	}
 
 	void onServiceUnregistered(const Service& service) override {
-		IPCOutputMessage msg(IPCMessageType::SERVICES_UNREGISTERED);
-		msg << service.getServiceID();
-		writeNonBlocking(msg);
+		if ( isConnected() ) {
+			IPCOutputMessage msg(IPCMessageType::SERVICES_UNREGISTERED);
+			msg << service.getServiceID();
+			writeNonBlocking(msg);
+		}
 	}
 
 	void handleIncomingIPCMessage(IPCInputMessage& inputMessage) override;
@@ -109,12 +113,14 @@ public:
 		getDispatcher().removeServiceRegistrationListener(*this);
 		unregisterClient();
 
-		m_channelWatcher.disableWatch();
+		m_inputDataWatcher->disable();
+		m_outputDataWatcher->disable();
+		m_disconnectionWatcher->disable();
 	}
 
 	void onCongestionDetected() override {
-		m_channelWatcher.enableOutputWatch();
-		log_info( "Congestion %s", toString().c_str() );
+		m_outputDataWatcher->enable();
+		log_info() << "Congestion with " << toString();
 	}
 
 	/**
@@ -130,7 +136,11 @@ public:
 private:
 	IPCInputMessage m_inputMessage;
 
-	GlibChannelWatcher m_channelWatcher;
+	std::unique_ptr<WatchMainLoopHook> m_inputDataWatcher;
+	std::unique_ptr<WatchMainLoopHook> m_outputDataWatcher;
+	std::unique_ptr<WatchMainLoopHook> m_disconnectionWatcher;
+
+	MainLoopContext& m_mainLoopContext;
 
 	/// PID of the client process
 	pid_t pid = -1;

@@ -200,7 +200,7 @@ void Dispatcher::onClientDisconnected(Client& client) {
 	assert(m_clients[client.getIdentifier()] != nullptr);
 	m_clients[client.getIdentifier()] = nullptr;
 	m_disconnectedClients.push_back(&client);
-	m_idleCallback.activate();
+	m_idleCallback->activate();
 }
 
 std::string Notification::toString() const {

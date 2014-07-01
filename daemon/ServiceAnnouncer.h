@@ -29,9 +29,11 @@ class ServiceAnnouncer : public ServiceRegistrationListener {
 
 public:
 	ServiceAnnouncer(Dispatcher& dispatcher, TCPServer& tcpServer, MainLoopContext& mainLoopContext) :
-		m_dispatcher(dispatcher), m_timer([&]() {
-							  announceServices();
-						  }, 300000, mainLoopContext), m_tcpServer(tcpServer) {
+		m_dispatcher(dispatcher), m_timer(
+			mainLoopContext.addTimeout(
+				[&]() {
+					announceServices();
+				}, 300000) ), m_tcpServer(tcpServer) {
 	}
 
 	virtual ~ServiceAnnouncer() {
@@ -59,7 +61,7 @@ private:
 
 	Dispatcher& m_dispatcher;
 
-	GLibTimer m_timer;
+	std::unique_ptr<TimeOutMainLoopHook> m_timer;
 
 	TCPServer& m_tcpServer;
 

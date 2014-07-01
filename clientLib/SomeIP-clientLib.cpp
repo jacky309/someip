@@ -9,7 +9,7 @@ SomeIPReturnCode ClientDaemonConnection::getDaemonStateDump(std::string& dump) {
 	IPCOutputMessage msg(IPCMessageType::DUMP_STATE);
 	IPCInputMessage returnMessage = writeRequest(msg);
 
-	if (returnMessage.isError())
+	if ( returnMessage.isError() )
 		return SomeIPReturnCode::DISCONNECTED;
 
 	IPCInputMessageReader reader(returnMessage);
@@ -41,6 +41,24 @@ SomeIPReturnCode ClientDaemonConnection::connect(ClientConnectionListener& clien
 	if ( !isError(c) )
 		log_info() << "Connected to the dispatcher";
 
+	assert(m_mainLoop != nullptr);
+
+	struct pollfd fd;
+	fd.fd = getFileDescriptor();
+	fd.revents = 0;
+	fd.events = POLLIN;
+	m_inputDataWatch = m_mainLoop->addWatch([&] () {
+							dispatchIncomingMessages();
+						}, fd);
+
+	m_inputDataWatch->enable();
+
+	fd.events = POLLHUP;
+	m_disconnectionWatch = m_mainLoop->addWatch([&] () {
+							    onDisconnected();
+						    }, fd);
+	m_disconnectionWatch->enable();
+
 	return c;
 }
 
@@ -49,7 +67,7 @@ SomeIPReturnCode ClientDaemonConnection::registerService(SomeIP::ServiceID servi
 	msg << serviceID;
 	IPCInputMessage returnMessage = writeRequest(msg);
 
-	if (returnMessage.isError())
+	if ( returnMessage.isError() )
 		return SomeIPReturnCode::ERROR;
 	else {
 		log_info("Successfully registered service 0x%X", serviceID);
@@ -62,7 +80,7 @@ SomeIPReturnCode ClientDaemonConnection::unregisterService(SomeIP::ServiceID ser
 	msg << serviceID;
 	IPCInputMessage returnMessage = writeRequest(msg);
 
-	if (returnMessage.isError())
+	if ( returnMessage.isError() )
 		return SomeIPReturnCode::ERROR;
 	else {
 		log_info("Successfully unregistered service 0x%X", serviceID);
@@ -136,12 +154,14 @@ InputMessage ClientDaemonConnection::waitForAnswer(const OutputMessage& requestM
 void ClientDaemonConnection::pushToQueue(const IPCInputMessage& msg) {
 	m_queue.push(msg);
 
-	log_verbose() << "Message pushed : " << msg.toString().c_str();
+	log_verbose() << "Message pushed : " << msg.toString();
 
-	if (m_mainLoop)
-		m_mainLoop->addIdleCallback([&] () {
-						    dispatchQueuedMessages();
-					    });
+	if (m_mainLoop != nullptr) {
+		m_idleCallBack = m_mainLoop->addIdleCallback([&] () {
+								     dispatchQueuedMessages();
+								     return false;
+							     });
+	}
 
 }
 
@@ -287,7 +307,6 @@ bool ClientDaemonConnection::readIncomingMessages(IPCMessageReceivedCallbackFunc
 		if (msg != nullptr) {
 			bKeepProcessing = dispatchFunction(*msg);
 			delete msg;
-
 		} else
 			bKeepProcessing = false;
 
@@ -310,7 +329,8 @@ void ClientDaemonConnection::onCongestionDetected() {
 
 void ClientDaemonConnection::onDisconnected() {
 	log_warning() << "Disconnected from server";
-	messageReceivedCallback->onDisconnected();
+	if (messageReceivedCallback)
+		messageReceivedCallback->onDisconnected();
 }
 
 

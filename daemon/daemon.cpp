@@ -20,6 +20,8 @@ LOG_DEFINE_APP_IDS("Some", "SomeIP daemon");
 
 #include "SomeIP-clientLib.h"
 
+#include "GlibClientConnection.h"
+
 namespace SomeIP_Dispatcher {
 
 LOG_DECLARE_DEFAULT_CONTEXT(mainContext, "main", "Main log context");
@@ -48,7 +50,9 @@ int run(int argc, const char** argv) {
 
 	MainLoopApplication app;
 
-	MainLoopContext& mainLoopContext = app.getMainContext();
+	//	auto& mainLoopContext = app.getMainContext();
+
+	GlibMainLoopContext mainLoopContext( app.getMainContext() );
 
 	Dispatcher dispatcher(mainLoopContext);
 

@@ -20,25 +20,26 @@ void sendMessageWithExpectedAnswer(OutputMessage& outputMsg, OutputMessage& expe
 
 	ClientDaemonConnection connection;
 
-	log_info("Sending message : ") << outputMsg;
-	log_info("Expected message : ") << expectedMsg;
+	log_info() << "Sending message : " << outputMsg;
+	log_info() << "Expected message : " << expectedMsg;
 
 	TestSink sink(
 		[&](const InputMessage &msg) {
-			log_info("Received message : ") << msg;
-			log_info("Expected message : ") << expectedMsg;
+			log_info() << "Received message : " << msg;
+			log_info() << "Expected message : " << expectedMsg;
 			EXPECT_TRUE( msg.isAnswerTo(expectedMsg) );
 			EXPECT_TRUE(msg == expectedMsg);
 			EXPECT_TRUE( byteArraysEqual( msg.getPayload(), msg.getPayloadLength(),
 						      expectedMsg.getPayload(), expectedMsg.getPayloadLength() ) );
 		});
 
+	GLibIntegration glibIntegration(connection);
+	connection.setMainLoopInterface(glibIntegration);
+
 	connection.connect(sink);
 
 	EXPECT_EQ(connection.isConnected(), true);
 
-	GLibIntegration glibIntegration(connection);
-	glibIntegration.setup();
 	MainLoopApplication app;
 
 	connection.sendMessage(outputMsg);
@@ -64,55 +65,6 @@ OutputMessage createTestOutputMessage(SomeIP::ServiceID service, SomeIP::Message
 	return outputMsg;
 }
 
-/**
- * Set up two connections to the dispatcher successively, to check whether the first connection is properly uninitialized so that the
- * second one can be properly established.
- */
-TEST_F(SomeIPTest, ConnectionCleanup) {
-
-	using namespace SomeIPClient;
-
-	{
-		ClientDaemonConnection connection;
-
-	TestSink sink([&](const InputMessage &msg) {
-		      });
-
-	connection.connect(sink);
-	log_error() << "TTTTTTT" << connection.isConnected();
-	EXPECT_TRUE(connection.isConnected());
-	GLibIntegration glibIntegration(connection);
-	glibIntegration.setup();
-	EXPECT_FALSE(isError(connection.registerService(TEST_SERVICE_ID)));
-	}
-
-	{
-		ClientDaemonConnection connection;
-
-		OutputMessage outputMsg = createTestOutputMessage(TEST_SERVICE_ID, SomeIP::MessageType::REQUEST,
-								  MESSAGE_SIZE);
-
-		TestSink sink([&](const InputMessage &msg) {
-				      log_info() << msg;
-				      EXPECT_EQ(msg, outputMsg);
-			      });
-
-		connection.connect(sink);
-		GLibIntegration glibIntegration(connection);
-		glibIntegration.setup();
-
-		connection.registerService(TEST_SERVICE_ID);
-
-		connection.sendMessage(outputMsg);
-
-		MainLoopApplication app;
-		app.run(TIMEOUT);
-
-		// We expect one answer to be received
-		EXPECT_EQ(sink.getReceivedMessageCount(), 1);
-	}
-
-}
 
 struct TestConnection {
 
@@ -125,6 +77,8 @@ struct TestConnection {
 
 		OutputMessage testOutputMsg = createTestOutputMessage(TEST_SERVICE_ID, SomeIP::MessageType::REQUEST,
 								      MESSAGE_SIZE);
+
+		connection.setMainLoopInterface(glibIntegration);
 		connection.connect(sink);
 
 		glibIntegration.setup();
@@ -143,33 +97,6 @@ struct TestConnection {
 	SomeIPClient::GLibIntegration glibIntegration;
 
 };
-
-
-/**
- * Stress the dispatcher with plenty of connection requests.
- */
-TEST_F(SomeIPTest, ClientConnectionStressTest) {
-
-	using namespace SomeIPClient;
-
-	std::vector<std::unique_ptr<TestConnection> > v1;
-
-	for (int i = 0; i < 128; i++) {
-	auto p = std::unique_ptr<TestConnection>( new TestConnection() );
-	p->init();
-	v1.push_back( std::move(p) );
-
-	std::vector<std::unique_ptr<TestConnection> > v2;
-	for (int j = 0; j < i % 10; j++) {
-		auto p = std::unique_ptr<TestConnection>( new TestConnection() );
-		p->init();
-		v2.push_back( std::move(p) );
-	}
-
-	}
-
-}
-
 
 /**
  * Send a message to ourself, using two distinct connections.
@@ -192,8 +119,9 @@ TEST_F(SomeIPTest, SendSelf) {
 			connection.sendMessage(returnMessage);
 		});
 
-	connection.connect(sink);
 	GLibIntegration glibIntegration(connection);
+	connection.setMainLoopInterface(glibIntegration);
+	connection.connect(sink);
 	glibIntegration.setup();
 
 	connection.registerService(TEST_SERVICE_ID);
@@ -206,6 +134,67 @@ TEST_F(SomeIPTest, SendSelf) {
 	EXPECT_EQ(sink.getReceivedMessageCount(), 1);
 
 }
+
+TEST_F(SomeIPTest, SendSelf2) {
+
+	using namespace SomeIPClient;
+
+	ClientDaemonConnection connection;
+
+	OutputMessage testOutputMsg = createTestOutputMessage(TEST_SERVICE_ID, SomeIP::MessageType::REQUEST,
+							      MESSAGE_SIZE);
+
+	TestSink sink(
+		[&](const InputMessage &msg) {
+			EXPECT_TRUE(msg.getHeader().getServiceID() == TEST_SERVICE_ID);
+			EXPECT_TRUE(msg == testOutputMsg);
+			OutputMessage returnMessage = createMethodReturn(msg);
+			returnMessage.getPayloadOutputStream().writeRawData( msg.getPayload(), msg.getPayloadLength() );
+			connection.sendMessage(returnMessage);
+		});
+
+	GLibIntegration glibIntegration(connection);
+	connection.setMainLoopInterface(glibIntegration);
+	connection.connect(sink);
+	glibIntegration.setup();
+
+	connection.registerService(TEST_SERVICE_ID);
+
+	OutputMessage expectedMsg = testOutputMsg;
+	expectedMsg.getHeader().setMessageType(SomeIP::MessageType::RESPONSE);
+
+	sendMessageWithExpectedAnswer(testOutputMsg, expectedMsg);
+
+	EXPECT_EQ(sink.getReceivedMessageCount(), 1);
+
+}
+
+
+/**
+ * Stress the dispatcher with plenty of connection requests.
+ */
+TEST_F(SomeIPTest, ClientConnectionStressTest) {
+
+	using namespace SomeIPClient;
+
+	std::vector<std::unique_ptr<TestConnection> > v1;
+
+	for (int i = 0; i < 1; i++) {
+	auto p = std::unique_ptr<TestConnection>( new TestConnection() );
+	p->init();
+	v1.push_back( std::move(p) );
+
+	std::vector<std::unique_ptr<TestConnection> > v2;
+	for (int j = 0; j < i % 10; j++) {
+		auto p = std::unique_ptr<TestConnection>( new TestConnection() );
+		p->init();
+		v2.push_back( std::move(p) );
+	}
+
+	}
+
+}
+
 
 
 TEST_F(SomeIPTest, SendToUnregisteredService) {
@@ -221,6 +210,60 @@ TEST_F(SomeIPTest, SendToUnregisteredService) {
 
 }
 
+
+/**
+ * Set up two connections to the dispatcher successively, to check whether the first connection is properly uninitialized so that the
+ * second one can be properly established.
+ */
+TEST_F(SomeIPTest, ConnectionCleanup) {
+
+	using namespace SomeIPClient;
+
+	{
+	ClientDaemonConnection connection;
+
+	TestSink sink([&](const InputMessage &msg) {
+		      });
+
+	GLibIntegration glibIntegration(connection);
+	connection.setMainLoopInterface(glibIntegration);
+
+	connection.connect(sink);
+
+	EXPECT_TRUE( connection.isConnected() );
+	glibIntegration.setup();
+	EXPECT_FALSE( isError( connection.registerService(TEST_SERVICE_ID) ) );
+	}
+
+	{
+		ClientDaemonConnection connection;
+
+		OutputMessage outputMsg = createTestOutputMessage(TEST_SERVICE_ID, SomeIP::MessageType::REQUEST,
+								  MESSAGE_SIZE);
+
+		TestSink sink([&](const InputMessage &msg) {
+				      log_info() << msg;
+				      EXPECT_EQ(msg, outputMsg);
+			      });
+
+		GLibIntegration glibIntegration(connection);
+		connection.setMainLoopInterface(glibIntegration);
+
+		connection.connect(sink);
+		glibIntegration.setup();
+
+		connection.registerService(TEST_SERVICE_ID);
+
+		connection.sendMessage(outputMsg);
+
+		MainLoopApplication app;
+		app.run(TIMEOUT);
+
+		// We expect one answer to be received
+		EXPECT_EQ(sink.getReceivedMessageCount(), 1);
+	}
+
+}
 
 int main(int argc, char** argv) {
 	MainLoopApplication app; // to get rid of the DLT threads, by forcing the DLT main loop mode

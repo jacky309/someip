@@ -31,7 +31,7 @@ class StubAdapterFactoryRegistration {
 public:
 	StubAdapterFactoryRegistration() {
 		SomeIPRuntime::getInstance()->registerAdapterFactoryMethod(InterfaceType::getInterfaceId(),
-									       &createSomeIPStubAdapter);
+									   &createSomeIPStubAdapter);
 	}
 
 	static std::shared_ptr<SomeIPStubAdapter> createSomeIPStubAdapter(

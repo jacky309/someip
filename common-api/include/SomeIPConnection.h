@@ -14,8 +14,8 @@ using namespace::SomeIP;
 class SomeIPStubAdapter;
 class SomeIPProxy;
 
-class SomeIPConnection : private SomeIPClient::ClientConnectionListener, public CommonAPI::ServicePublisher {
-
+class SomeIPConnection : private SomeIPClient::ClientConnectionListener, public CommonAPI::ServicePublisher,
+	public MainLoopInterface {
 	LOG_SET_CLASS_CONTEXT(someIPCommonAPILogContext);
 
 	class SomeIPConnectionWatch;
@@ -64,7 +64,6 @@ private:
 		 * @param eventFlags The events that shall be retrieved from the file descriptor.
 		 */
 		void dispatch(unsigned int eventFlags) override {
-			//			log_info() << eventFlags;
 			m_connection.dispatchIncomingMessages();
 		}
 
@@ -74,21 +73,9 @@ private:
 		 * @return The associated file descriptor.
 		 */
 		const pollfd& getAssociatedFileDescriptor() override {
-
 			m_pollfd.events = POLLERR | POLLHUP | POLLIN;
 			m_pollfd.revents = 0;
 			m_pollfd.fd = m_connection.getFileDescriptor();
-
-			//	        if(channelFlags_ & DBUS_WATCH_READABLE) {
-			//	            pollFlags |= POLLIN;
-			//	        }
-			//	        if(channelFlags_ & DBUS_WATCH_WRITABLE) {
-			//	            pollFlags |= POLLOUT;
-			//	        }
-			//	        pollFileDescriptor_.fd = dbus_watch_get_unix_fd(libdbusWatch_);
-			//	        pollFileDescriptor_.events = pollFlags;
-			//	        pollFileDescriptor_.revents = 0;
-
 			return m_pollfd;
 		}
 
@@ -106,33 +93,117 @@ private:
 private:
 		pollfd m_pollfd;
 		std::vector<DispatchSource*> m_dependentDispatchSources;
-
 		SomeIPClient::ClientConnection& m_connection;
-
 		SomeIPDispatchSource m_dispatchSource;
 
 		friend class SomeIPConnection;
 	};
 
+	class CommonAPIIdleMainLoopHook : public IdleMainLoopHook {
+
 public:
-	SomeIPConnection(SomeIPClient::ClientConnection& clientConnection) : m_connection(clientConnection),
-		m_watch(clientConnection) {
+		CommonAPIIdleMainLoopHook(CallBackFunction callBackFunction, std::shared_ptr<MainLoopContext> mainLoopContext) {
+			m_callBack = callBackFunction;
+		}
+
+		void activate() override {
+			// TODO
+			assert(false);
+		}
+
+private:
+		CallBackFunction m_callBack;
+		std::shared_ptr<MainLoopContext> m_mainLoopContext;
+	};
+
+	class CommonAPITimeOutMainLoopHook : public TimeOutMainLoopHook {
+public:
+		CommonAPITimeOutMainLoopHook(CallBackFunction callBackFunction, int durationInMilliseconds,
+					     std::shared_ptr<MainLoopContext> mainLoopContext) {
+			m_callBack = callBackFunction;
+		}
+
+private:
+		CallBackFunction m_callBack;
+		std::shared_ptr<MainLoopContext> m_mainLoopContext;
+	};
+
+	class CommonAPIWatchMainLoopHook : public WatchMainLoopHook, private Watch {
+public:
+		CommonAPIWatchMainLoopHook(CallBackFunction callBackFunction, struct pollfd& fd,
+					   std::shared_ptr<MainLoopContext> mainLoopContext) :
+			m_mainLoopContext(mainLoopContext), m_fd(fd) {
+			m_callBack = callBackFunction;
+		}
+
+		~CommonAPIWatchMainLoopHook() {
+			disable();
+			//			assert(false);
+		}
+
+		void enable() override {
+			m_mainLoopContext->registerWatch(this);
+		}
+
+		void dispatch(unsigned int eventFlags) override {
+			m_callBack();
+		}
+
+		const pollfd& getAssociatedFileDescriptor() {
+			return m_fd;
+		}
+
+		const std::vector<DispatchSource*>& getDependentDispatchSources() {
+			return m_dependentSources;
+		}
+
+		void disable() override {
+			m_mainLoopContext->deregisterWatch(this);
+		}
+
+private:
+		CallBackFunction m_callBack;
+		std::shared_ptr<MainLoopContext> m_mainLoopContext;
+		struct pollfd& m_fd;
+		std::vector<DispatchSource*> m_dependentSources;
+	};
+
+public:
+	SomeIPConnection(SomeIPClient::ClientConnection* clientConnection) : m_connection(clientConnection),
+		m_watch( getConnection() ) {
 	}
 
 	~SomeIPConnection() {
-		m_connection.disconnect();
+		getConnection().disconnect();
+	}
+
+	std::unique_ptr<IdleMainLoopHook> addIdleCallback(IdleMainLoopHook::CallBackFunction callBackFunction) override {
+		return std::unique_ptr<IdleMainLoopHook>( new CommonAPIIdleMainLoopHook(callBackFunction, m_mainLoopContext) );
+	}
+
+	std::unique_ptr<TimeOutMainLoopHook> addTimeout(TimeOutMainLoopHook::CallBackFunction callBackFunction,
+							int durationInMilliseconds) override {
+		return std::unique_ptr<TimeOutMainLoopHook>( new CommonAPITimeOutMainLoopHook(callBackFunction,
+											      durationInMilliseconds,
+											      m_mainLoopContext) );
+	}
+
+	std::unique_ptr<WatchMainLoopHook> addWatch(WatchMainLoopHook::CallBackFunction callBackFunction, pollfd& fd) override {
+		return std::unique_ptr<WatchMainLoopHook>( new CommonAPIWatchMainLoopHook(callBackFunction, fd, m_mainLoopContext) );
 	}
 
 	Watch& getWatch() {
 		return m_watch;
 	}
 
-	SomeIPReturnCode connect() {
-		return m_connection.connect(*this);
+	SomeIPReturnCode connect(std::shared_ptr<MainLoopContext> mainLoopContext) {
+		m_mainLoopContext = mainLoopContext;
+		getConnection().setMainLoopInterface(*this);
+		return getConnection().connect(*this);
 	}
 
-	bool isConnected() {
-		return m_connection.isConnected();
+	bool isConnected() const {
+		return getConnection().isConnected();
 	}
 
 	void onDisconnected() {
@@ -140,16 +211,12 @@ public:
 	}
 
 	SomeIPReturnCode sendMessage(OutputMessage& msg) {
-		return m_connection.sendMessage(msg);
+		return getConnection().sendMessage(msg);
 	}
 
 	InputMessage sendMessageBlocking(OutputMessage& msg) {
-		return m_connection.sendMessageBlocking(msg);
+		return getConnection().sendMessageBlocking(msg);
 	}
-
-	//	bool sendWithResponse(SomeIPClient::OutputMessageWithReport& msg) {
-	//		return m_connection.sendWithResponse(msg);
-	//	}
 
 	void sendWithResponseHandler(OutputMessage& msg,
 				     MessageSink& messageHandler) {
@@ -170,13 +237,17 @@ public:
 	//	}
 
 	void subscribeNotification(MessageID messageID) {
-		m_connection.subscribeToNotifications(messageID);
+		getConnection().subscribeToNotifications(messageID);
 	}
 
 	MessageProcessingResult processMessage(const InputMessage& message);
 
 	SomeIPClient::ClientConnection& getConnection() {
-		return m_connection;
+		return *m_connection.get();
+	}
+
+	const SomeIPClient::ClientConnection& getConnection() const {
+		return *m_connection.get();
 	}
 
 	const std::unordered_map<ServiceID, SomeIPProxy*> getProxies() const {
@@ -197,12 +268,14 @@ public:
 	}
 
 private:
-	SomeIPClient::ClientConnection& m_connection;
+	std::unique_ptr<SomeIPClient::ClientConnection> m_connection;
 	std::unordered_map<ServiceID, SomeIPStubAdapter*> m_serviceTable;
 	std::unordered_map<ServiceID, SomeIPProxy*> m_proxyTable;
 	std::unordered_map<RequestID, MessageSink*> m_messageHandlers;
 
 	SomeIPConnectionWatch m_watch;
+
+	std::shared_ptr<MainLoopContext> m_mainLoopContext;
 
 };
 

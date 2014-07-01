@@ -115,7 +115,7 @@ WatchStatus LocalClient::onIncomingDataAvailable() {
 
 void LocalClient::sendPingMessage() {
 #ifdef ENABLE_PING
-	log_verbose( "Sending PING message to %s", toString().c_str() );
+	log_verbose() << "Sending PING message to " << toString();
 	IPCOutputMessage msg(IPCMessageType::PING);
 	for (size_t i = 0; i < 256; i++) {
 		uint8_t v = i;
@@ -129,8 +129,36 @@ void LocalClient::sendPingMessage() {
 void LocalClient::initConnection() {
 	pid = getPidFromFiledescriptor( getFileDescriptor() );
 	processName = getProcessName(pid);
-	m_channelWatcher.setup( getFileDescriptor() );
-	m_channelWatcher.enableWatch();
+
+	{
+		pollfd fd;
+		fd.fd = getFileDescriptor();
+		fd.events = POLLIN;
+		m_inputDataWatcher = m_mainLoopContext.addWatch([&] () {
+									return onIncomingDataAvailable();
+								}, fd);
+		m_inputDataWatcher->enable();
+	}
+
+	{
+		pollfd fd;
+		fd.fd = getFileDescriptor();
+		fd.events = POLLOUT;
+		m_outputDataWatcher = m_mainLoopContext.addWatch([&] () {
+									 return onWritingPossible();
+								 }, fd);
+	}
+
+	{
+		pollfd fd;
+		fd.fd = getFileDescriptor();
+		fd.events = POLLHUP;
+		m_disconnectionWatcher = m_mainLoopContext.addWatch([&] () {
+									    disconnect();
+								    }, fd);
+		m_disconnectionWatcher->enable();
+	}
+
 	sendPingMessage();
 	sendRegistry();
 }

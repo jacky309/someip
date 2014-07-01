@@ -6,6 +6,7 @@ set(LIBRARY_FILES
 
 add_library( someip_client_lib SHARED
 SomeIP-clientLib.cpp
+SomeIP-standloneClientLib.cpp
 )
 
 TARGET_LINK_LIBRARIES( someip_client_lib 

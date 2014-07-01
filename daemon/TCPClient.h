@@ -17,7 +17,7 @@ class TCPManager;
  */
 class TCPClient : public Client,
 	private SocketStreamConnection,
-	private GlibChannelListener,
+	//	private GlibChannelListener,
 	private ServiceDiscoveryListener {
 
 	LOG_DECLARE_CLASS_CONTEXT("TCPC", "TCPClient");
@@ -52,7 +52,7 @@ public:
 	 * Constructor used when a remote client connects to us
 	 */
 	TCPClient(Dispatcher& dispatcher, int fileDescriptor, TCPManager& tcpManager, MainLoopContext& mainContext) :
-		Client(dispatcher), m_tcpManager(tcpManager), m_serviceDiscoveryDecoder(*this), m_channelWatcher(*this, mainContext) {
+		Client(dispatcher), m_tcpManager(tcpManager), m_serviceDiscoveryDecoder(*this), m_mainLoopContext(mainContext) {
 		setFileDescriptor(fileDescriptor);
 	}
 
@@ -61,7 +61,7 @@ public:
 	 */
 	TCPClient(Dispatcher& dispatcher, IPv4TCPEndPoint server, TCPManager& tcpManager, MainLoopContext& mainContext) :
 		Client(dispatcher), ServiceDiscoveryListener(*this), m_tcpManager(tcpManager), m_serviceDiscoveryDecoder(
-			*this), m_channelWatcher(*this, mainContext) {
+			*this), m_mainLoopContext(mainContext) {
 		m_serverIdentifier = server;
 	}
 
@@ -96,12 +96,45 @@ public:
 
 	void onFindServiceRequested(const SomeIPServiceDiscoveryServiceEntry& serviceEntry,
 				    const SomeIPServiceDiscoveryMessage& message) override {
-	};
+	}
 
 	void setupConnection() {
 		m_headerReader.setBuffer( m_headerBytes, sizeof(m_headerBytes) );
-		m_channelWatcher.setup( getFileDescriptor() );
-		m_channelWatcher.enableWatch();
+
+		{
+			pollfd fd;
+			fd.fd = getFileDescriptor();
+			fd.events = POLLIN;
+			m_inputDataWatcher = m_mainLoopContext.addWatch([&] () {
+										return onIncomingDataAvailable();
+									}, fd);
+			m_inputDataWatcher->enable();
+		}
+
+		{
+			pollfd fd;
+			fd.fd = getFileDescriptor();
+			fd.events = POLLOUT;
+			m_outputDataWatcher = m_mainLoopContext.addWatch([&] () {
+										 return onWritingPossible();
+									 }, fd);
+		}
+
+		{
+			pollfd fd;
+			fd.fd = getFileDescriptor();
+			fd.events = POLLHUP;
+			m_disconnectionWatcher = m_mainLoopContext.addWatch([&] () {
+										    disconnect();
+									    }, fd);
+			m_disconnectionWatcher->enable();
+		}
+
+		/*
+		 m_channelWatcher.setup( getFileDescriptor() );
+		 m_channelWatcher.enableWatch();
+		 */
+
 	}
 
 	IPv4TCPEndPoint& getServerID() {
@@ -125,7 +158,9 @@ public:
 
 	void onDisconnected() override {
 		unregisterClient();
-		m_channelWatcher.disableWatch();
+		m_inputDataWatcher->disable();
+		m_outputDataWatcher->disable();
+		m_disconnectionWatcher->disable();
 	}
 
 	static void enableNoDelay(int fd) {
@@ -165,8 +200,8 @@ public:
 	void onNotificationSubscribed(SomeIP::MemberID serviceID, SomeIP::MemberID memberID) override;
 
 	void onCongestionDetected() override {
-		m_channelWatcher.enableOutputWatch();
-		log_info() << "Congestion %s" << toString();
+		m_outputDataWatcher->enable();
+		log_info() << "Congestion " << toString();
 	}
 
 	class MyInputMessage : public DispatcherMessage {
@@ -201,9 +236,9 @@ private:
 	/**
 	 * Called whenever some data is received from a client
 	 */
-	WatchStatus onIncomingDataAvailable() override;
+	WatchStatus onIncomingDataAvailable();
 
-	WatchStatus onWritingPossible() override {
+	WatchStatus onWritingPossible() {
 		return (writePendingDataNonBlocking() ==
 			IPCOperationReport::OK) ? WatchStatus::STOP_WATCHING : WatchStatus::KEEP_WATCHING;
 	}
@@ -231,7 +266,11 @@ private:
 	TCPManager& m_tcpManager;
 	ServiceDiscoveryMessageDecoder m_serviceDiscoveryDecoder;
 
-	GlibChannelWatcher m_channelWatcher;
+	MainLoopContext& m_mainLoopContext;
+
+	std::unique_ptr<WatchMainLoopHook> m_inputDataWatcher;
+	std::unique_ptr<WatchMainLoopHook> m_outputDataWatcher;
+	std::unique_ptr<WatchMainLoopHook> m_disconnectionWatcher;
 
 	RebootInformation m_rebootInformationMulticast;
 	RebootInformation m_rebootInformationUnicast;

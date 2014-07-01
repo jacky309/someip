@@ -12,9 +12,7 @@ void ServiceAnnouncer::sendMessage(const SomeIPServiceDiscoveryMessage& serviceD
 		    (struct sockaddr*) &addr,
 		    sizeof(addr) ) < 0) {
 		log_error() << "Can't send service discovery message : " << byteArray;
-	}
-	else
-	{
+	} else {
 		log_info() << "Service discovery message sent : " << byteArray;
 	}
 

@@ -133,16 +133,8 @@ public:
 class ClientConnection {
 
 public:
-
 	virtual ~ClientConnection() {
 	}
-
-	struct MainLoopInterface {
-		virtual ~MainLoopInterface() {
-		}
-
-		virtual void addIdleCallback(std::function<void()> callBackFunction) = 0;
-	};
 
 	/**
 	 * Handles the data which has been received.
@@ -151,8 +143,6 @@ public:
 	virtual bool dispatchIncomingMessages() = 0;
 
 	virtual void disconnect() = 0;
-
-	virtual	void setMainLoopInterface(MainLoopInterface& mainloopInterface) = 0;
 
 	virtual int getFileDescriptor() const = 0;
 
@@ -194,14 +184,28 @@ public:
 	/**
 	 * Returns true if the connection to the daemon is active
 	 */
-	virtual bool isConnected() const  = 0;
+	virtual bool isConnected() const = 0;
 
 	/**
 	 * Returns true if some data has been received
 	 */
 	virtual bool hasIncomingMessages() = 0;
 
-	virtual ServiceRegistry& getServiceRegistry() = 0;
+	void setMainLoopInterface(MainLoopInterface& mainloopInterface) {
+		m_mainLoop = &mainloopInterface;
+	}
+
+	/**
+	 * Returns the service registry instance
+	 */
+	ServiceRegistry& getServiceRegistry() {
+		return m_registry;
+	}
+
+protected:
+	MainLoopInterface* m_mainLoop = nullptr;
+	ServiceRegistry m_registry;
+	ClientConnectionListener* messageReceivedCallback = nullptr;
 
 };
 
@@ -214,7 +218,6 @@ class ClientDaemonConnection : public ClientConnection, private MessageSource, p
 	LOG_SET_CLASS_CONTEXT(clientLibContext);
 
 public:
-
 	static constexpr const char* DEFAULT_SERVER_SOCKET_PATH = "/tmp/someIPSocket";
 	static constexpr const char* ALTERNATIVE_SERVER_SOCKET_PATH = "/tmp/someIPSocket2";
 
@@ -222,6 +225,7 @@ public:
 	}
 
 	~ClientDaemonConnection() {
+		messageReceivedCallback = nullptr;
 		disconnect();
 	}
 
@@ -245,13 +249,6 @@ public:
 	 * @return : true if there is still some data to be processed
 	 */
 	bool dispatchIncomingMessages() override;
-
-	/**
-	 * Returns the service registry instance
-	 */
-	ServiceRegistry& getServiceRegistry() override {
-		return m_registry;
-	}
 
 	/**
 	 * Connects to the dispatcher.
@@ -299,10 +296,6 @@ public:
 	 * Returns a dump of the daemon's internal state, which can be useful for diagnostic.
 	 */
 	SomeIPReturnCode getDaemonStateDump(std::string& dump);
-
-	void setMainLoopInterface(MainLoopInterface& mainloopInterface) {
-		m_mainLoop = &mainloopInterface;
-	}
 
 private:
 	class SafeMessageQueue {
@@ -394,13 +387,7 @@ private:
 		log_error() << "Connection to daemon lost";
 	}
 
-	ClientConnectionListener* messageReceivedCallback = nullptr;
-
 	std::vector<OutputMessageWithReport> m_messagesWithReport;
-
-	MainLoopInterface* m_mainLoop = nullptr;
-
-	ServiceRegistry m_registry;
 
 	SafeMessageQueue m_queue;
 
@@ -408,6 +395,11 @@ private:
 
 	std::recursive_mutex dataReceptionMutex;
 	std::recursive_mutex dataEmissionMutex;
+
+	std::unique_ptr<IdleMainLoopHook> m_idleCallBack;
+
+	std::unique_ptr<WatchMainLoopHook> m_inputDataWatch;
+	std::unique_ptr<WatchMainLoopHook> m_disconnectionWatch;
 
 };
 

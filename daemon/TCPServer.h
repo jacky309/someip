@@ -43,7 +43,7 @@ public:
 
 	void createNewClientConnection(int fileDescriptor) override {
 		TCPClient* newClient = new TCPClient(m_dispatcher, fileDescriptor, m_tcpManager, m_mainContext);
-		log_debug( "New client : %s", newClient->toString().c_str() );
+		log_debug() << "New client : " << newClient->toString();
 		newClient->registerClient();
 	}
 

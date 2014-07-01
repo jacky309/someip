@@ -26,7 +26,7 @@ public:
 	ControlApp(SomeIPClient::ClientConnection& connection) :
 		MainLoopApplication(), m_glibIntegration(connection) {
 		connection.connect(*this);
-		if (!connection.isConnected())
+		if ( !connection.isConnected() )
 			throw new ConnectionException("Not connected");
 		m_glibIntegration.setup();
 	}
@@ -104,7 +104,7 @@ int main(int argc, const char** argv) {
 	int serviceToRegister = NO_SERVICE_ID;
 	MessageID messageToSubscribeTo = NO_MESSAGE_ID;
 	bool dumpDaemonState = false;
-	bool blockingMode = true;
+	bool blockingMode = false;
 	int repeatDuration = 0;
 
 	CommandLineParser commandLineParser(
@@ -153,13 +153,13 @@ int main(int argc, const char** argv) {
 	}
 
 	if (dumpDaemonState) {
-		new GLibTimer([&]() {
-			std::string s;
-			if (!isError(connection.getDaemonStateDump(s)))
-				std::cout << s << std::endl;
-		}, 1000, app.getMainContext());
+		new GLibTimer( [&]() {
+				       std::string s;
+				       if ( !isError( connection.getDaemonStateDump(s) ) )
+					       std::cout << s << std::endl;
+			       }, 1000, app.getMainContext() );
 
-//		std::cout << connection.getDaemonStateDump();
+		//		std::cout << connection.getDaemonStateDump();
 	}
 
 	auto sendMessagesFunction = [&] () {
@@ -202,9 +202,9 @@ int main(int argc, const char** argv) {
 	sendMessagesFunction();
 
 	if (repeatDuration != 0) {
-		new GLibTimer([&]() {
-				      sendMessagesFunction();
-			      }, repeatDuration, app.getMainContext());
+		new GLibTimer( [&]() {
+				       sendMessagesFunction();
+			       }, repeatDuration, app.getMainContext() );
 	}
 
 	app.run();

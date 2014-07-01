@@ -123,7 +123,7 @@ IPCOperationReport SocketStreamConnection::writeBytesBlocking(const void* buffer
 
 	}
 
-	log_verbose( ) << "Bytes written : " << byteArrayToString(buffer, length);
+	log_verbose() << "Bytes written : " << byteArrayToString(buffer, length);
 
 	return IPCOperationReport::OK;
 }
@@ -157,7 +157,7 @@ IPCOperationReport UDSConnection::writeBlocking(const IPCMessage& msg) {
 	// write payload
 	returnIfError( writeBytesBlocking( msg.getPayload().getData(), msg.getPayload().size() ) );
 
-	log_traffic( ) << "Written IPCMessage : " << msg.toString();
+	log_traffic() << "Written IPCMessage : " << msg.toString();
 
 	return IPCOperationReport::OK;
 }
@@ -225,11 +225,11 @@ IPCOperationReport SocketStreamConnection::writeBytesNonBlocking(const void* dat
 			break;
 
 		case EBADF :
-			log_error( ) << "Bad file descriptor " << getFileDescriptor();
+			log_error() << "Bad file descriptor " << getFileDescriptor();
 			break;
 
 		default :
-			log_error( ) << "Unknown error : " << errno << " . " << toString();
+			log_error() << "Unknown error : " << errno << " . " << toString();
 			disconnect();
 			return IPCOperationReport::DISCONNECTED;
 			break;

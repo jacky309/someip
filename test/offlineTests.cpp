@@ -50,12 +50,12 @@ void sendMessageWithExpectedAnswer(     //SomeIPClient::ClientConnection& connec
 
 	CommonAPI::Version v;
 
-	log_info("Sending message : ") << outputMsg;
-	log_info("Expected message : ") << expectedMsg;
+	log_info() << "Sending message : " << outputMsg;
+	log_info() << "Expected message : " << expectedMsg;
 
 	TestSink sink(
 		[&](const InputMessage &msg) {
-			log_info("Received message : ") << msg;
+			log_info() << "Received message : " << msg;
 			EXPECT_TRUE( msg.isAnswerTo(expectedMsg) );
 			EXPECT_TRUE( byteArraysEqual( msg.getPayload(), msg.getPayloadLength(),
 						      expectedMsg.getPayload(), expectedMsg.getPayloadLength() ) );
