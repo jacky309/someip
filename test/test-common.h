@@ -4,9 +4,9 @@
 
 #include "ivi-logging.h"
 
-LOG_DECLARE_DEFAULT_CONTEXT(blabla, "LOG", "Main context");
-
 using namespace SomeIP_Lib;
+
+LOG_DECLARE_DEFAULT_CONTEXT(blabla, "LOG", "Main context");
 
 class TestSink : public SomeIPClient::ClientConnectionListener {
 public:
@@ -21,7 +21,7 @@ public:
 	}
 
 	MessageProcessingResult processMessage(const InputMessage& msg) override {
-		log_info("message received :") << msg;
+		log_info() << "message received :" << msg;
 		m_callBackFunction(msg);
 		m_messageCounter++;
 		return MessageProcessingResult::Processed_OK;

@@ -4,7 +4,7 @@
 
 namespace SomeIP_Lib {
 
-//LOG_DECLARE_CONTEXT(someIPLibContext, "SOLI", "SomeIP library");
+LOG_DECLARE_DEFAULT_CONTEXT(libContext, "lib", "lib");
 
 uint16_t OutputMessage::s_nextAvailableRequestID = 0x1000;
 std::mutex OutputMessage::s_nextAvailableRequestIDMutex;

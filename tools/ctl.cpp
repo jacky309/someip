@@ -1,7 +1,5 @@
 #include "SomeIP-common.h"
 
-LOG_DEFINE_APP_IDS("sctl", "SomeIP ctl tool");
-
 #include "MainLoopApplication.h"
 #include "CommandLineParser.h"
 #include "GlibMainLoopInterfaceImplementation.h"
@@ -11,11 +9,12 @@ LOG_DEFINE_APP_IDS("sctl", "SomeIP ctl tool");
 #include <string>
 #include <boost/tokenizer.hpp>
 
-LOG_DECLARE_DEFAULT_CONTEXT(mainContext, "ctl", "Main log context");
-
 using namespace SomeIP;
 using namespace SomeIP_utils;
 using namespace SomeIP_Lib;
+
+LOG_DEFINE_APP_IDS("sctl", "SomeIP ctl tool");
+LOG_DECLARE_DEFAULT_CONTEXT(mainContext, "ctl", "Main log context");
 
 typedef std::function<void (const InputMessage&)> MessageReceivedCallbackFunction;
 

@@ -8,7 +8,7 @@ CommandLineParser.h
 )
 
 add_library( utilLib STATIC
-	lib.cpp
+	SomeIP-Utils.cpp
 )
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC"  )

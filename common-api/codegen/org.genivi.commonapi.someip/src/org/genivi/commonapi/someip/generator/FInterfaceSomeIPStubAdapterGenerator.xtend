@@ -9,19 +9,63 @@ import org.franca.core.franca.FModelElement
 import org.genivi.commonapi.core.generator.FrancaGeneratorExtensions
 import org.genivi.commonapi.core.deployment.DeploymentInterfacePropertyAccessor
 import org.franca.deploymodel.dsl.fDeploy.FDInterface
+import org.franca.core.franca.FModel
+import org.franca.core.franca.FTypeCollection
+import org.genivi.commonapi.core.generator.FrancaGenerator
 
 class FInterfaceSomeIPStubAdapterGenerator {
+    @Inject private extension FrancaGenerator
     @Inject private extension FrancaGeneratorExtensions
     @Inject private extension FrancaSomeIPGeneratorExtensions
 	@Inject private extension FTypeGeneratorMadePublic = new FTypeGeneratorMadePublic
 
-	def generateSomeIPStubAdapter(FDInterface fDInterface, IFileSystemAccess fileSystemAccess) {
+	def generateSomeIPStubAdapter(FDInterface fDInterface, FModel model, IFileSystemAccess fileSystemAccess) {
         var fInterface = fDInterface.target
-        fileSystemAccess.generateFile(fInterface.someipStubAdapterHeaderPath, fDInterface.generateSomeIPStubAdapterHeader(null))
-        fileSystemAccess.generateFile(fInterface.someipStubAdapterSourcePath, fDInterface.generateSomeIPStubAdapterSource(null))
+        fileSystemAccess.generateFile(fInterface.someipStubAdapterHeaderPath, fDInterface.generateSomeIPStubAdapterHeader(model, null))
+        fileSystemAccess.generateFile(fInterface.someipStubAdapterSourcePath, fDInterface.generateSomeIPStubAdapterSource(model, null))
 	}
 
-    def private generateSomeIPStubAdapterHeader(FDInterface fDInterface, DeploymentInterfacePropertyAccessor deploymentAccessor) '''
+	def getReferencedType(FModel model) {
+		    val allReferencedFTypes = model.allReferencedFTypes
+	        val allFTypeTypeCollections = allReferencedFTypes.filter[eContainer instanceof FTypeCollection].map[
+	            eContainer as FTypeCollection]
+	
+	        val generateTypeCollections = model.typeCollections.toSet
+	        generateTypeCollections.addAll(allFTypeTypeCollections)
+		
+		return generateTypeCollections;
+	}
+
+	def getSomeIPDefinitionFilePath(FModel model, FTypeCollection collection) {
+		return model.directoryPath + '/' + collection.name + 'SomeIP.h';
+	}
+
+	def generateTypeCollectionSomeIP(FModel model, IFileSystemAccess fileSystemAccess) {
+
+        val generateTypeCollections = getReferencedType(model)
+
+        generateTypeCollections.forEach [
+        	var collection = it
+	        fileSystemAccess.generateFile(getSomeIPDefinitionFilePath(model, collection), collection.generateTypeCollectionSomeIP())
+        ]
+
+	}
+
+	def generateTypeCollectionSomeIP(FTypeCollection collection) '''
+		
+		#include "«collection.name».h"
+		
+		namespace SomeIP_Lib {
+
+		«FOR type: collection.types.sortTypes(null)»
+            «type.generateFTypeSerializer(collection)»
+        «ENDFOR»
+		
+		}
+		
+	'''
+
+    def private generateSomeIPStubAdapterHeader(FDInterface fDInterface, FModel model, DeploymentInterfacePropertyAccessor deploymentAccessor) '''
         «val fInterface = fDInterface.target»
         #pragma once
 
@@ -31,12 +75,11 @@ class FInterfaceSomeIPStubAdapterGenerator {
 
         #include <«fInterface.stubHeaderPath»>
 
-namespace SomeIP_Lib {
-
-		«FOR type: fInterface.types.sortTypes(fInterface)»
-            «type.generateFTypeSerializer(fInterface)»
-        «ENDFOR»
-}
+////
+        «FOR collection : getReferencedType(model)»
+	        #include "«getSomeIPDefinitionFilePath(model, collection)»"
+		«ENDFOR»
+////
 
         «fInterface.model.generateNamespaceBeginDeclaration»
 
@@ -69,7 +112,7 @@ namespace SomeIP_Lib {
 
     '''
 
-    def private generateSomeIPStubAdapterSource(FDInterface fDInterface, DeploymentInterfacePropertyAccessor deploymentAccessor) '''
+    def private generateSomeIPStubAdapterSource(FDInterface fDInterface, FModel model, DeploymentInterfacePropertyAccessor deploymentAccessor) '''
         «val fInterface = fDInterface.target»
         
         «internal_compilation_guard»
@@ -206,12 +249,12 @@ namespace SomeIP_Lib {
     }
 
     def private getAllOutTypes(FMethod fMethod) {
-        var types = fMethod.outArgs.map[type.getNameReference(fMethod.model)].join(', ')
+        var types = fMethod.outArgs.map[getTypeName(fMethod.model)].join(', ')
 
         if (fMethod.hasError) {
             if (!fMethod.outArgs.empty)
                 types = ', ' + types
-            types = fMethod.getErrorNameReference(fMethod.model) + types
+            types = fMethod.getErrorNameReference(fMethod.eContainer) + types
         }
 
         return types

@@ -20,7 +20,6 @@
 namespace CommonAPI {
 namespace SomeIP {
 
-
 template<typename _StubClass>
 class StubAdapterHelper : public SomeIPStubAdapter,
 	public std::enable_shared_from_this<typename _StubClass::StubAdapterType> {

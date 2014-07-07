@@ -39,61 +39,61 @@ class FrancaSomeIPGenerator implements IGenerator {
 	@Inject private FrancaGenerator francaGenerator
 
     override doGenerate(Resource input, IFileSystemAccess fileSystemAccess) {
-        var FModel fModel
-        var FDModel fDeployedModel
-        var List<FDInterface> deployedInterfaces
-        var IResource res = null
-        var EclipseResourceFileSystemAccess2 accessspez
-
-//        if (input.URI.fileExtension.equals(francaPersistenceManager.fileExtension)) {
-//            francaGenerator.doGenerate(input, fileSystemAccess);
-//            fModel = francaPersistenceManager.loadModel(input.filePath)
-//            deployedInterfaces = new LinkedList<FDInterface>()
+//        var FModel fModel
+//        var FDModel fDeployedModel
+//        var List<FDInterface> deployedInterfaces
+//        var IResource res = null
+//        var EclipseResourceFileSystemAccess2 accessspez
 //
-//        } else 
-        if (input.URI.fileExtension.equals("fdepl"/* fDeployPersistenceManager.fileExtension */)) {
-            francaGenerator.doGenerate(input, fileSystemAccess);
-
-            fDeployedModel = fDeployPersistenceManager.loadModel(input.URI, input.URI);
-            val fModelExtender = new FDModelExtender(fDeployedModel);
-
-            checkArgument(fModelExtender.getFDInterfaces().size > 0, "No Interfaces were deployed, nothing to generate.")
-            fModel = fModelExtender.getFDInterfaces().get(0).target.model
-            deployedInterfaces = fModelExtender.getFDInterfaces()
-
-        } else {
-            checkArgument(false, "Unknown input: " + input)
-        }
-        try {
-            var pathfile = input.URI.toPlatformString(false)
-            if (pathfile == null) {
-                pathfile = FPreferences::instance.getModelPath(fModel)
-            }
-            if (pathfile.startsWith("platform:/")) {
-                pathfile = pathfile.substring(pathfile.indexOf("platform") + 10)
-                pathfile = pathfile.substring(pathfile.indexOf(System.getProperty("file.separator")))
-            }
-            res = ResourcesPlugin.workspace.root.findMember(pathfile)
-            accessspez = fileSystemAccess as EclipseResourceFileSystemAccess2
-            FPreferences.instance.addPreferences(res);
-            if (FPreferences.instance.useModelSpecific(res)) {
-                var output = res.getPersistentProperty(
-                    new QualifiedName(PreferenceConstants.PROJECT_PAGEID, PreferenceConstants.P_OUTPUT))
-                if (output != null && output.length != 0) {
-                    accessspez.setOutputPath(output)
-                }
-            }
-        } catch (IllegalStateException e) {} //will be thrown only when the cli calls the francagenerator
-        
-        doGenerate(deployedInterfaces, fileSystemAccess)
-        if(res != null) {
-            var deflt = DefaultScope::INSTANCE.getNode(PreferenceConstants::SCOPE).get(PreferenceConstants::P_OUTPUT,
-                PreferenceConstants::DEFAULT_OUTPUT);
-            deflt = InstanceScope::INSTANCE.getNode(PreferenceConstants::SCOPE).get(PreferenceConstants::P_LICENSE,
-                        deflt)
-            deflt = FPreferences.instance.getPreference(res, PreferenceConstants.P_OUTPUT, deflt)
-            accessspez.setOutputPath(deflt)
-        }
+////        if (input.URI.fileExtension.equals(francaPersistenceManager.fileExtension)) {
+////            francaGenerator.doGenerate(input, fileSystemAccess);
+////            fModel = francaPersistenceManager.loadModel(input.filePath)
+////            deployedInterfaces = new LinkedList<FDInterface>()
+////
+////        } else 
+//        if (input.URI.fileExtension.equals("fdepl"/* fDeployPersistenceManager.fileExtension */)) {
+//            francaGenerator.doGenerate(input, fileSystemAccess);
+//
+//            fDeployedModel = fDeployPersistenceManager.loadModel(input.URI, input.URI);
+//            val fModelExtender = new FDModelExtender(fDeployedModel);
+//
+//            checkArgument(fModelExtender.getFDInterfaces().size > 0, "No Interfaces were deployed, nothing to generate.")
+//            fModel = fModelExtender.getFDInterfaces().get(0).target.model
+//            deployedInterfaces = fModelExtender.getFDInterfaces()
+//
+//        } else {
+//            checkArgument(false, "Unknown input: " + input)
+//        }
+//        try {
+//            var pathfile = input.URI.toPlatformString(false)
+//            if (pathfile == null) {
+//                pathfile = FPreferences::instance.getModelPath(fModel)
+//            }
+//            if (pathfile.startsWith("platform:/")) {
+//                pathfile = pathfile.substring(pathfile.indexOf("platform") + 10)
+//                pathfile = pathfile.substring(pathfile.indexOf(System.getProperty("file.separator")))
+//            }
+//            res = ResourcesPlugin.workspace.root.findMember(pathfile)
+//            accessspez = fileSystemAccess as EclipseResourceFileSystemAccess2
+//            FPreferences.instance.addPreferences(res);
+//            if (FPreferences.instance.useModelSpecific(res)) {
+//                var output = res.getPersistentProperty(
+//                    new QualifiedName(PreferenceConstants.PROJECT_PAGEID, PreferenceConstants.P_OUTPUT))
+//                if (output != null && output.length != 0) {
+//                    accessspez.setOutputPath(output)
+//                }
+//            }
+//        } catch (IllegalStateException e) {} //will be thrown only when the cli calls the francagenerator
+//        
+//        doGenerate(deployedInterfaces, fileSystemAccess)
+//        if(res != null) {
+//            var deflt = DefaultScope::INSTANCE.getNode(PreferenceConstants::SCOPE).get(PreferenceConstants::P_OUTPUT,
+//                PreferenceConstants::DEFAULT_OUTPUT);
+//            deflt = InstanceScope::INSTANCE.getNode(PreferenceConstants::SCOPE).get(PreferenceConstants::P_LICENSE,
+//                        deflt)
+//            deflt = FPreferences.instance.getPreference(res, PreferenceConstants.P_OUTPUT, deflt)
+//            accessspez.setOutputPath(deflt)
+//        }
     }
 
 //    def public doGenerate(List<FDInterface> deployedInterfaces, IFileSystemAccess fileSystemAccess) {
@@ -104,8 +104,10 @@ class FrancaSomeIPGenerator implements IGenerator {
 //		]
 //    }
 
-    def public doGenerate(List<FDInterface> deployedInterfaces, IFileSystemAccess fileSystemAccess) {
+    def public doGenerate(FModel fModel, List<FDInterface> deployedInterfaces, IFileSystemAccess fileSystemAccess) {
         val defaultDeploymentAccessor = new DeploymentInterfacePropertyAccessorWrapper(null) as DeploymentInterfacePropertyAccessor
+
+		fModel.generateTypeCollectionSomeIP(fileSystemAccess)
 
         deployedInterfaces.forEach [
             val currentInterface = it
@@ -145,7 +147,7 @@ class FrancaSomeIPGenerator implements IGenerator {
 //            if (finalValue.equals(booleanTrue)) {
 //                if (deploymentAccessor.getPropertiesType(currentInterface) == null ||
 //                    deploymentAccessor.getPropertiesType(currentInterface) == PropertiesType::CommonAPI) {
-                    it.generateSomeIPStubAdapter(fileSystemAccess)
+                    it.generateSomeIPStubAdapter(fModel, fileSystemAccess)
 //                } else {
 //                    // Report no Stub here!
 //                }

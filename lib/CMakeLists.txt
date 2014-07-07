@@ -18,6 +18,7 @@ add_library( someip_lib SHARED
 	ipc/UDS.cpp
 	ipc/IPC.cpp
 	Message.cpp
+	lib.cpp
 )
 
 message("LOGGING_LIBRARIES : ${LOGGING_LIBRARIES}")

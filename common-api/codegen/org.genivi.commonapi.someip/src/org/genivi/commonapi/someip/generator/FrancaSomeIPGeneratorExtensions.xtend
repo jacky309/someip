@@ -96,20 +96,25 @@ class FrancaSomeIPGeneratorExtensions {
     }
 
     def dispatch generateFTypeSerializer(FType fType, FModelElement parent) '''
-// unknown type
-//template<> inline void readCustomType(SomeIPInputStream& inputStream, «fType.containingInterface.model.generateCppNamespace»«getClassNamespace(fType, parent)»& v) {}
+// unknown type : «fType.toString»
 '''
+
+	def fullyQualifiedCppName(FType fType, FModelElement parent) {
+		var s = fType.containingTypeCollection.model.generateCppNamespace;
+		s = s + getClassNamespace(fType, parent);
+		return s;
+	}
 
     def dispatch generateFTypeSerializer(FEnumerationType fType, FModelElement parent) '''
 // enum type
-inline SomeIPInputStream& operator>>(SomeIPInputStream& stream, «fType.containingInterface.model.generateCppNamespace»«getClassNamespace(fType, parent)»& v) {
-//template<> inline void readCustomType(SomeIPInputStream& inputStream, «fType.containingInterface.model.generateCppNamespace»«getClassNamespace(fType, parent)»& v) {
+inline SomeIPInputStream& operator>>(SomeIPInputStream& stream, «fType.fullyQualifiedCppName(parent)»& v) {
+//template<> inline void readCustomType(SomeIPInputStream& inputStream, «fType.fullyQualifiedCppName(parent)»& v) {
 	stream.readEnum(v);
 	return stream;
 }
 
 // enum type
-inline SomeIPOutputStream& operator<<(SomeIPOutputStream& stream, const «fType.containingInterface.model.generateCppNamespace»«getClassNamespace(fType, parent)»& v) {
+inline SomeIPOutputStream& operator<<(SomeIPOutputStream& stream, const «fType.fullyQualifiedCppName(parent)»& v) {
 	stream.writeEnum(v);
 	return stream;
 }
@@ -117,8 +122,8 @@ inline SomeIPOutputStream& operator<<(SomeIPOutputStream& stream, const «fType.
 
     def dispatch generateFTypeSerializer(FStructType fType, FModelElement parent) '''
 // struct type
-inline SomeIPInputStream& operator>>(SomeIPInputStream& stream, «fType.containingInterface.model.generateCppNamespace»«getClassNamespace(fType, parent)»& v) {
-//template<> inline void readCustomType(SomeIPInputStream& inputStream, «fType.containingInterface.model.generateCppNamespace»«getClassNamespace(fType, parent)»& v) {
+inline SomeIPInputStream& operator>>(SomeIPInputStream& stream, «fType.fullyQualifiedCppName(parent)»& v) {
+//template<> inline void readCustomType(SomeIPInputStream& inputStream, «fType.fullyQualifiedCppName(parent)»& v) {
 	«FOR element : fType.elements»
 	    stream >> v.«element.name»;
 	«ENDFOR»
@@ -126,8 +131,8 @@ inline SomeIPInputStream& operator>>(SomeIPInputStream& stream, «fType.containi
 }
 
 // enum type
-inline SomeIPOutputStream& operator<<(SomeIPOutputStream& stream, const «fType.containingInterface.model.generateCppNamespace»«getClassNamespace(fType, parent)»& v) {
-//template<> inline void writeCustomType(SomeIPOutputStream& outputStream, const «fType.containingInterface.model.generateCppNamespace»«getClassNamespace(fType, parent)»& v) {
+inline SomeIPOutputStream& operator<<(SomeIPOutputStream& stream, const «fType.fullyQualifiedCppName(parent)»& v) {
+//template<> inline void writeCustomType(SomeIPOutputStream& outputStream, const «fType.fullyQualifiedCppName(parent)»& v) {
     «FOR element : fType.elements»
         stream << v.«element.name»;
     «ENDFOR»

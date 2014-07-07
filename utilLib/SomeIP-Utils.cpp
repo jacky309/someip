@@ -7,37 +7,11 @@
 #include <sys/types.h>
 #include <sys/un.h>
 
-FILE* SomeIPFileLoggingContext::m_file = nullptr;
-
 namespace SomeIP_utils {
 
 LOG_DECLARE_DEFAULT_CONTEXT(libContext, "lib", "lib");
 
 LOG_DECLARE_CONTEXT(serializationContext, "PSer", "Serialization");
-
-
-std::string byteArrayToString(const void* buffer, size_t length) {
-	static char hexcode[] = "0123456789ABCDEF";
-	static char textBuffer[1024];
-
-	size_t dest = 0;
-
-	if (length + 1 > sizeof(textBuffer) / 3)
-		length = sizeof(textBuffer) / 3;
-
-	const unsigned char* bufferAsChar = static_cast<const unsigned char*>(buffer);
-
-	for (size_t byteIndex = 0; byteIndex < length; byteIndex++) {
-		textBuffer[dest++] = hexcode[bufferAsChar[byteIndex] >> 4];
-		textBuffer[dest++] = hexcode[bufferAsChar[byteIndex] & 0xF];
-		textBuffer[dest++] = ' ';
-	}
-
-	textBuffer[dest] = 0;
-
-	return textBuffer;
-}
-
 
 std::string getProcessName(pid_t pid) {
 

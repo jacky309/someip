@@ -13,9 +13,11 @@
 
 #include "ivi-logging.h"
 
+#include <ByteArray.h>
+
 namespace SomeIP_utils {
 
-std::string byteArrayToString(const void* buffer, size_t length);
+using logging::byteArrayToString;
 
 inline size_t getPointerAsInt(const void* p) {
 	return reinterpret_cast<size_t>(p);

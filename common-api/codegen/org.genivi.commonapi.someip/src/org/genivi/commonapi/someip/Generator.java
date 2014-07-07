@@ -18,7 +18,7 @@ public class Generator implements GeneratorInterface {
 
 	public void generate(FModel fModel, List<FDInterface> deployedInterfaces,
 			IFileSystemAccess fileSystemAccess, IResource res) {
-		generator.doGenerate(deployedInterfaces, fileSystemAccess);
+		generator.doGenerate(fModel, deployedInterfaces, fileSystemAccess);
 	}
 
 }

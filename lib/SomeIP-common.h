@@ -6,10 +6,13 @@
 #include <poll.h>
 #include <memory>
 
+#include <ByteArray.h>
+
 namespace SomeIP_Lib {
 
 using namespace SomeIP;
 using namespace SomeIP_utils;
+
 
 class IdleMainLoopHook {
 public:

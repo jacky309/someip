@@ -18,6 +18,8 @@
 #define log_traffic(args ...) while (false) NullLogData()
 #endif
 
+namespace SomeIP_utils {
+
 class SomeIPFileLoggingContext : public logging::FileLogContext {
 
 public:
@@ -54,5 +56,6 @@ typedef logging::LogContextT<
 #endif
 			 , SomeIPFileLoggingContext::LogDataType> > LogContext;
 
+}
 
 #include "SomeIP-Config.h"
