@@ -108,7 +108,6 @@ class FrancaSomeIPGeneratorExtensions {
     def dispatch generateFTypeSerializer(FEnumerationType fType, FModelElement parent) '''
 // enum type
 inline SomeIPInputStream& operator>>(SomeIPInputStream& stream, «fType.fullyQualifiedCppName(parent)»& v) {
-//template<> inline void readCustomType(SomeIPInputStream& inputStream, «fType.fullyQualifiedCppName(parent)»& v) {
 	stream.readEnum(v);
 	return stream;
 }
@@ -123,7 +122,6 @@ inline SomeIPOutputStream& operator<<(SomeIPOutputStream& stream, const «fType.
     def dispatch generateFTypeSerializer(FStructType fType, FModelElement parent) '''
 // struct type
 inline SomeIPInputStream& operator>>(SomeIPInputStream& stream, «fType.fullyQualifiedCppName(parent)»& v) {
-//template<> inline void readCustomType(SomeIPInputStream& inputStream, «fType.fullyQualifiedCppName(parent)»& v) {
 	«FOR element : fType.elements»
 	    stream >> v.«element.name»;
 	«ENDFOR»
@@ -132,7 +130,6 @@ inline SomeIPInputStream& operator>>(SomeIPInputStream& stream, «fType.fullyQua
 
 // enum type
 inline SomeIPOutputStream& operator<<(SomeIPOutputStream& stream, const «fType.fullyQualifiedCppName(parent)»& v) {
-//template<> inline void writeCustomType(SomeIPOutputStream& outputStream, const «fType.fullyQualifiedCppName(parent)»& v) {
     «FOR element : fType.elements»
         stream << v.«element.name»;
     «ENDFOR»
