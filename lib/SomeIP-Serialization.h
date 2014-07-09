@@ -116,8 +116,8 @@ SomeIPOutputStream& operator<<(SomeIPOutputStream& stream, const std::pair<KeyTy
 	return stream;
 }
 
-template<typename KeyType, typename ValueType>
-SomeIPOutputStream& operator<<(SomeIPOutputStream& stream, const std::unordered_map<KeyType, ValueType>& v) {
+template<typename KeyType, typename ValueType, typename Hasher>
+SomeIPOutputStream& operator<<(SomeIPOutputStream& stream, const std::unordered_map<KeyType, ValueType, Hasher>& v) {
 	uint32_t size = v.size();
 	stream.writeValue(size);
 	for (auto& element : v) {
@@ -191,8 +191,8 @@ SomeIPInputStream& operator>>(SomeIPInputStream& stream, Variant<_Types ...>& v)
 	return stream;
 }
 
-template<typename KeyType, typename ValueType>
-SomeIPInputStream& operator>>(SomeIPInputStream& stream, std::unordered_map<KeyType, ValueType>& v) {
+template<typename KeyType, typename ValueType, typename Hasher>
+SomeIPInputStream& operator>>(SomeIPInputStream& stream, std::unordered_map<KeyType, ValueType, Hasher>& v) {
 	uint32_t size;
 	stream.readValue(size);
 	for (size_t i = 0; i < size; i++) {

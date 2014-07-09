@@ -8,6 +8,7 @@ SomeIPConnection.h
 SomeIPProxy.h
 SomeIPEvent.h
 SomeIPRuntime.h
+SomeIPCommonAPI-Serialization.h
 ProxyHelper.h
 Attribute.h
 SomeIPFactoryRegistration.h

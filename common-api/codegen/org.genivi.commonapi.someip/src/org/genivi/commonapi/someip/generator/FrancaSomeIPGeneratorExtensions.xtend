@@ -119,22 +119,97 @@ inline SomeIPOutputStream& operator<<(SomeIPOutputStream& stream, const «fType.
 }
 '''
 
-    def dispatch generateFTypeSerializer(FStructType fType, FModelElement parent) '''
-// struct type
-inline SomeIPInputStream& operator>>(SomeIPInputStream& stream, «fType.fullyQualifiedCppName(parent)»& v) {
-	«FOR element : fType.elements»
-	    stream >> v.«element.name»;
+    def dispatch generatePolymorphicFTypeSerializer(FModelElement fType, FModelElement parent) ''''''
+
+    def dispatch generatePolymorphicFTypeSerializer(FStructType fType, FModelElement parent) '''
+«IF fType.isPolymorphic»
+
+inline void serializePolymorphic(SomeIPOutputStream& stream, const «fType.fullyQualifiedCppName(parent)»& v) {
+	LOG_SET_DEFAULT_CONTEXT(CommonAPI::SomeIP::someIPCommonAPILogContext);
+	uint32_t type = v.getSerialId();
+	stream << type;
+	switch (type) {
+		case «fType.fullyQualifiedCppName(parent)»::SERIAL_ID: {
+			serializeNoPolymorphic(stream, v);
+		} break;
+	«FOR derivedFStructType : fType.getDerivedFStructTypes»
+		case «derivedFStructType.fullyQualifiedCppName(parent)»::SERIAL_ID: {
+			serializeNoPolymorphic(stream, static_cast<const «derivedFStructType.fullyQualifiedCppName(parent)»&>(v) );
+		} break;
 	«ENDFOR»
+		default :
+			log_error() << "Unknown objectID : " << type;
+	}
+}
+
+inline void deserializePolymorphic(SomeIPInputStream& stream, std::shared_ptr<«fType.fullyQualifiedCppName(parent)»>& v) {
+	LOG_SET_DEFAULT_CONTEXT(CommonAPI::SomeIP::someIPCommonAPILogContext);
+	uint32_t type;
+	stream >> type;
+	switch (type) {
+		case «fType.fullyQualifiedCppName(parent)»::SERIAL_ID: {
+			auto d = std::make_shared<«fType.fullyQualifiedCppName(parent)»>();
+			deserializeNoPolymorphic(stream, *d);
+			v = d;
+		} break;
+	«FOR derivedFStructType : fType.getDerivedFStructTypes»
+		case «derivedFStructType.fullyQualifiedCppName(parent)»::SERIAL_ID: {
+			auto d = std::make_shared<«derivedFStructType.fullyQualifiedCppName(parent)»>();
+			deserializeNoPolymorphic(stream, *(d.get()) );
+			v = d;
+		} break;
+	«ENDFOR»
+		default :
+			log_error() << "Unknown objectID : " << type;
+	}
+}
+
+inline SomeIPInputStream& operator>>(SomeIPInputStream& stream, std::shared_ptr<«fType.fullyQualifiedCppName(parent)»>& v) {
+	deserializePolymorphic(stream, v);
 	return stream;
 }
 
-// enum type
 inline SomeIPOutputStream& operator<<(SomeIPOutputStream& stream, const «fType.fullyQualifiedCppName(parent)»& v) {
+	serializePolymorphic(stream, v);
+	return stream;
+}
+
+«ENDIF»
+'''
+
+    def dispatch generateFTypeSerializer(FStructType fType, FModelElement parent) '''
+// struct type
+
+inline void serializeNoPolymorphic(SomeIPOutputStream& stream, const «fType.fullyQualifiedCppName(parent)»& v) {
+	«IF (fType.base != null)»
+		serializeNoPolymorphic(stream, static_cast<const «fType.base.fullyQualifiedCppName(parent)»&>(v));
+	«ENDIF»
     «FOR element : fType.elements»
         stream << v.«element.name»;
     «ENDFOR»
+}
+
+inline void deserializeNoPolymorphic(SomeIPInputStream& stream, «fType.fullyQualifiedCppName(parent)»& v) {
+	«IF (fType.base != null)»
+		deserializeNoPolymorphic(stream, static_cast<«fType.base.fullyQualifiedCppName(parent)»&>(v));
+	«ENDIF»
+    «FOR element : fType.elements»
+        stream >> v.«element.name»;
+    «ENDFOR»
+}
+
+«IF !fType.isPolymorphic»
+
+inline SomeIPInputStream& operator>>(SomeIPInputStream& stream, «fType.fullyQualifiedCppName(parent)»& v) {
+	deserializeNoPolymorphic(stream, v);
 	return stream;
 }
+
+inline SomeIPOutputStream& operator<<(SomeIPOutputStream& stream, const «fType.fullyQualifiedCppName(parent)»& v) {
+	serializeNoPolymorphic(stream, v);
+	return stream;
+}
+«ENDIF»
 '''
 
     def internal_compilation_guard() '''

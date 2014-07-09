@@ -54,11 +54,16 @@ class FInterfaceSomeIPStubAdapterGenerator {
 	def generateTypeCollectionSomeIP(FTypeCollection collection) '''
 		
 		#include "«collection.name».h"
+		#include <SomeIPCommonAPI-Serialization.h>
 		
 		namespace SomeIP_Lib {
 
 		«FOR type: collection.types.sortTypes(null)»
             «type.generateFTypeSerializer(collection)»
+        «ENDFOR»
+		
+		«FOR type: collection.types.sortTypes(null)»
+            «type.generatePolymorphicFTypeSerializer(collection)»
         «ENDFOR»
 		
 		}
@@ -75,17 +80,18 @@ class FInterfaceSomeIPStubAdapterGenerator {
 
         #include <«fInterface.stubHeaderPath»>
 
-////
         «FOR collection : getReferencedType(model)»
 	        #include "«getSomeIPDefinitionFilePath(model, collection)»"
 		«ENDFOR»
-////
 
         «fInterface.model.generateNamespaceBeginDeclaration»
 
         typedef CommonAPI::SomeIP::StubAdapterHelper<«fInterface.stubClassName»> «fInterface.someipStubAdapterHelperClassName»;
 
         class «fInterface.someipStubAdapterClassName»: public «fInterface.stubAdapterClassName», public «fInterface.someipStubAdapterHelperClassName» {
+
+//			LOG_IMPORT_CLASS_CONTEXT(CommonAPI::SomeIP::someIPCommonAPILogContext);
+
          public:
             «fInterface.someipStubAdapterClassName»(
                     const std::shared_ptr<CommonAPI::StubBase>& stub,
@@ -95,12 +101,21 @@ class FInterfaceSomeIPStubAdapterGenerator {
             
             «FOR attribute : fInterface.attributes»
                 «IF attribute.isObservable»
-                    void «attribute.stubAdapterClassFireChangedMethodName»(const «attribute.type.getNameReference(fInterface.model)»& value);
+                    void «attribute.stubAdapterClassFireChangedMethodName»(const «attribute.getTypeName(fInterface.model)»& value);
                 «ENDIF»
             «ENDFOR»
         
             «FOR broadcast: fInterface.broadcasts»
-                void «broadcast.stubAdapterClassFireEventMethodName»(«broadcast.outArgs.map['const ' + type.getNameReference(fInterface.model) + '& ' + name].join(', ')»);
+                «IF !broadcast.selective.nullOrEmpty»
+                    void «broadcast.stubAdapterClassFireSelectiveMethodName»(«generateFireSelectiveSignatur(broadcast, fInterface)»);
+                    void «broadcast.stubAdapterClassSendSelectiveMethodName»(«generateSendSelectiveSignatur(broadcast, fInterface, true)»);
+                    void «broadcast.subscribeSelectiveMethodName»(const std::shared_ptr<CommonAPI::ClientId> clientId, bool& success);
+                    void «broadcast.unsubscribeSelectiveMethodName»(const std::shared_ptr<CommonAPI::ClientId> clientId);
+                    std::shared_ptr<CommonAPI::ClientIdList> const «broadcast.stubAdapterClassSubscribersMethodName»();
+                «ELSE»
+                    void «broadcast.stubAdapterClassFireEventMethodName»(«broadcast.outArgs.map['const ' + getTypeName(fInterface.model) + '& ' + elementName].join(', ')»);
+                «ENDIF»
+            
             «ENDFOR»
     
 		    void deactivateManagedInstances() override {
@@ -133,26 +148,8 @@ class FInterfaceSomeIPStubAdapterGenerator {
                 «fInterface.someipStubAdapterHelperClassName»(std::dynamic_pointer_cast<«fInterface.stubClassName»>(stub), connection, commonApiAddress, serviceID) {
         }
 
-
-
-
         «FOR attribute : fInterface.attributes»
-            static CommonAPI::SomeIP::GetAttributeStubDispatcher<
-                    «fInterface.stubClassName»,
-                    «attribute.type.getNameReference(fInterface.model)»
-                    > «attribute.someipGetStubDispatcherVariable»(&«fInterface.stubClassName»::«attribute.stubClassGetMethodName»);
-            «IF !attribute.isReadonly»
-                static CommonAPI::SomeIP::Set«IF attribute.observable»Observable«ENDIF»AttributeStubDispatcher<
-                        «fInterface.stubClassName»,
-                        «attribute.type.getNameReference(fInterface.model)»
-                        > «attribute.someipSetStubDispatcherVariable»(
-                                &«fInterface.stubClassName»::«attribute.stubClassGetMethodName»,
-                                &«fInterface.stubRemoteEventClassName»::«attribute.stubRemoteEventClassSetMethodName»,
-                                &«fInterface.stubRemoteEventClassName»::«attribute.stubRemoteEventClassChangedMethodName»,
-                                «IF attribute.observable»&«fInterface.stubAdapterClassName»::«attribute.stubAdapterClassFireChangedMethodName»«ENDIF»
-                                );
-            «ENDIF»
-            
+	        «attribute.generateAttributeDispatcherDeclarations(deploymentAccessor, fInterface)»
         «ENDFOR»
         
         «FOR method : fInterface.methods»
@@ -174,8 +171,8 @@ class FInterfaceSomeIPStubAdapterGenerator {
 
         «FOR attribute : fInterface.attributes»
             «IF attribute.isObservable»
-                void «fInterface.someipStubAdapterClassName»::«attribute.stubAdapterClassFireChangedMethodName»(const «attribute.type.getNameReference(fInterface.model)»& value) {
-                	CommonAPI::SomeIP::StubSignalHelper<CommonAPI::SomeIP::SerializableArguments<«attribute.type.getNameReference(fInterface.model)»>>
+                void «fInterface.someipStubAdapterClassName»::«attribute.stubAdapterClassFireChangedMethodName»(const «attribute.getTypeName(fInterface.model)»& value) {
+                	CommonAPI::SomeIP::StubSignalHelper<CommonAPI::SomeIP::SerializableArguments<«attribute.getTypeName(fInterface.model)»>>
                         ::sendSignal(
                             *this,
                             «attribute.changeNotificationMemberID(fDInterface)»,
@@ -187,8 +184,8 @@ class FInterfaceSomeIPStubAdapterGenerator {
 
         «FOR broadcast: fInterface.broadcasts»
 «««        	«var broadcast = broadcastDeployment.target»
-            void «fInterface.someipStubAdapterClassName»::«broadcast.stubAdapterClassFireEventMethodName»(«broadcast.outArgs.map['const ' + type.getNameReference(fInterface.model) + '& ' + name].join(', ')») {
-                CommonAPI::SomeIP::StubSignalHelper<CommonAPI::SomeIP::SerializableArguments<«broadcast.outArgs.map[type.getNameReference(fInterface.model)].join(', ')»>>
+            void «fInterface.someipStubAdapterClassName»::«broadcast.stubAdapterClassFireEventMethodName»(«broadcast.outArgs.map['const ' + getTypeName(fInterface.model) + '& ' + name].join(', ')») {
+                CommonAPI::SomeIP::StubSignalHelper<CommonAPI::SomeIP::SerializableArguments<«broadcast.outArgs.map[getTypeName(fInterface.model)].join(', ')»>>
                         ::sendSignal(
                             *this,
                             «broadcast.memberID(fDInterface)»
@@ -214,6 +211,24 @@ class FInterfaceSomeIPStubAdapterGenerator {
             «ENDFOR»
         };
         
+    '''
+
+    def private generateAttributeDispatcherDeclarations(FAttribute attribute, DeploymentInterfacePropertyAccessor deploymentAccessor, FInterface fInterface) '''
+            static CommonAPI::SomeIP::GetAttributeStubDispatcher<
+                    «fInterface.stubClassName»,
+                    «attribute.getTypeName(fInterface.model)»
+                    > «attribute.someipGetStubDispatcherVariable»(&«fInterface.stubClassName»::«attribute.stubClassGetMethodName»);
+            «IF !attribute.isReadonly»
+                static CommonAPI::SomeIP::Set«IF attribute.observable»Observable«ENDIF»AttributeStubDispatcher<
+                        «fInterface.stubClassName»,
+                        «attribute.getTypeName(fInterface.model)»
+                        > «attribute.someipSetStubDispatcherVariable»(
+                                &«fInterface.stubClassName»::«attribute.stubClassGetMethodName»,
+                                &«fInterface.stubRemoteEventClassName»::«attribute.stubRemoteEventClassSetMethodName»,
+                                &«fInterface.stubRemoteEventClassName»::«attribute.stubRemoteEventClassChangedMethodName»,
+                                «IF attribute.observable»&«fInterface.stubAdapterClassName»::«attribute.stubAdapterClassFireChangedMethodName»«ENDIF»
+                                );
+            «ENDIF»
     '''
 
     def private getAbsoluteNamespace(FModelElement fModelElement) {
@@ -245,7 +260,7 @@ class FInterfaceSomeIPStubAdapterGenerator {
     }
 
     def private getAllInTypes(FMethod fMethod) {
-        fMethod.inArgs.map[type.getNameReference(fMethod.model)].join(', ')
+        fMethod.inArgs.map[getTypeName(fMethod.model)].join(', ')
     }
 
     def private getAllOutTypes(FMethod fMethod) {

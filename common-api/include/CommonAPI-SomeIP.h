@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SomeIP-common.h"
+#include "SomeIPCommonAPI-Serialization.h"
 
 namespace CommonAPI {
 namespace SomeIP {

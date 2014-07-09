@@ -244,7 +244,7 @@ template<typename _StubClass, typename _AttributeType>
 class GetAttributeStubDispatcher : public StubAdapterHelper<_StubClass>::StubDispatcher {
 public:
 	typedef StubAdapterHelper<_StubClass> StubAdapterHelperType;
-	typedef const _AttributeType& (_StubClass::* GetStubFunctor)(const std::shared_ptr<CommonAPI::ClientId> clientId);
+	typedef const _AttributeType& (_StubClass::* GetStubFunctor)(std::shared_ptr<CommonAPI::ClientId>);
 
 	GetAttributeStubDispatcher(GetStubFunctor getStubFunctor) :
 		getStubFunctor_(getStubFunctor) {

@@ -48,6 +48,9 @@ class FInterfaceSomeIPProxyGenerator {
         «fInterface.model.generateNamespaceBeginDeclaration»
         
         class «fInterface.someipProxyClassName»: virtual public «fInterface.proxyBaseClassName», virtual public CommonAPI::SomeIP::SomeIPProxy {
+
+//			LOG_IMPORT_CLASS_CONTEXT(CommonAPI::SomeIP::someIPCommonAPILogContext);
+
          public:
             «fInterface.someipProxyClassName»(CommonAPI::SomeIP::SomeIPConnection& someipProxyconnection,
                             const std::string& commonApiAddress = "«fDInterface.commonAPIAddress»",

@@ -30,7 +30,8 @@ bool ClientDaemonConnection::dispatchIncomingMessages() {
 SomeIPReturnCode ClientDaemonConnection::connect(ClientConnectionListener& clientReceiveCb) {
 
 	if (m_mainLoop == nullptr)
-		log_error() << "You need to provide a main loop integration object (setMainLoopInterface()) before calling connect()";
+		log_error() <<
+		"You need to provide a main loop integration object (setMainLoopInterface()) before calling connect()";
 
 	if ( isConnected() )
 		return SomeIPReturnCode::ALREADY_CONNECTED;
@@ -56,8 +57,8 @@ SomeIPReturnCode ClientDaemonConnection::connect(ClientConnectionListener& clien
 
 		fd.events = POLLHUP;
 		m_disconnectionWatch = m_mainLoop->addWatch([&] () {
-									onDisconnected();
-								}, fd);
+								    onDisconnected();
+							    }, fd);
 		m_disconnectionWatch->enable();
 	}
 

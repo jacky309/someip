@@ -8,29 +8,21 @@ import org.franca.core.dsl.FrancaPersistenceManager
 import org.genivi.commonapi.core.generator.FrancaGenerator
 import org.genivi.commonapi.core.generator.FrancaGeneratorExtensions
 
-import static com.google.common.base.Preconditions.*
 import org.franca.core.franca.FModel
 import java.util.List
 import org.franca.deploymodel.dsl.fDeploy.FDInterface
 import org.franca.deploymodel.dsl.FDeployPersistenceManager
-import org.franca.deploymodel.core.FDModelExtender
 import org.franca.deploymodel.core.FDeployedInterface
 import org.eclipse.core.runtime.preferences.DefaultScope
 import org.genivi.commonapi.core.preferences.PreferenceConstants
 import org.eclipse.core.runtime.preferences.InstanceScope
-import org.eclipse.core.resources.ResourcesPlugin
-import org.genivi.commonapi.core.preferences.FPreferences
-import org.eclipse.core.runtime.QualifiedName
-import org.eclipse.xtext.builder.EclipseResourceFileSystemAccess2
-import org.eclipse.core.resources.IResource
 import org.eclipse.core.runtime.preferences.IEclipsePreferences
 import org.osgi.framework.FrameworkUtil
 import org.genivi.commonapi.core.deployment.DeploymentInterfacePropertyAccessor
 import org.genivi.commonapi.core.deployment.DeploymentInterfacePropertyAccessorWrapper
-import org.franca.deploymodel.dsl.fDeploy.FDModel
 
 class FrancaSomeIPGenerator implements IGenerator {
-	@Inject private extension FrancaGeneratorExtensions
+//	@Inject private extension FrancaGeneratorExtensions
 	@Inject private extension FInterfaceSomeIPProxyGenerator
 	@Inject private extension FInterfaceSomeIPStubAdapterGenerator
 
