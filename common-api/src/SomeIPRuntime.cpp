@@ -46,7 +46,7 @@ SomeIPReturnCode SomeIPFactory::initializeConnection() {
 			"You are not using any main loop integration. Our recommendation is to use a main loop integration so that the dispatching of incoming messages is done by your main thread.";
 			m_mainLoopContext = getRuntime()->getNewMainLoopContext();
 			auto mainLoop = new GlibMainLoopContextHandler(m_mainLoopContext);
-			std::thread* m_receiveThread = new std::thread([&] () {
+			std::thread* m_receiveThread = new std::thread([=] () {
 									       mainLoop->runMainLoop();
 								       });
 
