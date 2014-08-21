@@ -3,9 +3,9 @@ cmake_minimum_required(VERSION 2.6)
 set(PACKAGE SomeIP)
 PROJECT(${PACKAGE})
 
-SET( ${PROJECT_NAME}_MAJOR_VERSION 1 )
-SET( ${PROJECT_NAME}_MINOR_VERSION 0 )
-SET( ${PROJECT_NAME}_PATCH_LEVEL 0 )
+SET( ${PROJECT_NAME}_MAJOR_VERSION 0 )
+SET( ${PROJECT_NAME}_MINOR_VERSION 9 )
+SET( ${PROJECT_NAME}_PATCH_LEVEL 1 )
 
 set(VERSION ${${PROJECT_NAME}_MAJOR_VERSION}.${${PROJECT_NAME}_MINOR_VERSION}.${${PROJECT_NAME}_PATCH_LEVEL})
 
@@ -28,7 +28,8 @@ pkg_check_modules(GLIB REQUIRED glib-2.0)
 add_definitions(${GLIB_CFLAGS})
 
 pkg_check_modules(COMMONAPI REQUIRED CommonAPI)
-add_definitions(${COMMONAPI_CFLAGS})
+add_definitions(${COMMONAPI_CFLAGS_OTHER})
+include_directories(${COMMONAPI_INCLUDE_DIRS})
 
 include_directories(
 	utilLib
@@ -49,6 +50,13 @@ link_directories(
 
 configure_file(CommonAPI-SomeIP.pc.in CommonAPI-SomeIP.pc @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CommonAPI-SomeIP.pc DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig)
+
+set(DEVELOPMENT_INCLUDE_PATH " -I${CMAKE_CURRENT_BINARY_DIR}/lib -I${CMAKE_CURRENT_SOURCE_DIR} -I${CMAKE_CURRENT_SOURCE_DIR}/clientLib -I${CMAKE_CURRENT_SOURCE_DIR}/utilLib -I${CMAKE_CURRENT_SOURCE_DIR}/lib -I${CMAKE_CURRENT_SOURCE_DIR}/common-api/include #")
+set(DEVELOPMENT_LIBRARY_PATH " -L${CMAKE_CURRENT_BINARY_DIR}/clientLib -L${CMAKE_CURRENT_BINARY_DIR}/lib #" )
+configure_file(CommonAPI-SomeIP.pc.in CommonAPI-SomeIP-uninstalled.pc @ONLY)
+if(INSTALL_PKGCONFIG_UNINSTALLED_FILE)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CommonAPI-SomeIP-uninstalled.pc DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig)
+endif()
 
 if (ENABLE_SYSTEMD)
 	add_definitions(-DENABLE_SYSTEMD)

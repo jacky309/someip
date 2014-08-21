@@ -110,12 +110,12 @@ void SomeIPStubAdapter::deinit() {
 //std::unordered_map<std::string, SomeIPFactory::AdapterFactoryFunction> SomeIPFactory::registeredAdapterFactoryFunctions;
 
 void SomeIPRuntime::registerAdapterFactoryMethod(const std::string& interfaceID, AdapterFactoryFunction function) {
-	log_info("Registering stubadapter factory for interface: ") << interfaceID;
+	printf("SomeIP: Registering stubadapter factory for interface: %s", interfaceID.c_str());
 	registeredAdapterFactoryFunctions.insert({interfaceID, function});
 }
 
 void SomeIPRuntime::registerProxyFactoryMethod(const std::string& interfaceID, ProxyFactoryFunction function) {
-	log_info("Registering proxy factory for interface: ") << interfaceID;
+	printf("SomeIP: Registering proxy factory for interface: %s", interfaceID.c_str());
 	registeredProxyFactoryFunctions.insert({interfaceID, function});
 }
 
