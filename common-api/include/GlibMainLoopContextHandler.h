@@ -36,7 +36,7 @@ public:
 
 private:
 	static gboolean gTimeoutDispatcher(void* userData) {
-		return static_cast<CommonAPI::DispatchSource*>(userData)->dispatch();
+		return static_cast<CommonAPI::Timeout*>(userData)->dispatch();
 	}
 
 	void timeoutAddedCallback(CommonAPI::Timeout* commonApiTimeoutSource,

@@ -297,8 +297,6 @@ public:
 
 };
 
-#define ENABLE_PING
-
 inline int timeval_subtract(struct timeval& result, const struct timeval& x, struct timeval& y) {
 	/* Perform the carry for the later subtraction by updating y. */
 	if (x.tv_usec < y.tv_usec) {

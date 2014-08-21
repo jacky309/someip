@@ -1,4 +1,6 @@
 #include "SomeIP-clientLib.h"
+#include <unistd.h>
+#include <fcntl.h>
 
 namespace SomeIPClient {
 
@@ -55,11 +57,26 @@ SomeIPReturnCode ClientDaemonConnection::connect(ClientConnectionListener& clien
 
 		m_inputDataWatch->enable();
 
+		int returnCode = pipe(m_queuedMessageIndicatorPipe);
+		assert(returnCode == 0);
+		fd.fd = m_queuedMessageIndicatorPipe[0];
+
+		m_bufferedMessagesWatch = m_mainLoop->addWatch([&] () {
+			 dispatchQueuedMessages();
+							    }, fd);
+
+		// set the pipe to non-blocking
+		int flags = fcntl(m_queuedMessageIndicatorPipe[0], F_GETFL, 0);
+		fcntl(m_queuedMessageIndicatorPipe[0], F_SETFL, flags | O_NONBLOCK);
+
+		m_bufferedMessagesWatch->enable();
+
 		fd.events = POLLHUP;
 		m_disconnectionWatch = m_mainLoop->addWatch([&] () {
 								    onDisconnected();
 							    }, fd);
 		m_disconnectionWatch->enable();
+
 	}
 
 	return c;
@@ -156,16 +173,10 @@ InputMessage ClientDaemonConnection::waitForAnswer(const OutputMessage& requestM
 
 void ClientDaemonConnection::pushToQueue(const IPCInputMessage& msg) {
 	m_queue.push(msg);
-
 	log_verbose() << "Message pushed : " << msg.toString();
 
-	if (m_mainLoop != nullptr) {
-		m_idleCallBack = m_mainLoop->addIdleCallback([&] () {
-								     dispatchQueuedMessages();
-								     return false;
-							     });
-	}
-
+	// notify ourself that we have a message to handle first
+	write(m_queuedMessageIndicatorPipe[1], &m_dummy, sizeof(m_dummy));
 }
 
 IPCInputMessage ClientDaemonConnection::writeRequest(IPCOutputMessage& ipcMessage) {
@@ -196,6 +207,9 @@ IPCInputMessage ClientDaemonConnection::writeRequest(IPCOutputMessage& ipcMessag
 }
 
 void ClientDaemonConnection::dispatchQueuedMessages() {
+
+	::read(m_queuedMessageIndicatorPipe[0], &m_dummy, sizeof(m_dummy));
+
 	const IPCInputMessage* msg = nullptr;
 	//		log_debug("dispatchQueuedMessages");
 	do {

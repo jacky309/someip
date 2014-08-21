@@ -35,6 +35,10 @@ public:
 			m_callBack = callBackFunction;
 		}
 
+		void activate() override {
+			assert(false);
+		}
+
 private:
 		CallBackFunction m_callBack;
 		GLibTimer m_timer;

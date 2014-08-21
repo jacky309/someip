@@ -8,6 +8,8 @@
 
 #include <ByteArray.h>
 
+//#define ENABLE_PING
+
 namespace SomeIP_Lib {
 
 using namespace SomeIP;
@@ -30,6 +32,8 @@ public:
 
 	virtual ~TimeOutMainLoopHook() {
 	}
+
+	virtual void activate() = 0;
 
 };
 

@@ -24,10 +24,10 @@ class SomeIPConnection : private SomeIPClient::ClientConnectionListener, public 
 public:
 		CommonAPIIdleMainLoopHook(CallBackFunction callBackFunction, std::shared_ptr<MainLoopContext> mainLoopContext) {
 			m_callBack = callBackFunction;
+			m_mainLoopContext = mainLoopContext;
 		}
 
 		void activate() override {
-			// TODO
 			assert(false);
 		}
 
@@ -36,16 +36,40 @@ private:
 		std::shared_ptr<MainLoopContext> m_mainLoopContext;
 	};
 
-	class CommonAPITimeOutMainLoopHook : public TimeOutMainLoopHook {
+	class CommonAPITimeOutMainLoopHook : public TimeOutMainLoopHook, private CommonAPI::Timeout {
 public:
 		CommonAPITimeOutMainLoopHook(CallBackFunction callBackFunction, int durationInMilliseconds,
 					     std::shared_ptr<MainLoopContext> mainLoopContext) {
+			m_mainLoopContext = mainLoopContext;
 			m_callBack = callBackFunction;
+			m_durationInMilliseconds = durationInMilliseconds;
 		}
+
+		~CommonAPITimeOutMainLoopHook() override {
+			m_mainLoopContext->deregisterTimeoutSource(this);
+		}
+
+		void activate() override {
+			m_mainLoopContext->registerTimeoutSource(this);
+		}
+
+	    bool dispatch() override {
+	    	m_callBack();
+	    	return false;
+	    }
+
+	    int64_t getTimeoutInterval() const override {
+	    	return m_durationInMilliseconds;
+	    }
+
+	    int64_t getReadyTime() const override {
+	    	return m_durationInMilliseconds;
+	    }
 
 private:
 		CallBackFunction m_callBack;
 		std::shared_ptr<MainLoopContext> m_mainLoopContext;
+		int m_durationInMilliseconds;
 	};
 
 	class CommonAPIWatchMainLoopHook : public WatchMainLoopHook, private Watch {

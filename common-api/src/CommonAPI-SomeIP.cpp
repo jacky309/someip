@@ -57,22 +57,30 @@ MessageProcessingResult SomeIPConnection::processMessage(const InputMessage& mes
 
 		// TODO : handle multiple proxy instances with same serviceID ?
 		SomeIPProxy* proxy = m_proxyTable[serviceID];
-		if (proxy != NULL)
+		if (proxy != nullptr)
 			proxy->processMessage(message);
 
 	} else if ( message.getHeader().isReply() ) {
 
 		auto* messageHandler =
 			m_messageHandlers[message.getHeader().getRequestID()];
-		if (messageHandler != NULL) {
+		if (messageHandler != nullptr) {
 			messageHandler->processMessage(message);
 			delete messageHandler;
 		}
 
 	} else {
 		SomeIPStubAdapter* adapter = m_serviceTable[serviceID];
-		if (adapter != NULL)
-			adapter->processMessage(message);
+		if (adapter != nullptr)
+		{
+			auto result = adapter->processMessage(message);
+			if (result != MessageProcessingResult::Processed_OK) {
+				// The adapter could not process the message => send an error back to the sender
+				OutputMessage errorMessage = createMethodReturn(message);
+				errorMessage.getHeader().setMessageType(MessageType::ERROR);
+				sendMessage(errorMessage);
+			}
+		}
 	}
 	return MessageProcessingResult::Processed_OK;
 }
@@ -81,7 +89,7 @@ MessageProcessingResult SomeIPProxy::processMessage(const InputMessage& message)
 
 	// TODO : check what is done here
 	auto handler = m_messageHandlers[message.getHeader().getMemberID()];
-	if (handler != NULL) {
+	if (handler != nullptr) {
 		handler->processMessage(message);
 		return MessageProcessingResult::Processed_OK;
 	}
@@ -105,9 +113,6 @@ void SomeIPStubAdapter::deinit() {
 }
 
 }
-
-//std::unordered_map<std::string, SomeIPFactory::ProxyFactoryFunction> SomeIPFactory::registeredProxyFactoryFunctions;
-//std::unordered_map<std::string, SomeIPFactory::AdapterFactoryFunction> SomeIPFactory::registeredAdapterFactoryFunctions;
 
 void SomeIPRuntime::registerAdapterFactoryMethod(const std::string& interfaceID, AdapterFactoryFunction function) {
 	printf("SomeIP: Registering stubadapter factory for interface: %s", interfaceID.c_str());

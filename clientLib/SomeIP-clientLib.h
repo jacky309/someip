@@ -396,10 +396,12 @@ private:
 	std::recursive_mutex dataReceptionMutex;
 	std::recursive_mutex dataEmissionMutex;
 
-	std::unique_ptr<IdleMainLoopHook> m_idleCallBack;
-
+	std::unique_ptr<WatchMainLoopHook> m_bufferedMessagesWatch;
 	std::unique_ptr<WatchMainLoopHook> m_inputDataWatch;
 	std::unique_ptr<WatchMainLoopHook> m_disconnectionWatch;
+
+	int m_queuedMessageIndicatorPipe[2];
+	char m_dummy = 0;
 
 };
 
