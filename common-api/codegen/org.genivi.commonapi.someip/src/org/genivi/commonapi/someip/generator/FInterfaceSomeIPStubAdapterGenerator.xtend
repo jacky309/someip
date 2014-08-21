@@ -37,7 +37,7 @@ class FInterfaceSomeIPStubAdapterGenerator {
 	}
 
 	def getSomeIPDefinitionFilePath(FModel model, FTypeCollection collection) {
-		return model.directoryPath + '/' + collection.name + 'SomeIP.h';
+		return model.directoryPath + '/' + collection.elementName + 'SomeIP.h';
 	}
 
 	def generateTypeCollectionSomeIP(FModel model, IFileSystemAccess fileSystemAccess) {
@@ -53,7 +53,7 @@ class FInterfaceSomeIPStubAdapterGenerator {
 
 	def generateTypeCollectionSomeIP(FTypeCollection collection) '''
 		
-		#include "«collection.name».h"
+		#include "«collection.elementName».h"
 		#include <SomeIPCommonAPI-Serialization.h>
 		
 		namespace SomeIP_Lib {
@@ -84,10 +84,30 @@ class FInterfaceSomeIPStubAdapterGenerator {
 	        #include "«getSomeIPDefinitionFilePath(model, collection)»"
 		«ENDFOR»
 
+namespace SomeIP_Lib {
+        «FOR method: fInterface.methods»
+        «if (method.hasError)
+        '''
+        // enum type
+inline SomeIPInputStream& operator>>(SomeIPInputStream& stream, «fInterface.absoluteNamespace»::«fInterface.name»::«method.name»Error& v) {
+	stream.readEnum(v);
+	return stream;
+}
+
+// enum type
+inline SomeIPOutputStream& operator<<(SomeIPOutputStream& stream, const «fInterface.absoluteNamespace»::«fInterface.name»::«method.name»Error& v) {
+	stream.writeEnum(v);
+	return stream;
+}
+        '''
+        »
+        «ENDFOR»
+}
+
         «fInterface.model.generateNamespaceBeginDeclaration»
 
         typedef CommonAPI::SomeIP::StubAdapterHelper<«fInterface.stubClassName»> «fInterface.someipStubAdapterHelperClassName»;
-
+        
         class «fInterface.someipStubAdapterClassName»: public «fInterface.stubAdapterClassName», public «fInterface.someipStubAdapterHelperClassName» {
 
 //			LOG_IMPORT_CLASS_CONTEXT(CommonAPI::SomeIP::someIPCommonAPILogContext);
@@ -202,7 +222,7 @@ class FInterfaceSomeIPStubAdapterGenerator {
             «FOR attribute : fInterface.attributes SEPARATOR ','»
                 { «attribute.getterMemberID(fDInterface)», &«fInterface.absoluteNamespace»::«attribute.someipGetStubDispatcherVariable» }
                 «IF !attribute.isReadonly»
-                    , { «attribute.setterMemberID(fDInterface)» + 1, &«fInterface.absoluteNamespace»::«attribute.someipSetStubDispatcherVariable» }
+                    , { «attribute.setterMemberID(fDInterface)», &«fInterface.absoluteNamespace»::«attribute.someipSetStubDispatcherVariable» }
                 «ENDIF»
             «ENDFOR»
             «IF !fInterface.attributes.empty && !fInterface.methods.empty»,«ENDIF»

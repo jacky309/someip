@@ -12,6 +12,8 @@ import org.genivi.commonapi.core.deployment.DeploymentInterfacePropertyAccessor
 
 import static com.google.common.base.Preconditions.*
 import org.franca.deploymodel.dsl.fDeploy.FDInterface
+import org.franca.core.franca.FVersion
+import org.franca.core.franca.impl.FVersionImpl
 
 class FInterfaceSomeIPProxyGenerator {
     @Inject private extension FrancaGeneratorExtensions
@@ -150,13 +152,13 @@ class FInterfaceSomeIPProxyGenerator {
         «ENDFOR»
         
         void «fInterface.someipProxyClassName»::getOwnVersion(uint16_t& ownVersionMajor, uint16_t& ownVersionMinor) const {
-            ownVersionMajor = «fInterface.version.major»;
-            ownVersionMinor = «fInterface.version.minor»;
+            ownVersionMajor = «if (fInterface.version!=null) fInterface.version.major else 1»;
+            ownVersionMinor = «if (fInterface.version!=null) fInterface.version.minor else 0»;
         }
 
         «fInterface.model.generateNamespaceEndDeclaration»
     '''
-
+    
     def private someipClassVariableName(FModelElement fModelElement) {
         checkArgument(!fModelElement.name.nullOrEmpty, 'FModelElement has no name: ' + fModelElement)
         fModelElement.name.toFirstLower + '_'
