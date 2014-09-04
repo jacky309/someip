@@ -61,6 +61,16 @@ void LocalClient::handleIncomingIPCMessage(IPCInputMessage& inputMessage) {
 	}
 	break;
 
+	case IPCMessageType::GET_SERVICE_LIST : {
+		log_debug() << "GET_SERVICE_LIST Message received from client " << toString();
+		IPCOutputMessage answer(inputMessage, IPCReturnCode::OK);
+		for (auto& service : getDispatcher().getServices()) {
+			answer << service->getServiceID();
+		}
+		writeNonBlocking(answer);
+	}
+	break;
+
 	case IPCMessageType::SUBSCRIBE_NOTIFICATION : {
 		SomeIP::MessageID messageID;
 		reader >> messageID;

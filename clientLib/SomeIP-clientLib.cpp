@@ -142,6 +142,21 @@ InputMessage ClientDaemonConnection::sendMessageBlocking(const OutputMessage& ms
 	return waitForAnswer(msg);
 }
 
+bool ClientDaemonConnection::isServiceAvailableBlocking(ServiceID service) {
+	IPCOutputMessage msg(IPCMessageType::GET_SERVICE_LIST);
+	auto inputMessage = writeRequest(msg);
+	IPCInputMessageReader reader(inputMessage);
+
+	while(reader.hasMoreData()) {
+		ServiceRegistryEntry entry;
+		reader >> entry;
+		if (entry == service)
+			return true;
+	}
+
+	return false;
+}
+
 InputMessage ClientDaemonConnection::waitForAnswer(const OutputMessage& requestMsg) {
 	std::lock_guard<std::recursive_mutex> receptionLock(dataReceptionMutex); // we prevent other threads from stealing the response of our request
 

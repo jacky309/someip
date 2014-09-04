@@ -208,6 +208,10 @@ public:
 		return false;
 	}
 
+	bool isServiceAvailableBlocking(ServiceID service) const {
+		return m_connection->isServiceAvailableBlocking(service);
+	}
+
 private:
 	std::unique_ptr<SomeIPClient::ClientConnection> m_connection;
 	std::unordered_map<ServiceID, SomeIPStubAdapter*> m_serviceTable;

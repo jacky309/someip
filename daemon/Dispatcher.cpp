@@ -132,7 +132,7 @@ Service* Dispatcher::tryRegisterService(SomeIP::ServiceID serviceID, Client& cli
 	}
 
 	if (service->getClient() != &client) {
-		log_info() << "registration refused : " << serviceID;
+		log_warn() << "registration refused : " << serviceID;
 		return nullptr;
 	}
 

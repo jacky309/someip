@@ -13,6 +13,9 @@
 
 namespace SomeIP_Dispatcher {
 
+/**
+ * That class handles the registration of remote services
+ */
 class RemoteServiceListener : public ServiceDiscoveryListener {
 
 	LOG_DECLARE_CLASS_CONTEXT("RSL", "Remote service listener");

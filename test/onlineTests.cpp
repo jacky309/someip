@@ -96,6 +96,28 @@ struct TestConnection {
 
 };
 
+
+
+struct AutoconnectConnection {
+
+	AutoconnectConnection() :
+		sink([&](const InputMessage &msg) {
+		     }) {
+		init();
+	}
+
+	void init() {
+		connection.setMainLoopInterface(glibIntegration);
+		connection.connect(sink);
+	}
+
+	SomeIPClient::ClientDaemonConnection connection;
+	TestSink sink;
+	SomeIPClient::GlibMainLoopInterfaceImplementation glibIntegration;
+
+};
+
+
 /**
  * Send a message to ourself, using two distinct connections.
  */
@@ -258,6 +280,22 @@ TEST_F(SomeIPTest, ConnectionCleanup) {
 	}
 
 }
+
+
+TEST_F(SomeIPTest, TestIsAvailableBlocking) {
+
+	AutoconnectConnection connection;
+
+	static constexpr SomeIP::ServiceID SERVICE_ID = 542;
+
+	connection.connection.registerService(SERVICE_ID);
+
+	EXPECT_TRUE(connection.connection.isServiceAvailableBlocking(SERVICE_ID));
+	EXPECT_FALSE(connection.connection.isServiceAvailableBlocking(SERVICE_ID+1));
+
+}
+
+
 
 int main(int argc, char** argv) {
 	MainLoopApplication app; // to get rid of the DLT threads, by forcing the DLT main loop mode

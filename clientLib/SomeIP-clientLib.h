@@ -35,7 +35,7 @@ public:
 
 
 /**
- * This class can be used to be notified of the availibilty/unavailability of a service
+ * This class can be used to be notified of the availability/unavailability of a service
  */
 class ServiceAvailabilityListener {
 public:
@@ -133,6 +133,10 @@ public:
 class ClientConnection {
 
 public:
+
+	ClientConnection() {
+	}
+
 	virtual ~ClientConnection() {
 	}
 
@@ -201,6 +205,8 @@ public:
 	ServiceRegistry& getServiceRegistry() {
 		return m_registry;
 	}
+
+	virtual bool isServiceAvailableBlocking(ServiceID service) = 0;
 
 protected:
 	MainLoopInterface* m_mainLoop = nullptr;
@@ -296,6 +302,8 @@ public:
 	 * Returns a dump of the daemon's internal state, which can be useful for diagnostic.
 	 */
 	SomeIPReturnCode getDaemonStateDump(std::string& dump);
+
+	bool isServiceAvailableBlocking(ServiceID service) override;
 
 private:
 	class SafeMessageQueue {

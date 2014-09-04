@@ -29,18 +29,26 @@ LOG_DECLARE_DEFAULT_CONTEXT(mainContext, "main", "Main log context");
 int run(int argc, const char** argv) {
 
 	CommandLineParser commandLineParser("Dispatcher", "", SOMEIP_PACKAGE_VERSION);
-	int tcpPortNumber = TCPServer::DEFAULT_TCP_SERVER_PORT;
-	int tcpPortTriesCount = 10;
-	bool disableLocalIPC = false;
-	const char* activationConfigurationFolder = SOMEIP_ACTIVATION_CONFIGURATION_FOLDER;
-	const char* logFilePath = "/tmp/someip_dispatcher.log";
-	const char* localSocketPath = SomeIPClient::ClientDaemonConnection::DEFAULT_SERVER_SOCKET_PATH;
 
+	int tcpPortNumber = TCPServer::DEFAULT_TCP_SERVER_PORT;
 	commandLineParser.addOption(tcpPortNumber, "port", 'p', "TCP port number");
+
+	int tcpPortTriesCount = 10;
 	commandLineParser.addOption(tcpPortTriesCount, "portcount", 'u', "Number of consecutive TCP port to try");
+
+	const char* activationConfigurationFolder = SOMEIP_ACTIVATION_CONFIGURATION_FOLDER;
 	commandLineParser.addOption(activationConfigurationFolder, "conf", 'c', "Auto-activation configuration folder");
+
+	const char* logFilePath = "/tmp/someip_dispatcher.log";
 	commandLineParser.addOption(logFilePath, "log", 'l', "Log file path");
+
+	bool disableLocalIPC = false;
 	commandLineParser.addOption(disableLocalIPC, "ipc", 'i', "Disable local IPC");
+
+	bool disableRemoteServices = false;
+	commandLineParser.addOption(disableRemoteServices, "rem", 'r', "Disable remote services registration");
+
+	const char* localSocketPath = SomeIPClient::ClientDaemonConnection::DEFAULT_SERVER_SOCKET_PATH;
 	commandLineParser.addOption(localSocketPath, "localPath", 's', "Local IPC socket path");
 
 	if ( commandLineParser.parse(argc, argv) )
@@ -74,7 +82,8 @@ int run(int argc, const char** argv) {
 	serviceAnnouncer.init();
 
 	RemoteServiceListener remoteServiceListener(dispatcher, tcpManager, serviceAnnouncer, mainLoopContext);
-	remoteServiceListener.init();
+	if (!disableRemoteServices)
+		remoteServiceListener.init();
 
 	WellKnownServiceManager wellKnownServiceManager(dispatcher);
 	wellKnownServiceManager.init(activationConfigurationFolder);

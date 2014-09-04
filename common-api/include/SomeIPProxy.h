@@ -53,9 +53,8 @@ public:
 		return interfaceVersionAttribute_;
 	}
 
-	virtual bool isAvailableBlocking() const {
-		return isAvailable();
-		//		assert(false);
+	virtual bool isAvailableBlocking() const override {
+		return connection_.isServiceAvailableBlocking(getServiceID());
 	}
 
 	std::string getAddress() const override {
@@ -68,8 +67,7 @@ public:
 	}
 
 	const std::string& getServiceId() const override {
-		assert(false);
-		return commonApiAddress_;
+		return commonApiServiceId_;
 	}
 
 	const std::string& getInstanceId() const override {
@@ -100,7 +98,6 @@ public:
 	}
 
 	void sendPingMessage(SomeIP::ServiceID serviceID) {
-
 		auto pingSender = new PingSender();
 		pingSender->sendPingMessage([&] (OutputMessage & msg) {
 						    getConnection().sendWithResponseHandler(msg, *pingSender);
