@@ -62,7 +62,9 @@ public:
 
 	virtual void sendMessage(const DispatcherMessage& msg) = 0;
 
-	virtual SomeIPReturnCode sendMessage(OutputMessage& msg) = 0;
+	virtual SomeIPReturnCode sendMessage(const OutputMessage& msg) = 0;
+
+	virtual InputMessage sendMessageBlocking(const OutputMessage& msg) = 0;
 
 	void processIncomingMessage(InputMessage& msg);
 

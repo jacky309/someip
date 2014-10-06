@@ -233,7 +233,7 @@ std::string Service::toString() const {
 	return buffer;
 }
 
-void Service::sendMessage(DispatcherMessage& msg) {
+void Service::sendMessage(const DispatcherMessage& msg) {
 	m_client->sendMessage(msg);
 }
 
@@ -267,8 +267,7 @@ void Notification::init() {
 
 void Notification::setProviderService(Service* service) {
 	m_providerService = service;
-	if (m_providerService != nullptr)
-		m_providerService->onNotificationSubscribed( SomeIP::getMemberID(m_messageID) );
+//	if (m_providerService != nullptr)		m_providerService->onNotificationSubscribed( SomeIP::getMemberID(m_messageID) );
 }
 
 ClientIdentifier Client::s_nextAvailableID = 0;

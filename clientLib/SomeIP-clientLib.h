@@ -95,7 +95,7 @@ public:
 		m_serviceAvailabilityListeners.push_back(&listener);
 	}
 
-private:
+protected:
 	void onServiceRegistered(SomeIP::ServiceID serviceID) {
 		m_availableServices.push_back(serviceID);
 		for (auto& listener : m_serviceAvailabilityListeners) {
@@ -114,7 +114,7 @@ private:
 	std::vector<SomeIP::ServiceID> m_availableServices;
 	std::vector<ServiceAvailabilityListener*> m_serviceAvailabilityListeners;
 
-	friend class ClientDaemonConnection;
+	friend class ClientConnection;
 };
 
 class OutputMessageWithReport : public OutputMessage {
@@ -168,7 +168,7 @@ public:
 	/**
 	 * Sends the given message to the dispatcher.
 	 */
-	virtual SomeIPReturnCode sendMessage(OutputMessage& msg) = 0;
+	virtual SomeIPReturnCode sendMessage(const OutputMessage& msg) = 0;
 
 	/**
 	 * Sends a ping message to the dispatcher
@@ -209,9 +209,19 @@ public:
 	virtual bool isServiceAvailableBlocking(ServiceID service) = 0;
 
 protected:
+
+	void onServiceRegistered(SomeIP::ServiceID serviceID) {
+		m_registry.onServiceRegistered(serviceID);
+	}
+
+	void onServiceUnregistered(SomeIP::ServiceID serviceID) {
+		m_registry.onServiceUnregistered(serviceID);
+	}
+
+
 	MainLoopInterface* m_mainLoop = nullptr;
-	ServiceRegistry m_registry;
 	ClientConnectionListener* messageReceivedCallback = nullptr;
+	ServiceRegistry m_registry;
 
 };
 
@@ -286,7 +296,7 @@ public:
 	/**
 	 * Sends the given message to the dispatcher.
 	 */
-	SomeIPReturnCode sendMessage(OutputMessage& msg);
+	SomeIPReturnCode sendMessage(const OutputMessage& msg);
 
 	/**
 	 * Sends a ping message to the dispatcher

@@ -61,7 +61,7 @@ public:
 
 	ReturnCode setClient(Client& client) override;
 
-	void sendMessage(DispatcherMessage& msg) override;
+	void sendMessage(const DispatcherMessage& msg) override;
 
 	SomeIPReturnCode activateService();
 

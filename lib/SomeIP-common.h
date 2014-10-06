@@ -16,9 +16,14 @@ using namespace SomeIP;
 using namespace SomeIP_utils;
 
 
+enum class WatchStatus {
+	KEEP_WATCHING, STOP_WATCHING
+};
+
+
 class IdleMainLoopHook {
 public:
-	typedef std::function<bool (void)> CallBackFunction;
+	typedef std::function<bool ()> CallBackFunction;
 
 	virtual ~IdleMainLoopHook() {
 	}

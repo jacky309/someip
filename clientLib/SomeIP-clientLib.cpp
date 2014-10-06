@@ -115,7 +115,7 @@ SomeIPReturnCode ClientDaemonConnection::subscribeToNotifications(SomeIP::Messag
 	return writeMessage(msg);
 }
 
-SomeIPReturnCode ClientDaemonConnection::sendMessage(OutputMessage& msg) {
+SomeIPReturnCode ClientDaemonConnection::sendMessage(const OutputMessage& msg) {
 	const IPCMessage& ipcMessage = msg.getIPCMessage();
 	auto ret = writeMessage(ipcMessage);
 	log_traffic() << "Message sent : " << msg;
@@ -273,7 +273,7 @@ void ClientDaemonConnection::handleConstIncomingIPCMessage(const IPCInputMessage
 		while ( reader.remainingBytesCount() >= sizeof(SomeIP::ServiceID) ) {
 			SomeIP::ServiceID serviceID;
 			reader >> serviceID;
-			getServiceRegistry().onServiceRegistered(serviceID);
+			onServiceRegistered(serviceID);
 		}
 	}
 	break;
@@ -282,7 +282,7 @@ void ClientDaemonConnection::handleConstIncomingIPCMessage(const IPCInputMessage
 		while ( reader.remainingBytesCount() >= sizeof(SomeIP::ServiceID) ) {
 			SomeIP::ServiceID serviceID;
 			reader >> serviceID;
-			getServiceRegistry().onServiceUnregistered(serviceID);
+			onServiceUnregistered(serviceID);
 		}
 	}
 	break;

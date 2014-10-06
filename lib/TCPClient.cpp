@@ -6,7 +6,7 @@ namespace SomeIP_Dispatcher {
 /**
  * Called whenever some data is received from a client
  */
-WatchStatus TCPClient::onIncomingDataAvailable() {
+WatchStatus TCPClient::processIncomingData(std::function<void(InputMessage&)> handler) {
 
 	if( isInputBlocked() )
 		return WatchStatus::STOP_WATCHING;
@@ -59,7 +59,7 @@ WatchStatus TCPClient::onIncomingDataAvailable() {
 						tagClientIdentifier(m_currentIncomingMessage.getHeaderPrivate(), 0); // remove the client identifier from the requestID
 					}
 
-					processIncomingMessage(m_currentIncomingMessage);
+					handler(m_currentIncomingMessage);
 
 				}
 				m_headerReader.clear();

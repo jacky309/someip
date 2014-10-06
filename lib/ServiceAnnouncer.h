@@ -50,7 +50,7 @@ public:
 
 	void sendMessage(const SomeIPServiceDiscoveryMessage& serviceDiscoveryMessage);
 
-	void init();
+	SomeIPReturnCode init();
 
 private:
 	int m_broadcastFileDescriptor;

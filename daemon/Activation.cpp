@@ -18,7 +18,7 @@ ReturnCode WellKnownService::setClient(Client& client) {
 }
 
 
-void WellKnownService::sendMessage(DispatcherMessage& msg) {
+void WellKnownService::sendMessage(const DispatcherMessage& msg) {
 	if (getLocalClient() == nullptr) {
 		if (activateService() == SomeIPReturnCode::OK) {
 			m_pendingMessages.push_back( msg.getIPCMessage() );

@@ -101,7 +101,7 @@ void SomeIPStubAdapter::init() {
 	//	m_isRegistered = true;
 }
 
-SomeIPReturnCode SomeIPStubAdapter::sendMessage(OutputMessage& msg) {
+SomeIPReturnCode SomeIPStubAdapter::sendMessage(const OutputMessage& msg) {
 	return getConnection().sendMessage(msg);
 }
 

@@ -47,7 +47,7 @@ std::vector<IPV4Address> TCPServer::getAllIPAddresses() {
 	return ipAddresses;
 }
 
-void TCPServer::init(int portCount) {
+SomeIPReturnCode TCPServer::init(int portCount) {
 
 	m_dispatcher.addBlackListFilter(*this);
 
@@ -55,7 +55,7 @@ void TCPServer::init(int portCount) {
 
 	if ( ( tcpServerSocketHandle = ::socket(AF_INET, SOCK_STREAM, 0) ) < 0 ) {
 		log_error() << "Failed to create socket";
-		throw ConnectionExceptionWithErrno("Failed to create socket");
+		return SomeIPReturnCode::ERROR;
 	}
 
 	struct sockaddr_in sin;
@@ -78,21 +78,28 @@ void TCPServer::init(int portCount) {
 		}
 	}
 
-	if (!bindSuccessful)
+	if (bindSuccessful) {
+		if (::listen(tcpServerSocketHandle, SOMAXCONN) != 0) {
+			log_error( "Failed to listen to TCP port %i. Error : %s", m_port, strerror(errno) );
+			return SomeIPReturnCode::ERROR;
+		}
+
+		setFileDescriptor(tcpServerSocketHandle);
+
+		log_info() << "TCP Server socket listening on port " << m_port;
+
+		for ( auto address : getAllIPAddresses() ) {
+			m_activePorts.push_back( IPv4TCPEndPoint(address, m_port) );
+		}
+
+		return SomeIPReturnCode::OK;
+	}
+	else {
 		log_error() << "Failed to find a free port in the range " << m_port << "-" << m_port + portCount - 1;
-
-	if (::listen(tcpServerSocketHandle, SOMAXCONN) != 0) {
-		log_error( "Failed to listen to TCP port %i. Error : %s", m_port, strerror(errno) );
-		throw ConnectionExceptionWithErrno("Failed to listen to TCP port");
+		return SomeIPReturnCode::ERROR;
 	}
 
-	setFileDescriptor(tcpServerSocketHandle);
 
-	log_info() << "TCP Server socket listening on port " << m_port;
-
-	for ( auto address : getAllIPAddresses() ) {
-		m_activePorts.push_back( IPv4TCPEndPoint(address, m_port) );
-	}
 }
 
 

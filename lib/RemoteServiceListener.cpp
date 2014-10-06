@@ -21,18 +21,19 @@ void RemoteServiceListener::handleMessage() {
 	m_serviceDiscoveryDecoder.decodeMessage( array.getData(), array.size() );
 }
 
-void RemoteServiceListener::init() {
-
-	struct sockaddr_in addr;
+SomeIPReturnCode RemoteServiceListener::init() {
 
 	m_broadcastFileDescriptor = socket(AF_INET, SOCK_DGRAM, 0);
 	if (m_broadcastFileDescriptor < 0)
-		throw ConnectionExceptionWithErrno("Can't create socket");
+		return SomeIPReturnCode::ERROR;
 
 	int so_reuseaddr = TRUE;
-	if (setsockopt( m_broadcastFileDescriptor, SOL_SOCKET, SO_REUSEADDR, &so_reuseaddr, sizeof (so_reuseaddr) ) != 0)
-		throw ConnectionExceptionWithErrno("Can't set SO_REUSEADDR");
+	if (setsockopt( m_broadcastFileDescriptor, SOL_SOCKET, SO_REUSEADDR, &so_reuseaddr, sizeof (so_reuseaddr) ) != 0) {
+		log_error () << "Can't set SO_REUSEADDR";
+		return SomeIPReturnCode::ERROR;
+	}
 
+	struct sockaddr_in addr;
 	memset( &addr, 0, sizeof(addr) );
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -55,9 +56,12 @@ void RemoteServiceListener::init() {
 		//			throw ConnectionExceptionWithErrno("Cannot add watch on GIOChannel");
 		//		}
 
-	} else
-		throw ConnectionExceptionWithErrno("Can't bind socket");
+	} else {
+		log_error() << "Can't bind socket";
+		return SomeIPReturnCode::ERROR;
+	}
 
+	return SomeIPReturnCode::OK;
 }
 
 }

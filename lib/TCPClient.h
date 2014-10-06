@@ -11,6 +11,8 @@
 
 namespace SomeIP_Dispatcher {
 
+using namespace SomeIP_utils;
+
 class TCPManager;
 
 /**
@@ -105,8 +107,11 @@ public:
 			pollfd fd;
 			fd.fd = getFileDescriptor();
 			fd.events = POLLIN;
+
 			m_inputDataWatcher = m_mainLoopContext.addWatch([&] () {
-										return onIncomingDataAvailable();
+										return processIncomingData([&] (InputMessage& msg) {
+											processIncomingMessage(msg);
+										});
 									}, fd);
 			m_inputDataWatcher->enable();
 		}
@@ -185,14 +190,34 @@ public:
 
 	void sendMessage(const DispatcherMessage& msg) override;
 
-	SomeIPReturnCode sendMessage(OutputMessage& msg) override {
+	InputMessage sendMessageBlocking(const OutputMessage& msg) override {
+		InputMessage answer;
 
-		log_traffic( "Sending message to client %s. Message: %s", toString().c_str(), msg.toString().c_str() );
+		sendMessage(msg);
 
-		sendMessage( msg.getHeader(), msg.getPayload(), msg.getPayloadLength() );
+		bool responseReceived = false;
 
-		// TODO : return proper error code if needed
-		return SomeIPReturnCode::OK;
+		while(!responseReceived)
+			processIncomingData([&] (InputMessage& inputMessage) {
+				if (inputMessage.isAnswerTo(msg)) {
+					answer = inputMessage;
+					responseReceived = true;
+				}
+				else
+					assert(false);
+			});
+
+		return answer;
+	}
+
+	SomeIPReturnCode sendMessage(const OutputMessage& msg) override {
+
+		if ( !isConnected() )
+			connect();
+
+		log_traffic( ) << "Sending message to client " << toString() << " Message: " << msg.toString();
+
+		return !isError(sendMessage( msg.getHeader(), msg.getPayload(), msg.getPayloadLength() )) ? SomeIPReturnCode::OK : SomeIPReturnCode::ERROR;
 	}
 
 	IPCOperationReport sendMessage(const SomeIP::SomeIPHeader& header, const void* payload, size_t payloadLength);
@@ -236,7 +261,7 @@ private:
 	/**
 	 * Called whenever some data is received from a client
 	 */
-	WatchStatus onIncomingDataAvailable();
+	WatchStatus processIncomingData(std::function<void(InputMessage&)> handler);
 
 	WatchStatus onWritingPossible() {
 		return (writePendingDataNonBlocking() ==

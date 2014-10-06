@@ -26,12 +26,14 @@ class InputMessage {
 
 public:
 	InputMessage() :
-		m_ipcMessage(NULL), m_bDeleteNeeded(false) {
+		m_ipcMessage(NULL) {
 	}
 
 	InputMessage(const IPCInputMessage& ipcMessage) :
-		m_ipcMessage(&ipcMessage), m_bDeleteNeeded(false) {
+		m_ipcMessage(&ipcMessage) {
 	}
+
+	InputMessage(const OutputMessage& outputMessage);
 
 	bool operator==(const OutputMessage& right) const;
 
@@ -98,7 +100,7 @@ public:
 		return m_ipcMessage->getUserDataLength() - sizeof(InputMessageHeader);
 	}
 
-	const IPCInputMessage& getIPCMessage() const {
+	const IPCMessage& getIPCMessage() const {
 		return *m_ipcMessage;
 	}
 
@@ -111,8 +113,8 @@ protected:
 		return *const_cast<InputMessageHeader*>( reinterpret_cast<const InputMessageHeader*>( m_ipcMessage->getUserData() ) );
 	}
 
-	const IPCInputMessage* m_ipcMessage;
-	bool m_bDeleteNeeded;
+	const IPCMessage* m_ipcMessage;
+	bool m_bDeleteNeeded = false;
 
 };
 
@@ -268,6 +270,10 @@ inline bool InputMessage::isAnswerTo(const OutputMessage& msg) const {
 		      || (getMessageType() == SomeIP::MessageType::ERROR) ) );
 }
 
+inline InputMessage::InputMessage(const OutputMessage& outputMessage) :
+	m_ipcMessage(&outputMessage.getIPCMessage()) {
+}
+
 InputMessage readMessageFromIPCMessage(const IPCInputMessage& inputMsg);
 
 
@@ -281,7 +287,7 @@ public:
 	virtual ~MessageSource() {
 	}
 
-	virtual SomeIPReturnCode sendMessage(OutputMessage& msg) = 0;
+	virtual SomeIPReturnCode sendMessage(const OutputMessage& msg) = 0;
 
 };
 

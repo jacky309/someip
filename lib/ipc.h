@@ -17,6 +17,10 @@ enum class IPCOperationReport {
 	OK, BUFFER_FULL, DISCONNECTED
 };
 
+inline bool isError(IPCOperationReport code) {
+	return (code == IPCOperationReport::DISCONNECTED);
+}
+
 enum class IPCMessageType
 	: uint8_t {
 	INVALID,

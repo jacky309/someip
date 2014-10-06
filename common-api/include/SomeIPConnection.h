@@ -19,23 +19,6 @@ class SomeIPConnection : private SomeIPClient::ClientConnectionListener, public 
 
 	LOG_SET_CLASS_CONTEXT(someIPCommonAPILogContext);
 
-	class CommonAPIIdleMainLoopHook : public IdleMainLoopHook {
-
-public:
-		CommonAPIIdleMainLoopHook(CallBackFunction callBackFunction, std::shared_ptr<MainLoopContext> mainLoopContext) {
-			m_callBack = callBackFunction;
-			m_mainLoopContext = mainLoopContext;
-		}
-
-		void activate() override {
-			assert(false);
-		}
-
-private:
-		CallBackFunction m_callBack;
-		std::shared_ptr<MainLoopContext> m_mainLoopContext;
-	};
-
 	class CommonAPITimeOutMainLoopHook : public TimeOutMainLoopHook, private CommonAPI::Timeout {
 public:
 		CommonAPITimeOutMainLoopHook(CallBackFunction callBackFunction, int durationInMilliseconds,
@@ -71,6 +54,22 @@ private:
 		std::shared_ptr<MainLoopContext> m_mainLoopContext;
 		int m_durationInMilliseconds;
 	};
+
+
+	class CommonAPIIdleMainLoopHook : public IdleMainLoopHook, public CommonAPITimeOutMainLoopHook
+	{
+
+public:
+		CommonAPIIdleMainLoopHook(CommonAPITimeOutMainLoopHook::CallBackFunction callBackFunction, std::shared_ptr<MainLoopContext> mainLoopContext) :
+			CommonAPITimeOutMainLoopHook(callBackFunction, 0, mainLoopContext) {
+		}
+
+		void activate() override {
+			CommonAPITimeOutMainLoopHook::activate();
+		}
+
+	};
+
 
 	class CommonAPIWatchMainLoopHook : public WatchMainLoopHook, private Watch {
 public:
@@ -158,7 +157,7 @@ public:
 		log_info();
 	}
 
-	SomeIPReturnCode sendMessage(OutputMessage& msg) {
+	SomeIPReturnCode sendMessage(const OutputMessage& msg) {
 		return getConnection().sendMessage(msg);
 	}
 

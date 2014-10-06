@@ -61,10 +61,10 @@ void ServiceAnnouncer::onServiceUnregistered(const Service& service) {
 	}
 }
 
-void ServiceAnnouncer::init() {
+SomeIPReturnCode ServiceAnnouncer::init() {
 
 	if ( ( m_broadcastFileDescriptor = socket(AF_INET, SOCK_DGRAM, 0) ) < 0 )
-		throw ConnectionExceptionWithErrno("Can't create Socket");
+		return SomeIPReturnCode::ERROR;
 
 	int broadcastEnabled = 1;
 	int ret =
@@ -86,6 +86,7 @@ void ServiceAnnouncer::init() {
 	serviceDiscoveryMessage.addEntry(entry);
 	sendMessage(serviceDiscoveryMessage);
 
+	return SomeIPReturnCode::OK;
 }
 
 }

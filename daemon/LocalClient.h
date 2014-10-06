@@ -73,9 +73,14 @@ public:
 		sendIPCMessage( msg.getIPCMessage() );
 	}
 
-	SomeIPReturnCode sendMessage(OutputMessage& msg) override {
+	SomeIPReturnCode sendMessage(const OutputMessage& msg) override {
 		log_traffic( "Sending message to client %s. Message: %s", toString().c_str(), msg.toString().c_str() );
 		return sendIPCMessage( msg.getIPCMessage() );
+	}
+
+	InputMessage sendMessageBlocking(const OutputMessage& msg) override {
+		sendMessage(msg);
+		assert(false);
 	}
 
 	SomeIPReturnCode sendIPCMessage(const IPCMessage& msg) {

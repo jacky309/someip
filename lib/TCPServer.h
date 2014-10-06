@@ -58,7 +58,7 @@ public:
 
 	static std::vector<IPV4Address> getAllIPAddresses();
 
-	void init(int portCount = 1);
+	SomeIPReturnCode init(int portCount = 1);
 
 private:
 	std::vector<IPv4TCPEndPoint> m_activePorts;

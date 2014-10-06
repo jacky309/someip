@@ -106,7 +106,7 @@ public:
 		return true;
 	}
 
-	virtual void sendMessage(DispatcherMessage& msg);
+	virtual void sendMessage(const DispatcherMessage& msg);
 
 	virtual void onNotificationSubscribed(SomeIP::MemberID memberID);
 

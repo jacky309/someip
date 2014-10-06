@@ -29,7 +29,7 @@ public:
 	~RemoteServiceListener() {
 	}
 
-	void init();
+	SomeIPReturnCode init();
 
 	void onFindServiceRequested(const SomeIPServiceDiscoveryServiceEntry& serviceEntry,
 				    const SomeIPServiceDiscoveryMessage& message) {

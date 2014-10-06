@@ -69,7 +69,9 @@ int run(int argc, const char** argv) {
 	TCPManager tcpManager(dispatcher, mainLoopContext);
 
 	TCPServer tcpServer(dispatcher, tcpManager, tcpPortNumber, mainLoopContext);
-	tcpServer.init(tcpPortTriesCount);
+	if(isError(tcpServer.init(tcpPortTriesCount))) {
+		return -1;
+	}
 
 	for ( auto& localIpAddress : tcpServer.getIPAddresses() )
 		log_debug() << "Local IP address : " << localIpAddress.toString();
