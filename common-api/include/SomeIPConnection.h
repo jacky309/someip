@@ -113,8 +113,15 @@ private:
 	};
 
 public:
-	SomeIPConnection(SomeIPClient::ClientConnection* clientConnection) : m_connection(clientConnection) {
-		//,		m_watch( getConnection() )
+	SomeIPConnection(SomeIPClient::ClientConnection* clientConnection) {
+		setConnection(clientConnection);
+	}
+
+	SomeIPConnection() {
+	}
+
+	void setConnection(SomeIPClient::ClientConnection* clientConnection) {
+		m_connection = std::unique_ptr<SomeIPClient::ClientConnection>(clientConnection);
 	}
 
 	~SomeIPConnection() {

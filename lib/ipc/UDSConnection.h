@@ -101,16 +101,14 @@ class UDSServer : public SocketStreamServer {
 	LOG_DECLARE_CLASS_CONTEXT("UDSS", "UDSServer");
 
 public:
-	UDSServer() {
+	UDSServer(MainLoopInterface& mainContext) : SocketStreamServer(mainContext) {
 	}
 
 	IPCReturnCode initServerSocket(const char* uds_socket_path, int fd = 0) {
 
-		m_fileDescriptor = fd;
+		if (fd == 0) {
 
-		if (getFileDescriptor() == 0) {
-
-			if ( ( m_fileDescriptor = socket(AF_UNIX, SOCK_STREAM, 0) ) < 0 ) {
+			if ( ( fd = socket(AF_UNIX, SOCK_STREAM, 0) ) < 0 ) {
 				log_error() << "Failed to open socket " << uds_socket_path;
 				return IPCReturnCode::ERROR;
 			}
@@ -120,14 +118,14 @@ public:
 			strcpy(local.sun_path, uds_socket_path);
 			unlink(local.sun_path);
 
-			if (::bind( getFileDescriptor(), (struct sockaddr*) &local,
+			if (::bind( fd, (struct sockaddr*) &local,
 				    strlen(local.sun_path) + sizeof(local.sun_family) ) != 0) {
 				log_warning() << "Failed to bind server socket " << uds_socket_path;
 
 				//				uds_socket_path = alternative_uds_socket_path;
 				//				strcpy(local.sun_path, uds_socket_path);
 				//				unlink(local.sun_path);
-				//				if (::bind( getFileDescriptor(), (struct sockaddr*) &local,
+				//				if (::bind( fd, (struct sockaddr*) &local,
 				//					    strlen(local.sun_path) + sizeof(local.sun_family) ) != 0) {
 				//					log_warning() << "Failed to bind server socket " << uds_socket_path;
 				//					throw ConnectionException("Failed to open socket");
@@ -136,15 +134,16 @@ public:
 				return IPCReturnCode::ERROR;
 			}
 
-			if (listen(getFileDescriptor(), SOMAXCONN) != 0) {
+			if (listen(fd, SOMAXCONN) != 0) {
 				log_error() << "Failed to listen to socket " << uds_socket_path;
 				throw ConnectionException("Failed to listen");
 			}
 
 			m_uds_socket_path = uds_socket_path;
-			return IPCReturnCode::OK;
 
 		}
+
+		setFileDescriptor(fd);
 
 		return IPCReturnCode::OK;
 

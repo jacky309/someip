@@ -226,7 +226,7 @@ void ClientDaemonConnection::dispatchQueuedMessages() {
 	::read(m_queuedMessageIndicatorPipe[0], &m_dummy, sizeof(m_dummy));
 
 	const IPCInputMessage* msg = nullptr;
-	//		log_debug("dispatchQueuedMessages");
+
 	do {
 		{
 			std::lock_guard<std::recursive_mutex> receptionLock(dataReceptionMutex);
@@ -265,7 +265,7 @@ void ClientDaemonConnection::handleConstIncomingIPCMessage(const IPCInputMessage
 		}
 		IPCOutputMessage ipcMessage(IPCMessageType::PONG);
 		writeMessage(ipcMessage);
-		log_verbose("PING RECEIVED");
+		log_verbose() << "PING RECEIVED";
 	}
 	break;
 

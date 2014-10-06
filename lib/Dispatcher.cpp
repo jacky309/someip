@@ -2,6 +2,7 @@
 #include "SomeIP-common.h"
 
 #include "GlibIO.h"
+#include "ServiceDiscovery.h"
 
 namespace SomeIP_Dispatcher {
 

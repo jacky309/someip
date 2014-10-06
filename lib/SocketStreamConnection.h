@@ -186,7 +186,7 @@ class SocketStreamServer {
 	LOG_DECLARE_CLASS_CONTEXT("SSS", "SocketStreamServer");
 
 public:
-	SocketStreamServer() {
+	SocketStreamServer(MainLoopInterface& mainLoopInterface) : m_mainLoopInterface(mainLoopInterface) {
 	}
 
 	virtual ~SocketStreamServer() {
@@ -226,12 +226,27 @@ public:
 		return m_fileDescriptor;
 	}
 
+	bool isConnected() const {
+		return m_fileDescriptor != SocketStreamConnection::UNINITIALIZED_FILE_DESCRIPTOR;
+	}
+
 protected:
 	void setFileDescriptor(int fileDescriptor) {
 		m_fileDescriptor = fileDescriptor;
+
+		pollfd fd;
+		fd.fd = m_fileDescriptor;
+		fd.events = POLLIN;
+		m_connectionWatcher = m_mainLoopInterface.addWatch([&] () {
+			handleNewConnection();
+								}, fd);
+		m_connectionWatcher->enable();
 	}
 
+private:
 	int m_fileDescriptor = SocketStreamConnection::UNINITIALIZED_FILE_DESCRIPTOR;
+	MainLoopInterface& m_mainLoopInterface;
+	std::unique_ptr<WatchMainLoopHook> m_connectionWatcher;
 
 };
 

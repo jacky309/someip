@@ -148,7 +148,7 @@ public:
 
 	virtual void disconnect() = 0;
 
-	virtual int getFileDescriptor() const = 0;
+//	virtual int getFileDescriptor() const = 0;
 
 	/**
 	 * Registers a new service.
@@ -242,9 +242,9 @@ public:
 		return ( ( !m_queue.isEmpty() ) || hasAvailableBytes() );
 	}
 
-	int getFileDescriptor() const {
-		return SocketStreamConnection::getFileDescriptor();
-	}
+//	int getFileDescriptor() const {
+//		return SocketStreamConnection::getFileDescriptor();
+//	}
 
 	void disconnect() {
 		SocketStreamConnection::disconnect();

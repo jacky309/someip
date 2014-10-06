@@ -7,6 +7,7 @@
 
 #include "Client.h"
 #include "SocketStreamConnection.h"
+#include "ServiceDiscovery.h"
 
 namespace SomeIP_Dispatcher {
 

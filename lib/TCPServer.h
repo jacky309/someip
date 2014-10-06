@@ -10,7 +10,6 @@
 
 #include "ipc.h"
 #include "Dispatcher.h"
-#include "LocalClient.h"
 #include "SocketStreamConnection.h"
 #include "TCPClient.h"
 
@@ -18,14 +17,14 @@ namespace SomeIP_Dispatcher {
 
 typedef uint16_t TCPPort;
 
-class TCPServer : private SocketStreamServer, private BlackListHostFilter {
+class TCPServer : private BlackListHostFilter, public SocketStreamServer {
 
 	LOG_DECLARE_CLASS_CONTEXT("TCPS", "TCPServer");
 
 public:
 	static const TCPPort DEFAULT_TCP_SERVER_PORT = 10032;
 
-	TCPServer(Dispatcher& dispatcher, TCPManager& tcpManager, TCPPort port, MainLoopContext& mainContext) :
+	TCPServer(Dispatcher& dispatcher, TCPManager& tcpManager, TCPPort port, MainLoopContext& mainContext) : SocketStreamServer(mainContext),
 		m_dispatcher(dispatcher), m_tcpManager(tcpManager), m_port(port), m_mainContext(mainContext) {
 	}
 

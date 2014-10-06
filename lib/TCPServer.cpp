@@ -1,5 +1,6 @@
 #include "TCPServer.h"
 #include "TCPManager.h"
+#include <ifaddrs.h>
 
 namespace SomeIP_Dispatcher {
 
@@ -85,19 +86,13 @@ void TCPServer::init(int portCount) {
 		throw ConnectionExceptionWithErrno("Failed to listen to TCP port");
 	}
 
-	GIOChannel* tcpServerSocketChannel = g_io_channel_unix_new(tcpServerSocketHandle);
-
-	if ( !g_io_add_watch(tcpServerSocketChannel, G_IO_IN | G_IO_HUP, onNewSocketConnection, this) ) {
-		log_error() << "Cannot add watch on TCP GIOChannel!";
-		throw ConnectionException("Failed to listen to TCP port");
-	}
+	setFileDescriptor(tcpServerSocketHandle);
 
 	log_info() << "TCP Server socket listening on port " << m_port;
 
 	for ( auto address : getAllIPAddresses() ) {
 		m_activePorts.push_back( IPv4TCPEndPoint(address, m_port) );
 	}
-	setFileDescriptor(tcpServerSocketHandle);
 }
 
 

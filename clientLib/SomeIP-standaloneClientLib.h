@@ -13,20 +13,35 @@
 #include "Message.h"
 #include "SomeIP-clientLib.h"
 
+#include "Dispatcher.h"
+#include "TCPManager.h"
+#include "GlibMainLoopInterfaceImplementation.h"
+#include "RemoteServiceListener.h"
 
 namespace SomeIPClient {
 
 using namespace SomeIP_Lib;
 using namespace SomeIP_utils;
+using namespace SomeIP_Dispatcher;
 
 LOG_IMPORT_CONTEXT(clientLibContext);
 
 /**
  * Interface to be used by client application to connect to the dispatcher. The dispatcher can either be local
  */
-class DaemonLessClient : public ClientConnection {
+class DaemonLessClient : public ClientConnection, private Client {
+
+	LOG_DECLARE_CLASS_CONTEXT("DLES" , "Daemonless connection");
 
 public:
+	DaemonLessClient(MainLoopContext& mainLoopContext) : Client(dispatcher), m_mainLoopContext(mainLoopContext), dispatcher(m_mainLoopContext)
+, tcpManager(dispatcher, m_mainLoopContext)
+, tcpServer(dispatcher, tcpManager, m_tcpPortNumber, m_mainLoopContext)
+, serviceAnnouncer(dispatcher, tcpServer, m_mainLoopContext)
+, remoteServiceListener(dispatcher, tcpManager, serviceAnnouncer, m_mainLoopContext)
+{
+	}
+
 	virtual ~DaemonLessClient() {
 	}
 
@@ -35,58 +50,126 @@ public:
 	 * @return : true if there is still some data to be processed
 	 */
 	bool dispatchIncomingMessages() override {
-		return false;
+		assert(false);
 	}
 
 	void disconnect() override {
 	}
 
+	void init() override {
+	}
+
+	void onNotificationSubscribed(SomeIP::MemberID serviceID, SomeIP::MemberID memberID) override {
+		assert(false);
+	}
+
+	/**
+	 * Returns a string representation of the object
+	 */
+	std::string toString() const override {
+		return std::string();
+
+	}
+
+	void sendMessage(const DispatcherMessage& msg) override {
+//		dispatcher.dispatchMessage(msg, *this);
+		assert(false);
+	}
+
 	/**
 	 * Registers a new service.
 	 */
-	virtual SomeIPReturnCode registerService(SomeIP::ServiceID serviceID) = 0;
+	SomeIPReturnCode registerService(SomeIP::ServiceID serviceID) {
+		auto service = dispatcher.tryRegisterService(serviceID, *this, true);
+
+		if (service != nullptr)
+			return SomeIPReturnCode::OK;
+		else
+			return SomeIPReturnCode::ERROR;
+
+	}
 
 	/**
 	 * Unregisters the given service
 	 */
-	virtual SomeIPReturnCode unregisterService(SomeIP::ServiceID serviceID) = 0;
+	SomeIPReturnCode unregisterService(SomeIP::ServiceID serviceID) {
+		assert(false);
+
+	}
 
 	/**
 	 * Subscribes to notifications for the given MessageID
 	 */
-	virtual SomeIPReturnCode subscribeToNotifications(SomeIP::MessageID messageID) = 0;
+	 SomeIPReturnCode subscribeToNotifications(SomeIP::MessageID messageID) override {assert(false);
+}
 
 	/**
 	 * Sends the given message to the dispatcher.
 	 */
-	virtual SomeIPReturnCode sendMessage(OutputMessage& msg) = 0;
+	 SomeIPReturnCode sendMessage(OutputMessage& msg) override {assert(false);
+}
 
 	/**
 	 * Sends a ping message to the dispatcher
 	 */
-	virtual SomeIPReturnCode sendPing() = 0;
+	 SomeIPReturnCode sendPing() override {assert(false);
+}
 
 	/**
 	 * Sends the given message to the dispatcher and block until a response is received.
 	 */
-	virtual InputMessage sendMessageBlocking(const OutputMessage& msg) = 0;
+	 InputMessage sendMessageBlocking(const OutputMessage& msg) override {
+		 assert(false);
+		 log_debug() << msg;
+	 }
 
 	/**
 	 * Connects to the dispatcher.
 	 */
-	virtual SomeIPReturnCode connect(ClientConnectionListener& clientReceiveCb) = 0;
+	 SomeIPReturnCode connect(ClientConnectionListener& clientReceiveCb) override {
+		tcpServer.init(tcpPortTriesCount);
+
+		for (auto& localIpAddress : tcpServer.getIPAddresses())
+			log_debug() << "Local IP address : " << localIpAddress.toString();
+
+		serviceAnnouncer.init();
+
+		remoteServiceListener.init();
+
+		return SomeIPReturnCode::OK;
+	 }
+
 
 	/**
 	 * Returns true if the connection to the daemon is active
 	 */
-	virtual bool isConnected() const = 0;
+	bool isConnected() const override {
+		return tcpServer.isConnected();
+	}
 
 	/**
 	 * Returns true if some data has been received
 	 */
-	virtual bool hasIncomingMessages() = 0;
+	 bool hasIncomingMessages() override {
+		assert(false);
+		return false;
+	 }
 
-	virtual ServiceRegistry& getServiceRegistry() = 0;
+	bool isServiceAvailableBlocking(ServiceID service) override {
+		assert(false);
+		return false;
+	}
+
+private:
+	int m_tcpPortNumber = 6666;
+	int tcpPortTriesCount = 1;
+
+	MainLoopContext& m_mainLoopContext;
+	Dispatcher dispatcher;
+	TCPManager tcpManager;
+	TCPServer tcpServer;
+	ServiceAnnouncer serviceAnnouncer;
+	RemoteServiceListener remoteServiceListener;
 
 };
 

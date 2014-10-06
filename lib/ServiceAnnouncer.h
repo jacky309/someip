@@ -11,7 +11,6 @@
 
 #include "ipc.h"
 #include "Dispatcher.h"
-#include "LocalClient.h"
 #include "ServiceDiscovery.h"
 
 #include "TCPServer.h"

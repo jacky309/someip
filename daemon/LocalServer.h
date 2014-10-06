@@ -23,7 +23,7 @@ class LocalServer : private UDSServer {
 	LOG_DECLARE_CLASS_CONTEXT("LoSe", "LocalServer");
 
 public:
-	LocalServer(Dispatcher& dispatcher, MainLoopContext& mainLoopContext) :
+	LocalServer(Dispatcher& dispatcher, MainLoopContext& mainLoopContext) : UDSServer(mainLoopContext),
 		m_dispatcher(dispatcher), m_mainLoopContext(mainLoopContext) {
 	}
 

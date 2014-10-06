@@ -27,13 +27,6 @@ void LocalServer::init(const char* socketPath) {
 	initServerSocket(socketPath);
 #endif
 
-	m_serverSocketChannel = g_io_channel_unix_new( getFileDescriptor() );
-
-	if ( !g_io_add_watch(m_serverSocketChannel, G_IO_IN | G_IO_HUP, onNewSocketConnection, this) ) {
-		log_error() << "Cannot add watch on GIOChannel";
-		throw ConnectionException("Cannot add watch on GIOChannel");
-	}
-
 	// when running as root, allow the applications which are not running as root to connect
 	if ( chmod(getSocketPath(), S_IRWXU | S_IRWXG         // | S_IRWXO
 		   ) ) {

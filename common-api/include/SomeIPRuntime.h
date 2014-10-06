@@ -5,6 +5,7 @@
 
 #include "SomeIPProxy.h"
 #include "SomeIP-clientLib.h"
+#include "SomeIP-standaloneClientLib.h"
 
 #include <map>
 
@@ -52,11 +53,11 @@ typedef std::shared_ptr<SomeIPProxy> (*ProxyFactoryFunction)(SomeIPConnection& s
                                                              //			, CommonAPI::SomeIP::ServiceID serviceID
 							     );
 
+
 class SomeIPRuntime : public Runtime {
 
 public:
-	SomeIPRuntime() :
-		m_connection() {
+	SomeIPRuntime() {
 	}
 
 	~SomeIPRuntime() {
@@ -71,7 +72,15 @@ public:
 	std::shared_ptr<Factory> doCreateFactory(std::shared_ptr<MainLoopContext> mainLoopContext,
 						 const std::string& factoryName,
 						 const bool nullOnInvalidName) override {
-		m_connection = std::make_shared<SomeIPConnection>( new SomeIPClient::ClientDaemonConnection() );
+//		m_connection = std::make_shared<SomeIPConnection>( new SomeIPClient::ClientDaemonConnection() );
+
+		m_connection = std::make_shared<SomeIPConnection>();
+
+//		MainLoopInterface* mainLoop = new CommonAPIMainLoopInterface(mainLoopContext);
+
+//		m_connection->setConnection(new SomeIPClient::DaemonLessClient(*m_connection));
+		m_connection->setConnection(new SomeIPClient::ClientDaemonConnection());
+
 		return createFactory(mainLoopContext);
 	}
 
@@ -100,7 +109,6 @@ public:
 	}
 
 private:
-	//	std::unique_ptr<SomeIPClient::ClientDaemonConnection> m_clientLibConnection;
 	std::shared_ptr<SomeIPConnection> m_connection;
 
 	std::unordered_map<std::string, ProxyFactoryFunction> registeredProxyFactoryFunctions;

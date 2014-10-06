@@ -4,11 +4,11 @@
 #include "SomeIP.h"
 #include <vector>
 #include <algorithm>
-#include "config.h"
 #include "Message.h"
 #include "ipc.h"
 #include "SomeIP-common.h"
 #include "GlibIO.h"
+#include "Networking.h"
 
 namespace SomeIP_Dispatcher {
 
