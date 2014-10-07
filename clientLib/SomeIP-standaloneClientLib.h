@@ -225,17 +225,13 @@ public:
 	 }
 
 	bool isServiceAvailableBlocking(ServiceID service) override {
-		auto& v = getServiceRegistry().getAvailableServices();
-		bool bfound = (std::find(v.begin(), v.end(), service) != v.end());
-		return bfound;
-//		return getServiceRegistry().getAvailableServices().find(service);
+		return getServiceRegistry().isServiceRegistered(service);
 	}
 
 private:
 	int m_tcpPortNumber = 6666;
 	int tcpPortTriesCount = 10;
 
-//	MainLoopContext& m_mainLoopContext;
 	Dispatcher m_dispatcher;
 	TCPManager tcpManager;
 	TCPServer tcpServer;

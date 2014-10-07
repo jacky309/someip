@@ -2,8 +2,11 @@
 
 #include "glib.h"
 #include <functional>
+#include "SomeIP-common.h"
 
 namespace SomeIP_utils {
+
+using SomeIP_Lib::WatchStatus;
 
 inline GIOCondition operator|(const GIOCondition c1, const GIOCondition c2) {
 	return static_cast<GIOCondition>( static_cast<int>(c1) | static_cast<int>(c2) );
@@ -125,10 +128,6 @@ private:
 	GSource* m_source = nullptr;
 	GMainContext* m_mainContext = nullptr;
 	CallbackFunction m_func;
-};
-
-enum class WatchStatus {
-	KEEP_WATCHING, STOP_WATCHING
 };
 
 struct GlibChannelListener {

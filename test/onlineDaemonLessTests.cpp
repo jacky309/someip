@@ -43,28 +43,38 @@ static const SomeIP::ServiceID TEST_SERVICE_ID = 0x543F;
 
 
 /**
+ * Test that a service registered using one connection is also visible with another connection
  */
 TEST_F(SomeIPTest, RegisterServiceTest) {
 
 	using namespace SomeIPClient;
 
 	GlibMainLoopInterfaceImplementation glibIntegration;
-	DaemonLessClient connection(glibIntegration);
-
 	TestSink sink(
 		[&](const InputMessage &msg) {
 		});
 
-	connection.setMainLoopInterface(glibIntegration);
-	connection.connect(sink);
+	DaemonLessClient connection1(glibIntegration);
+	connection1.setMainLoopInterface(glibIntegration);
+	connection1.connect(sink);
+	connection1.registerService(TEST_SERVICE_ID);
 
-	connection.registerService(TEST_SERVICE_ID);
+	DaemonLessClient connection2(glibIntegration);
+	connection2.setMainLoopInterface(glibIntegration);
+	connection2.connect(sink);
 
 	MainLoopApplication app;
 
-	app.run(40000);
+	app.run(2000);
 
-	EXPECT_EQ(sink.getReceivedMessageCount(), 0);
+	EXPECT_TRUE(connection2.getServiceRegistry().isServiceRegistered(TEST_SERVICE_ID));
+
+
+	connection1.unregisterService(TEST_SERVICE_ID);
+
+	app.run(2000);
+
+	EXPECT_FALSE(connection2.getServiceRegistry().isServiceRegistered(TEST_SERVICE_ID));
 
 }
 

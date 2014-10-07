@@ -13,6 +13,7 @@
 #include "Message.h"
 
 #include "ipc/UDSConnection.h"
+#include <algorithm>
 
 namespace SomeIPClient {
 
@@ -88,6 +89,11 @@ public:
 		return m_availableServices;
 	}
 
+	bool isServiceRegistered(SomeIP::ServiceID serviceID) const {
+		bool bfound = (std::find(m_availableServices.begin(), m_availableServices.end(), serviceID) != m_availableServices.end());
+		return bfound;
+	}
+
 	/**
 	 * Registers a new service availability listener
 	 */
@@ -104,7 +110,7 @@ protected:
 	}
 
 	void onServiceUnregistered(SomeIP::ServiceID serviceID) {
-		m_availableServices.push_back(serviceID);
+		m_availableServices.erase(std::find(m_availableServices.begin(), m_availableServices.end(), serviceID));
 		for (auto& listener : m_serviceAvailabilityListeners) {
 			listener->onServiceUnregistered(serviceID);
 		}

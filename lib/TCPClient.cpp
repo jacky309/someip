@@ -106,20 +106,20 @@ void TCPClient::connect() {
 
 	/* Map TCP transport protocol name to protocol number. */
 	if ( ( ptrp = getprotobyname("tcp") ) == 0 ) {
-		log_error("Failed to connect to server. Cannot map \"tcp\" to protocol number");
+		log_error() << "Failed to connect to server. Cannot map \"tcp\" to protocol number";
 	}
 
 	/* Create a socket. */
 	fileDescriptor = socket(AF_INET, SOCK_STREAM, ptrp->p_proto);
 	if (fileDescriptor < 0) {
-		log_error( "Failed to connect to server. Socket creation failed. Error : %s", strerror(errno) );
+		log_error( ) << "Failed to connect to server. Socket creation failed. Error : " << strerror(errno);
 	}
 
 	enableNoDelay(fileDescriptor);
 
 	/* Connect the socket to the specified server. */
 	if (::connect( fileDescriptor, (struct sockaddr*) &sad, sizeof(sad) ) < 0) {
-		log_error( "Failed to connect to server : %s", m_serverIdentifier.toString().c_str() );
+		log_error( ) << "Failed to connect to server : " << m_serverIdentifier.toString();
 	}
 
 	setFileDescriptor(fileDescriptor);
@@ -130,7 +130,7 @@ void TCPClient::connect() {
 
 void TCPClient::sendMessage(const DispatcherMessage& msg) {
 
-	log_traffic( "Sending message to client %s. Message: %s", toString().c_str(), msg.toString().c_str() );
+	log_traffic() << "Sending message to client " << toString() << ". Message: " << msg.toString();
 
 	if ( !isConnected() ) {
 		connect();

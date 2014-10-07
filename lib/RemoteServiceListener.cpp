@@ -49,13 +49,6 @@ SomeIPReturnCode RemoteServiceListener::init() {
 								}, fd);
 		m_inputDataWatcher->enable();
 
-		//		m_serverSocketChannel = g_io_channel_unix_new(m_broadcastFileDescriptor);
-
-		//		if ( !g_io_add_watch(m_serverSocketChannel, G_IO_IN | G_IO_HUP, onMessageGlibCallback, this) ) {
-		//			log_error() << "Cannot add watch on GIOChannel";
-		//			throw ConnectionExceptionWithErrno("Cannot add watch on GIOChannel");
-		//		}
-
 	} else {
 		log_error() << "Can't bind socket";
 		return SomeIPReturnCode::ERROR;
