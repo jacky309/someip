@@ -9,7 +9,7 @@
 #include "MainLoopApplication.h"
 #include "Message.h"
 
-static const SomeIP::ServiceID TEST_SERVICE_ID = 0x543F;
+static const SomeIP::ServiceIDs TEST_SERVICE_ID(0x543F, 0x3);
 
 static const int TIMEOUT = 200;
 static const size_t MESSAGE_SIZE = 65536;
@@ -49,21 +49,6 @@ void sendMessageWithExpectedAnswer(OutputMessage& outputMsg, OutputMessage& expe
 
 }
 
-OutputMessage createTestOutputMessage(SomeIP::ServiceID service, SomeIP::MessageType messageType,
-				      size_t contentLength) {
-	OutputMessage outputMsg;
-	OutputMessageHeader& header = outputMsg.getHeader();
-	header.setServiceID(service);
-	header.setMessageType(messageType);
-	SomeIPOutputStream os = outputMsg.getPayloadOutputStream();
-
-	for (size_t i = 0; i < contentLength; i++) {
-		int8_t v = i;
-		os << v;
-	}
-
-	return outputMsg;
-}
 
 
 struct TestConnection {
@@ -132,7 +117,6 @@ TEST_F(SomeIPTest, SendSelf) {
 
 	TestSink sink(
 		[&](const InputMessage &msg) {
-			EXPECT_TRUE(msg.getHeader().getServiceID() == TEST_SERVICE_ID);
 			EXPECT_TRUE(msg == testOutputMsg);
 			OutputMessage returnMessage = createMethodReturn(msg);
 			returnMessage.getPayloadOutputStream().writeRawData( msg.getPayload(), msg.getPayloadLength() );
@@ -165,7 +149,6 @@ TEST_F(SomeIPTest, SendSelf2) {
 
 	TestSink sink(
 		[&](const InputMessage &msg) {
-			EXPECT_TRUE(msg.getHeader().getServiceID() == TEST_SERVICE_ID);
 			EXPECT_TRUE(msg == testOutputMsg);
 			OutputMessage returnMessage = createMethodReturn(msg);
 			returnMessage.getPayloadOutputStream().writeRawData( msg.getPayload(), msg.getPayloadLength() );
@@ -286,12 +269,13 @@ TEST_F(SomeIPTest, TestIsAvailableBlocking) {
 
 	AutoconnectConnection connection;
 
-	static constexpr SomeIP::ServiceID SERVICE_ID = 542;
+	static const SomeIP::ServiceIDs SERVICE_ID(542, 5);
+	static const SomeIP::ServiceIDs SERVICE_ID2(SERVICE_ID.serviceID, SERVICE_ID.instanceID+1);
 
 	connection.connection.registerService(SERVICE_ID);
 
 	EXPECT_TRUE(connection.connection.isServiceAvailableBlocking(SERVICE_ID));
-	EXPECT_FALSE(connection.connection.isServiceAvailableBlocking(SERVICE_ID+1));
+	EXPECT_FALSE(connection.connection.isServiceAvailableBlocking(SERVICE_ID2));
 
 }
 

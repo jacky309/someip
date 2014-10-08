@@ -14,10 +14,10 @@ namespace SomeIP {
 LOG_DECLARE_CONTEXT(someIPCommonAPILogContext, "SOCA", "SomeIP Common-API");
 
 SomeIPReturnCode SomeIPConnection::registerService(SomeIPStubAdapter& service) {
-	auto code = getConnection().registerService( service.getServiceID() );
+	auto code = getConnection().registerService( service.getServiceIDs() );
 
 	if ( !isError(code) )
-		m_serviceTable[service.getServiceID()] = &service;
+		m_serviceTable[service.getServiceIDs()] = &service;
 
 	return code;
 }
@@ -44,7 +44,7 @@ bool SomeIPConnection::registerService(const std::shared_ptr<StubBase>& stubBase
 }
 
 SomeIPReturnCode SomeIPConnection::registerProxy(SomeIPProxy& proxy) {
-	m_proxyTable[proxy.getServiceID()] = &proxy;
+	m_proxyTable[proxy.getServiceIDs()] = &proxy;
 	getConnection().getServiceRegistry().registerServiceAvailabilityListener(proxy);
 
 	return SomeIPReturnCode::OK;
@@ -52,7 +52,8 @@ SomeIPReturnCode SomeIPConnection::registerProxy(SomeIPProxy& proxy) {
 
 MessageProcessingResult SomeIPConnection::processMessage(const InputMessage& message) {
 
-	auto serviceID = message.getHeader().getServiceID();
+	ServiceIDs serviceID(message.getServiceID(), message.getInstanceID());
+
 	if ( message.getHeader().isNotification() ) {
 
 		// TODO : handle multiple proxy instances with same serviceID ?

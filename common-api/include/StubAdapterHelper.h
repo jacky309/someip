@@ -38,8 +38,9 @@ public:
 public:
 	StubAdapterHelper(const std::shared_ptr<_StubClass>& stub, SomeIPConnection& connection,
 			  const std::string& commonApiAddress,
-			  CommonAPI::SomeIP::ServiceID serviceID) :
-		SomeIPStubAdapter(commonApiAddress, serviceID, connection), stub_(stub) {
+			  CommonAPI::SomeIP::ServiceID serviceID,
+			  CommonAPI::SomeIP::InstanceID instanceID) :
+		SomeIPStubAdapter(commonApiAddress, serviceID, instanceID, connection), stub_(stub) {
 		remoteEventHandler_ = NULL;
 	}
 
@@ -75,8 +76,8 @@ protected:
 		if (SomeIPStubAdapter::processMessage(msg) == MessageProcessingResult::Processed_OK)
 			return MessageProcessingResult::Processed_OK;
 
-		auto interfaceMemberName = msg.getHeader().getMemberID();
-		auto findIterator = this->stubDispatcherTable_.find(interfaceMemberName);
+		auto interfaceMember = msg.getHeader().getMemberID();
+		auto findIterator = this->stubDispatcherTable_.find(interfaceMember);
 		const bool foundInterfaceMemberHandler = ( findIterator != stubDispatcherTable_.end() );
 		auto messageHandled = MessageProcessingResult::Processed_Error;
 
@@ -89,7 +90,7 @@ protected:
 								 *this) ? MessageProcessingResult::Processed_OK :
 				 MessageProcessingResult::Processed_Error);
 		} else {
-			log_error("Can not find member with MemberID=0x%X", interfaceMemberName);
+			log_error() << "Can not find member with MemberID:" << interfaceMember;
 			log_info() << "Available member IDs:";
 			for (auto& i : stubDispatcherTable_) {
 				log_info().writeFormatted("0x%X", i.first);
@@ -114,7 +115,7 @@ struct StubSignalHelper<_In<_InArgs ...> > {
 			       MemberID id,
 			       const _InArgs& ... inArgs) {
 
-		OutputMessage message( SomeIP::getMessageID(stub.getServiceID(), id) );
+		OutputMessage message( stub.getServiceIDs().serviceID , stub.getServiceIDs().instanceID, id);
 
 		message.getHeader().setMessageType(MessageType::NOTIFICATION);
 

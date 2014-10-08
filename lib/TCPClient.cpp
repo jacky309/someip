@@ -6,7 +6,7 @@ namespace SomeIP_Dispatcher {
 /**
  * Called whenever some data is received from a client
  */
-WatchStatus TCPClient::processIncomingData(std::function<void(InputMessage&)> handler) {
+WatchStatus TCPClient::processIncomingData(int fileDescriptor, std::function<void(InputMessage&)> handler) {
 
 	if( isInputBlocked() )
 		return WatchStatus::STOP_WATCHING;
@@ -17,7 +17,7 @@ WatchStatus TCPClient::processIncomingData(std::function<void(InputMessage&)> ha
 
 		if ( !m_headerReader.isComplete() ) {
 
-			m_headerReader.read(getFileDescriptor(), false);
+			m_headerReader.read(fileDescriptor, false);
 			if ( m_headerReader.isComplete() ) {
 				NetworkDeserializer deserializer( m_headerBytes, sizeof(m_headerBytes) );
 				SomeIP::SomeIPHeader& header = m_currentIncomingMessage.getHeaderPrivate();
@@ -40,7 +40,7 @@ WatchStatus TCPClient::processIncomingData(std::function<void(InputMessage&)> ha
 		} else {
 
 			// We are receiving some payload
-			m_payloadReader.read(getFileDescriptor(), false);
+			m_payloadReader.read(fileDescriptor, false);
 
 			if ( m_payloadReader.isComplete() ) {
 
@@ -165,7 +165,15 @@ IPCOperationReport TCPClient::sendMessage(const SomeIP::SomeIPHeader& header, co
 	return v;
 }
 
-void TCPClient::onNotificationSubscribed(SomeIP::MemberID serviceID, SomeIP::MemberID memberID) {
+void TCPClient::onNotificationSubscribed(SomeIP::ServiceIDs serviceID, SomeIP::MemberID memberID) {
+
+	auto& instances = m_tcpManager.getServiceNamespace();
+
+	if (instances.count(serviceID.serviceID) != 0) {
+		assert(	instances[serviceID.serviceID] == serviceID.instanceID ); // TODO : handle multiple instance
+	}
+
+	instances[serviceID.serviceID] = serviceID.instanceID;
 
 	if ( !isConnected() ) {
 		connect();

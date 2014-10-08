@@ -16,7 +16,13 @@ static const ClientIdentifier UNKNOWN_CLIENT = 0xFFFF;
 class OutputMessage;
 
 struct InputMessageHeader : public SomeIP::SomeIPHeader {
+
+	InstanceID getInstanceID() const {
+		return m_instanceID;
+	}
+
 	ClientIdentifier m_clientIdentifier;
+	InstanceID m_instanceID = 0;
 };
 
 /**
@@ -26,7 +32,7 @@ class InputMessage {
 
 public:
 	InputMessage() :
-		m_ipcMessage(NULL) {
+		m_ipcMessage(nullptr) {
 	}
 
 	InputMessage(const IPCInputMessage& ipcMessage) :
@@ -52,7 +58,7 @@ public:
 	 */
 	std::string toString() const {
 		char buffer[10000];
-		snprintf( buffer, sizeof(buffer), "MessageID:0x%.4X, MessageType:%s, RequestID:0x%X, payload: %s", getMessageID(),
+		snprintf( buffer, sizeof(buffer), "MessageID:0x%.4X, InstanceID=%d, MessageType:%s, RequestID:0x%X, payload: %s", getMessageID(), getInstanceID(),
 			  SomeIP::toString( getMessageType() ).c_str(), getHeader().getRequestID(),
 			  byteArrayToString( getPayload(), getPayloadLength() ).c_str() );
 		return buffer;
@@ -62,6 +68,10 @@ public:
 	 * Returns true if the message is a response to the output message passed as parameter
 	 */
 	bool isAnswerTo(const OutputMessage& msg) const;
+
+	SomeIP::ServiceID getServiceID() const {
+		return getHeader().getServiceID();
+	}
 
 	SomeIP::MessageID getMessageID() const {
 		return getHeader().getMessageID();
@@ -108,6 +118,14 @@ public:
 		return (getHeader().getMemberID() == SomeIP::PING_MEMBER_ID);
 	}
 
+	InstanceID getInstanceID() const {
+		return getHeader().m_instanceID;
+	}
+
+	void setInstanceID(InstanceID instanceID) {
+		getHeaderPrivate().m_instanceID = instanceID;
+	}
+
 protected:
 	InputMessageHeader& getHeaderPrivate() {
 		return *const_cast<InputMessageHeader*>( reinterpret_cast<const InputMessageHeader*>( m_ipcMessage->getUserData() ) );
@@ -119,7 +137,13 @@ protected:
 };
 
 struct OutputMessageHeader : public SomeIP::SomeIPHeader {
+
+	InstanceID getInstanceID() const {
+		return m_instanceID;
+	}
+
 	ClientIdentifier m_clientIdentifier;
+	InstanceID m_instanceID = 0;
 };
 
 inline bool byteArraysEqual(const void* p1, size_t length1, const void* p2,
@@ -142,12 +166,17 @@ class OutputMessage {
 public:
 	OutputMessage() :
 		m_ipcMessage(IPCMessageType::SEND_MESSAGE) {
-		init(0);
+		init(MemberIDs(0,0,0));
 	}
 
-	OutputMessage(SomeIP::MessageID messageID) :
+	OutputMessage(SomeIP::MemberIDs messageID) :
 		m_ipcMessage(IPCMessageType::SEND_MESSAGE) {
 		init(messageID);
+	}
+
+	OutputMessage(SomeIP::ServiceID serviceID, InstanceID instanceID, MemberID memberID) :
+		m_ipcMessage(IPCMessageType::SEND_MESSAGE) {
+		init(MemberIDs(serviceID,instanceID,memberID));
 	}
 
 	bool operator==(const InputMessage& right) const {
@@ -166,12 +195,14 @@ public:
 		return true;
 	}
 
-	void init(SomeIP::MessageID messageID) {
+	void init(SomeIP::MemberIDs messageID) {
 		m_headerPosition = getWritablePayload().skip( sizeof(OutputMessageHeader) );
 		// Construct header in-place
 		new ( &getHeader() )OutputMessageHeader();
 		assignUniqueRequestID();
-		getHeader().setMessageID(messageID);
+		getHeader().setMemberID(messageID.m_memberID);
+		getHeader().setServiceID(messageID.m_serviceIDs.serviceID);
+		setInstanceID(messageID.m_serviceIDs.instanceID);
 	}
 
 	void assignUniqueRequestID() {
@@ -186,6 +217,14 @@ public:
 		return *reinterpret_cast<OutputMessageHeader*>(m_ipcMessage.getPayload().getData() + m_headerPosition);
 	}
 
+	void setInstanceID(InstanceID instanceID) {
+		getHeader().m_instanceID = instanceID;
+	}
+
+	InstanceID getInstanceID() const {
+		return getHeader().m_instanceID;
+	}
+
 	const OutputMessageHeader& getHeader() const {
 		return *reinterpret_cast<const OutputMessageHeader*>(m_ipcMessage.getPayload().getData() + m_headerPosition);
 	}
@@ -195,8 +234,8 @@ public:
 	 */
 	std::string toString() const {
 		char buffer[1000];
-		snprintf( buffer, sizeof(buffer), "MessageID:0x%.4X, MessageType:%s, RequestID:0x%X, Payload : %s",
-			  getHeader().getMessageID(), SomeIP::toString( getHeader().getMessageType() ).c_str(),
+		snprintf( buffer, sizeof(buffer), "MessageID:0x%.4X, InstanceID=%d, MessageType:%s, RequestID:0x%X, Payload : %s",
+			  getHeader().getMessageID(), getInstanceID(), SomeIP::toString( getHeader().getMessageType() ).c_str(),
 			  getHeader().getRequestID(), byteArrayToString( getPayload(), getPayloadLength() ).c_str() );
 		return buffer;
 	}
@@ -258,6 +297,7 @@ inline bool InputMessage::operator==(const OutputMessage& right) const {
 inline OutputMessage createMethodReturn(const InputMessage& inputMessage) {
 	OutputMessage methodReturnMessage;
 	methodReturnMessage.getHeader().setMessageID( inputMessage.getMessageID() );
+	methodReturnMessage.setInstanceID( inputMessage.getInstanceID() );
 	methodReturnMessage.getHeader().setRequestID( inputMessage.getHeader().getRequestID() );
 	methodReturnMessage.getHeader().setMessageType(SomeIP::MessageType::RESPONSE);
 	methodReturnMessage.setClientIdentifier( inputMessage.getClientIdentifier() );

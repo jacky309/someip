@@ -1,4 +1,5 @@
 #include "ServiceAnnouncer.h"
+#include "TCPManager.h"
 
 namespace SomeIP_Dispatcher {
 
@@ -16,18 +17,18 @@ void ServiceAnnouncer::sendMessage(const SomeIPServiceDiscoveryMessage& serviceD
 		log_info() << "Service discovery message sent : " << byteArray;
 	}
 
-
 }
 
 void ServiceAnnouncer::onServiceRegistered(const Service& service) {
 
 	if ( service.isLocal() ) {         // we don't publish remote services
 
+		// TODO : handle multiple instances
 		for ( auto ipAddress : m_tcpServer.getIPAddresses() ) {
 			SomeIPServiceDiscoveryMessage serviceDiscoveryMessage(true);
 
 			SomeIPServiceDiscoveryServiceOfferedEntry serviceEntry(serviceDiscoveryMessage,
-									       service.getServiceID(),
+									       service.getServiceIDs(),
 									       TransportProtocol::TCP,
 									       ipAddress.m_address,
 									       ipAddress.m_port);
@@ -48,7 +49,7 @@ void ServiceAnnouncer::onServiceUnregistered(const Service& service) {
 			SomeIPServiceDiscoveryMessage serviceDiscoveryMessage(true);
 
 			SomeIPServiceDiscoveryServiceUnregisteredEntry serviceEntry(serviceDiscoveryMessage,
-										    service.getServiceID(),
+										    service.getServiceIDs(),
 										    SomeIP::TransportProtocol::
 										    TCP, ipAddress.m_address,
 										    ipAddress.m_port);

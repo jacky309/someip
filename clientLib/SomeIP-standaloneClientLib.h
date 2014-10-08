@@ -44,8 +44,7 @@ class DaemonLessClient : public ClientConnection, private ServiceRegistrationLis
 		void init() override {
 		}
 
-		void onNotificationSubscribed(SomeIP::MemberID serviceID, SomeIP::MemberID memberID) override {
-//			assert(false);
+		void onNotificationSubscribed(SomeIP::ServiceIDs serviceID, SomeIP::MemberID memberID) override {
 		}
 
 		/**
@@ -85,9 +84,8 @@ private:
 
 public:
 	DaemonLessClient(MainLoopContext& mainLoopContext) : m_dispatcher(mainLoopContext)
-, tcpManager(m_dispatcher, mainLoopContext)
-, tcpServer(m_dispatcher, tcpManager, m_tcpPortNumber, mainLoopContext)
-, serviceAnnouncer(m_dispatcher, tcpServer, mainLoopContext)
+, tcpManager(m_dispatcher, mainLoopContext, m_tcpPortNumber)
+, serviceAnnouncer(m_dispatcher, tcpManager, mainLoopContext)
 , remoteServiceListener(m_dispatcher, tcpManager, serviceAnnouncer, mainLoopContext), m_daemonInterface(*this, m_dispatcher)
 {
 		setMainLoopInterface(mainLoopContext);
@@ -110,17 +108,17 @@ public:
 
 
 	void onServiceRegistered(const Service& service) override {
-		ClientConnection::onServiceRegistered(service.getServiceID());
+		ClientConnection::onServiceRegistered(service.getServiceIDs());
 	}
 
 	virtual void onServiceUnregistered(const Service& service) override {
-		ClientConnection::onServiceUnregistered(service.getServiceID());
+		ClientConnection::onServiceUnregistered(service.getServiceIDs());
 	}
 
 	/**
 	 * Registers a new service.
 	 */
-	SomeIPReturnCode registerService(SomeIP::ServiceID serviceID) {
+	SomeIPReturnCode registerService(SomeIP::ServiceIDs serviceID) override {
 		auto service = m_dispatcher.tryRegisterService(serviceID, m_daemonInterface, true);
 
 		if (service != nullptr) {
@@ -132,12 +130,12 @@ public:
 
 	}
 
-	std::map<ServiceID, Service*> m_registeredServices;
+	std::unordered_map<ServiceIDs, Service*> m_registeredServices;
 
 	/**
 	 * Unregisters the given service
 	 */
-	SomeIPReturnCode unregisterService(SomeIP::ServiceID serviceID) {
+	SomeIPReturnCode unregisterService(SomeIP::ServiceIDs serviceID) override {
 		if (m_registeredServices.count(serviceID) == 0)
 			return SomeIPReturnCode::ERROR;
 
@@ -150,7 +148,7 @@ public:
 	/**
 	 * Subscribes to notifications for the given MessageID
 	 */
-	 SomeIPReturnCode subscribeToNotifications(SomeIP::MessageID messageID) override {
+	 SomeIPReturnCode subscribeToNotifications(SomeIP::MemberIDs messageID) override {
 		 m_dispatcher.subscribeClientForNotifications(m_daemonInterface, messageID);
 		 return SomeIPReturnCode::OK;
 	 }
@@ -177,7 +175,7 @@ public:
 	 */
 	 InputMessage sendMessageBlocking(const OutputMessage& msg) override {
 		 assert(msg.getHeader().isRequestWithReturn());
-		 Service* service = m_dispatcher.getService(msg.getHeader().getServiceID());
+		 Service* service = m_dispatcher.getService(ServiceIDs(msg.getHeader().getServiceID(), msg.getInstanceID()));
 		 Client* client = service->getClient();
 		 assert(client != nullptr);
 		 return client->sendMessageBlocking(msg);
@@ -188,11 +186,11 @@ public:
 	 */
 	SomeIPReturnCode connect(ClientConnectionListener& clientReceiveCb) override {
 
-		auto code = tcpServer.init(tcpPortTriesCount);
+		auto code = tcpManager.init(tcpPortTriesCount);
 		if (isError(code))
 			return code;
 
-		for (auto& localIpAddress : tcpServer.getIPAddresses())
+		for (auto& localIpAddress : tcpManager.getIPAddresses())
 			log_debug() << "Local IP address : " << localIpAddress.toString();
 
 		code = serviceAnnouncer.init();
@@ -205,6 +203,8 @@ public:
 
 		m_listener = &clientReceiveCb;
 
+		m_connected = true;
+
 		return SomeIPReturnCode::OK;
 	}
 
@@ -213,7 +213,7 @@ public:
 	 * Returns true if the connection to the daemon is active
 	 */
 	bool isConnected() const override {
-		return tcpServer.isConnected();
+		return m_connected;
 	}
 
 	/**
@@ -224,7 +224,7 @@ public:
 		return false;
 	 }
 
-	bool isServiceAvailableBlocking(ServiceID service) override {
+	bool isServiceAvailableBlocking(ServiceIDs service) override {
 		return getServiceRegistry().isServiceRegistered(service);
 	}
 
@@ -234,12 +234,13 @@ private:
 
 	Dispatcher m_dispatcher;
 	TCPManager tcpManager;
-	TCPServer tcpServer;
 	ServiceAnnouncer serviceAnnouncer;
 	RemoteServiceListener remoteServiceListener;
 
 	DaemonInterface m_daemonInterface;
 	ClientConnectionListener* m_listener = nullptr;
+
+	bool m_connected = false;
 
 };
 

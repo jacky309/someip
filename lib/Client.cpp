@@ -27,21 +27,21 @@ void Client::registerClient() {
 	}
 }
 
-Service* Client::registerService(SomeIP::ServiceID serviceID, bool isLocal) {
+Service* Client::registerService(SomeIP::ServiceIDs serviceID, bool isLocal) {
 	Service* service = m_dispatcher.tryRegisterService(serviceID, *this, isLocal);
 
-	if (service != NULL)
+	if (service != nullptr)
 		m_registeredServices.push_back(service);
 
 	return service;
 }
 
-void Client::unregisterService(SomeIP::ServiceID serviceID) {
+void Client::unregisterService(SomeIP::ServiceIDs serviceID) {
 
 	for (auto i = m_registeredServices.begin(); i != m_registeredServices.end(); ++i) {
 		auto& service = *i;
-		if (service->getServiceID() == serviceID) {
-			log_debug() << "Unregistering service ID" << serviceID << " from " << toString();
+		if (service->getServiceIDs() == serviceID) {
+			log_debug() << "Unregistering service ID" << serviceID.toString() << " from " << toString();
 			getDispatcher().unregisterService(*service);
 			m_registeredServices.erase(i);
 
@@ -58,8 +58,8 @@ void Client::processIncomingMessage(InputMessage& msg) {
 			getDispatcher().dispatchMessage(msg, *this);
 }
 
-void Client::subscribeToNotification(SomeIP::MessageID messageID) {
-	log_debug("SUBSCRIBE_NOTIFICATION Message received from client %s. MessageID:0x%X", toString().c_str(), messageID);
+void Client::subscribeToNotification(SomeIP::MemberIDs messageID) {
+	log_debug() << "SUBSCRIBE_NOTIFICATION Message received from client " << toString() << ". MessageID:0x" << messageID.toString();
 	auto& subscription = m_dispatcher.subscribeClientForNotifications(*this, messageID);
 	m_subscribedNotifications.push_back(&subscription);
 }

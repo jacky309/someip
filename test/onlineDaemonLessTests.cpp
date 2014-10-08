@@ -9,7 +9,7 @@
 #include "MainLoopApplication.h"
 #include "Message.h"
 
-static const SomeIP::ServiceID TEST_SERVICE_ID = 0x543F;
+static const SomeIP::ServiceIDs TEST_SERVICE_ID(0x543F, 0x3);
 
 //static const int TIMEOUT = 200;
 //static const size_t MESSAGE_SIZE = 65536;
@@ -40,6 +40,51 @@ static const SomeIP::ServiceID TEST_SERVICE_ID = 0x543F;
 //	SomeIPClient::GlibMainLoopInterfaceImplementation glibIntegration;
 //
 //};
+
+
+/**
+ * Test that a service registered using one connection is also visible with another connection
+ */
+TEST_F(SomeIPTest, MessageSendTest) {
+
+	using namespace SomeIPClient;
+
+	MainLoopApplication app;
+
+	GlibMainLoopInterfaceImplementation glibIntegration(app.getMainContext());
+
+	bool bMessageReceived = false;
+
+	DaemonLessClient clientConnection(glibIntegration);
+	clientConnection.setMainLoopInterface(glibIntegration);
+	TestSink clientSink(
+		[&](const InputMessage &msg) {
+			bMessageReceived = true;
+			log_debug("Message received &&&&&&&&&") << msg.toString();
+		});
+	clientConnection.connect(clientSink);
+	clientConnection.subscribeToNotifications(SomeIP::MemberIDs(TEST_SERVICE_ID.serviceID, TEST_SERVICE_ID.instanceID, 100));
+
+	DaemonLessClient serviceConnection(glibIntegration);
+	serviceConnection.setMainLoopInterface(glibIntegration);
+	TestSink serviceSink(
+		[&](const InputMessage &msg) {
+		});
+	serviceConnection.connect(serviceSink);
+	serviceConnection.registerService(TEST_SERVICE_ID);
+
+	// make sure that the client sends the subscription and that the service receives it
+	app.run(1000);
+
+	auto msg = createTestOutputMessage(TEST_SERVICE_ID, SomeIP::MessageType::NOTIFICATION, 100);
+	msg.getHeader().setMemberID(100);
+	serviceConnection.sendMessage(msg);
+
+	app.run(3000);
+
+	EXPECT_TRUE(bMessageReceived);
+
+}
 
 
 /**

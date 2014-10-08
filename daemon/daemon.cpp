@@ -66,21 +66,19 @@ int run(int argc, const char** argv) {
 
 	log_info() << "Daemon started. version: " << SOMEIP_PACKAGE_VERSION << ". Logging to : " << logFilePath;
 
-	TCPManager tcpManager(dispatcher, mainLoopContext);
-
-	TCPServer tcpServer(dispatcher, tcpManager, tcpPortNumber, mainLoopContext);
-	if(isError(tcpServer.init(tcpPortTriesCount))) {
+	TCPManager tcpManager(dispatcher, mainLoopContext, tcpPortNumber);
+	if(isError(tcpManager.init(tcpPortTriesCount))) {
 		return -1;
 	}
 
-	for ( auto& localIpAddress : tcpServer.getIPAddresses() )
+	for ( auto& localIpAddress : tcpManager.getIPAddresses() )
 		log_debug() << "Local IP address : " << localIpAddress.toString();
 
 	LocalServer localServer(dispatcher, mainLoopContext);
 	if (!disableLocalIPC)
 		localServer.init(localSocketPath);
 
-	ServiceAnnouncer serviceAnnouncer(dispatcher, tcpServer, mainLoopContext);
+	ServiceAnnouncer serviceAnnouncer(dispatcher, tcpManager, mainLoopContext);
 	serviceAnnouncer.init();
 
 	RemoteServiceListener remoteServiceListener(dispatcher, tcpManager, serviceAnnouncer, mainLoopContext);

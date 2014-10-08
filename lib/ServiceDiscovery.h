@@ -327,15 +327,15 @@ private:
 
 class SomeIPServiceDiscoveryServiceOfferedEntry : public SomeIPServiceDiscoveryServiceEntry {
 public:
-	SomeIPServiceDiscoveryServiceOfferedEntry(SomeIPServiceDiscoveryMessage& serviceDiscoveryMessage, ServiceID serviceID,
+	SomeIPServiceDiscoveryServiceOfferedEntry(SomeIPServiceDiscoveryMessage& serviceDiscoveryMessage, ServiceIDs serviceID,
 						  TransportProtocol protocol, IPV4Address address,
 						  uint16_t ipv4Port) :
 		m_ipv4ConfigurationOption(protocol, address, ipv4Port) {
 		m_type = SomeIP::SomeIPServiceDiscoveryEntryHeader::Type::OfferService;
 		m_ttl = 0xFFFFFFFF;                     // This means the service does not expire
-		m_serviceID = serviceID;
+		m_serviceID = serviceID.serviceID;
 		m_majorVersion = m_minorVersion = 1;
-		m_instanceID = 0;
+		m_instanceID = serviceID.instanceID;
 		m_1 = 1;
 		m_2 = 0;
 		m_indexFirstOptionRun = m_indexSecondOptionRun = serviceDiscoveryMessage.addOption(m_ipv4ConfigurationOption);
@@ -362,15 +362,15 @@ public:
 class SomeIPServiceDiscoveryServiceUnregisteredEntry : public SomeIPServiceDiscoveryServiceEntry {
 public:
 	SomeIPServiceDiscoveryServiceUnregisteredEntry(SomeIPServiceDiscoveryMessage& serviceDiscoveryMessage,
-						       ServiceID serviceID, TransportProtocol protocol, IPV4Address address,
+						       ServiceIDs serviceID, TransportProtocol protocol, IPV4Address address,
 						       uint16_t ipv4Port) : m_ipv4ConfigurationOption(protocol, address,
 												      ipv4Port)
 	{
 		m_type = SomeIP::SomeIPServiceDiscoveryEntryHeader::Type::OfferService;
 		m_ttl = 0x0;   // The service expires immediately
-		m_serviceID = serviceID;
+		m_serviceID = serviceID.serviceID;
 		m_majorVersion = m_minorVersion = 1;
-		m_instanceID = 0;
+		m_instanceID = serviceID.instanceID;
 		m_1 = 0;
 		m_2 = 0;
 		m_indexFirstOptionRun = m_indexSecondOptionRun = serviceDiscoveryMessage.addOption(m_ipv4ConfigurationOption);;
@@ -383,12 +383,12 @@ private:
 
 class SomeIPServiceDiscoverySubscribeNotificationEntry : public SomeIPServiceDiscoveryEventGroupEntry {
 public:
-	SomeIPServiceDiscoverySubscribeNotificationEntry(ServiceID serviceID, EventGroupID eventGroupID) {
+	SomeIPServiceDiscoverySubscribeNotificationEntry(ServiceIDs serviceID, EventGroupID eventGroupID) {
 		m_type = SomeIP::SomeIPServiceDiscoveryEntryHeader::Type::Subscribe;
 		m_ttl = 0xFFFFFFFF;   // No expiration
-		m_serviceID = serviceID;
+		m_serviceID = serviceID.serviceID;
 		m_majorVersion = 1;
-		m_instanceID = 0;
+		m_instanceID = serviceID.instanceID;
 		m_1 = 0;
 		m_2 = 0;
 		m_indexFirstOptionRun = m_indexSecondOptionRun = 0;

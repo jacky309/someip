@@ -143,12 +143,14 @@ int main(int argc, const char** argv) {
 						       }
 					       });
 
-		connection.registerService(serviceToRegister);
+		ServiceIDs service(serviceToRegister, 0);
+		connection.registerService(service);
 		log_info("Registering service serviceID:0x%X", serviceToRegister);
 	}
 
 	if (messageToSubscribeTo != NO_MESSAGE_ID) {
-		connection.subscribeToNotifications(messageToSubscribeTo);
+		SomeIP::MemberIDs memberID(getServiceID(messageToSubscribeTo), 0, getMemberID(messageToSubscribeTo));
+		connection.subscribeToNotifications(memberID);
 		log_info("Subscribe for notifications for messageID:0x%X", messageToSubscribeTo);
 	}
 

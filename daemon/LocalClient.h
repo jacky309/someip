@@ -15,7 +15,7 @@ class LocalServer;
 /**
  * Represents a local client connected via local IPC
  */
-class LocalClient : public Client, private GlibChannelListener, public ServiceRegistrationListener, private UDSConnection {
+class LocalClient : public Client, public ServiceRegistrationListener, private UDSConnection {
 
 	using SocketStreamConnection::disconnect;
 
@@ -59,12 +59,12 @@ public:
 	void sendRegistry() {
 		IPCOutputMessage msg(IPCMessageType::SERVICES_REGISTERED);
 		for ( auto& service : getDispatcher().getServices() )
-			msg << service->getServiceID();
+			msg << service->getServiceIDs().serviceID;
 
 		writeNonBlocking(msg);
 	}
 
-	void onNotificationSubscribed(SomeIP::MemberID serviceID, SomeIP::MemberID memberID) override {
+	void onNotificationSubscribed(SomeIP::ServiceIDs serviceID, SomeIP::MemberID memberID) override {
 		// TODO : send message to inform the client that we are interested in the notification
 	}
 
@@ -91,7 +91,7 @@ public:
 	void onServiceRegistered(const Service& service) override {
 		if ( isConnected() ) {
 			IPCOutputMessage msg(IPCMessageType::SERVICES_REGISTERED);
-			msg << service.getServiceID();
+			msg << service.getServiceIDs().serviceID;
 			writeNonBlocking(msg);
 		}
 	}
@@ -99,7 +99,7 @@ public:
 	void onServiceUnregistered(const Service& service) override {
 		if ( isConnected() ) {
 			IPCOutputMessage msg(IPCMessageType::SERVICES_UNREGISTERED);
-			msg << service.getServiceID();
+			msg << service.getServiceIDs().serviceID;
 			writeNonBlocking(msg);
 		}
 	}
@@ -131,9 +131,9 @@ public:
 	/**
 	 * Called whenever some data is received from a client
 	 */
-	WatchStatus onIncomingDataAvailable() override;
+	WatchStatus onIncomingDataAvailable();
 
-	WatchStatus onWritingPossible() override {
+	WatchStatus onWritingPossible() {
 		return (writePendingDataNonBlocking() ==
 			IPCOperationReport::OK) ? WatchStatus::STOP_WATCHING : WatchStatus::KEEP_WATCHING;
 	}

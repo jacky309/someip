@@ -79,7 +79,7 @@ inline bool isError(SomeIPReturnCode code) {
 	return (code != SomeIPReturnCode::OK);
 }
 
-typedef SomeIP::ServiceID ServiceRegistryEntry;
+typedef SomeIP::ServiceIDs ServiceRegistryEntry;
 
 }
 

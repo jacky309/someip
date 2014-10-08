@@ -48,7 +48,7 @@ class WellKnownService : public Service {
 	};
 
 public:
-	WellKnownService(WellKnownServiceManager& serviceManager, SomeIP::ServiceID serviceID, const char* commandLine,
+	WellKnownService(WellKnownServiceManager& serviceManager, SomeIP::ServiceIDs serviceID, const char* commandLine,
 			 const char* workingDirectory,
 			 const char* systemDServiceName) :
 		Service(serviceID, true), m_serviceManager(serviceManager), m_commandLine(commandLine), m_workingDirectory(
@@ -66,13 +66,10 @@ public:
 	SomeIPReturnCode activateService();
 
 	std::string toString() const override {
-		if (m_client != nullptr) {
+		if (getClient() != nullptr) {
 			return Service::toString();
 		} else {
-			char buffer[2000];
-			snprintf( buffer, sizeof(buffer), "Service ServiceID: 0x%X, Activatable service at %s", getServiceID(),
-				  m_commandLine.c_str() );
-			return buffer;
+			return StringBuilder() <<  "Service ServiceID: " << getServiceIDs().toString() << ", Activatable service at " << m_commandLine;
 		}
 	}
 
@@ -119,7 +116,7 @@ public:
 
 	void readConfiguration(const char* folder);
 
-	bool isBlackListed(const IPv4TCPEndPoint& server, ServiceID serviceID) const override;
+	bool isBlackListed(const IPv4TCPEndPoint& server, ServiceIDs serviceID) const override;
 
 #ifdef ENABLE_SYSTEMD
 	SystemDActivator& getSystemDActivator() {

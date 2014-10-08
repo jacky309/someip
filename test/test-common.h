@@ -70,3 +70,21 @@ protected:
 	//	}
 
 };
+
+
+inline OutputMessage createTestOutputMessage(SomeIP::ServiceIDs service, SomeIP::MessageType messageType,
+				      size_t contentLength) {
+	OutputMessage outputMsg;
+	OutputMessageHeader& header = outputMsg.getHeader();
+	header.setServiceID(service.serviceID);
+	outputMsg.setInstanceID(service.instanceID);
+	header.setMessageType(messageType);
+	SomeIPOutputStream os = outputMsg.getPayloadOutputStream();
+
+	for (size_t i = 0; i < contentLength; i++) {
+		int8_t v = i;
+		os << v;
+	}
+
+	return outputMsg;
+}

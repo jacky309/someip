@@ -31,18 +31,14 @@ public:
 	virtual ~TCPServer() {
 	}
 
-	bool isBlackListed(const IPv4TCPEndPoint& server, ServiceID serviceID) const override;
+	bool isBlackListed(const IPv4TCPEndPoint& server, ServiceIDs serviceID) const override;
 
 	static gboolean onNewSocketConnection(GIOChannel* gio, GIOCondition condition, gpointer data) {
 		TCPServer* server = static_cast<TCPServer*>(data);
 		return server->handleNewConnection();
 	}
 
-	void createNewClientConnection(int fileDescriptor) override {
-		TCPClient* newClient = new TCPClient(m_dispatcher, fileDescriptor, m_tcpManager, m_mainContext);
-		log_debug() << "New client : " << newClient->toString();
-		newClient->registerClient();
-	}
+	void createNewClientConnection(int fileDescriptor) override;
 
 	void onClientDisconnected(const Client& client) {
 		delete &client;
@@ -66,6 +62,7 @@ private:
 	TCPManager& m_tcpManager;
 	TCPPort m_port = -1;
 	MainLoopContext& m_mainContext;
+
 };
 
 }

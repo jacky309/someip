@@ -40,7 +40,7 @@ public:
  */
 class ServiceAvailabilityListener {
 public:
-	ServiceAvailabilityListener(SomeIP::ServiceID serviceID) {
+	ServiceAvailabilityListener(SomeIP::ServiceIDs serviceID) {
 		m_serviceID = serviceID;
 	}
 
@@ -58,18 +58,18 @@ public:
 	virtual void onServiceUnavailable() = 0;
 
 private:
-	void onServiceRegistered(SomeIP::ServiceID serviceID) {
-		if (serviceID == m_serviceID)
+	void onServiceRegistered(SomeIP::ServiceIDs serviceID) {
+		if (serviceID.matches(m_serviceID))
 			onServiceAvailable();
 	}
 
-	void onServiceUnregistered(SomeIP::ServiceID serviceID) {
-		if (serviceID == m_serviceID)
+	void onServiceUnregistered(SomeIP::ServiceIDs serviceID) {
+		if (serviceID.matches(m_serviceID))
 			onServiceUnavailable();
 	}
 
 private:
-	SomeIP::ServiceID m_serviceID;
+	SomeIP::ServiceIDs m_serviceID;
 
 	friend class ServiceRegistry;
 
@@ -85,11 +85,11 @@ public:
 	/**
 	 * Returns the list of currently registered services
 	 */
-	const std::vector<SomeIP::ServiceID>& getAvailableServices() const {
+	const std::vector<SomeIP::ServiceIDs>& getAvailableServices() const {
 		return m_availableServices;
 	}
 
-	bool isServiceRegistered(SomeIP::ServiceID serviceID) const {
+	bool isServiceRegistered(SomeIP::ServiceIDs serviceID) const {
 		bool bfound = (std::find(m_availableServices.begin(), m_availableServices.end(), serviceID) != m_availableServices.end());
 		return bfound;
 	}
@@ -102,14 +102,14 @@ public:
 	}
 
 protected:
-	void onServiceRegistered(SomeIP::ServiceID serviceID) {
+	void onServiceRegistered(SomeIP::ServiceIDs serviceID) {
 		m_availableServices.push_back(serviceID);
 		for (auto& listener : m_serviceAvailabilityListeners) {
 			listener->onServiceRegistered(serviceID);
 		}
 	}
 
-	void onServiceUnregistered(SomeIP::ServiceID serviceID) {
+	void onServiceUnregistered(SomeIP::ServiceIDs serviceID) {
 		m_availableServices.erase(std::find(m_availableServices.begin(), m_availableServices.end(), serviceID));
 		for (auto& listener : m_serviceAvailabilityListeners) {
 			listener->onServiceUnregistered(serviceID);
@@ -117,7 +117,7 @@ protected:
 	}
 
 private:
-	std::vector<SomeIP::ServiceID> m_availableServices;
+	std::vector<SomeIP::ServiceIDs> m_availableServices;
 	std::vector<ServiceAvailabilityListener*> m_serviceAvailabilityListeners;
 
 	friend class ClientConnection;
@@ -125,7 +125,7 @@ private:
 
 class OutputMessageWithReport : public OutputMessage {
 public:
-	OutputMessageWithReport(SomeIP::MessageID messageID) :
+	OutputMessageWithReport(SomeIP::MemberIDs messageID) :
 		OutputMessage(messageID) {
 	}
 	OutputMessageWithReport() :
@@ -154,22 +154,20 @@ public:
 
 	virtual void disconnect() = 0;
 
-//	virtual int getFileDescriptor() const = 0;
-
 	/**
 	 * Registers a new service.
 	 */
-	virtual SomeIPReturnCode registerService(SomeIP::ServiceID serviceID) = 0;
+	virtual SomeIPReturnCode registerService(SomeIP::ServiceIDs serviceID) = 0;
 
 	/**
 	 * Unregisters the given service
 	 */
-	virtual SomeIPReturnCode unregisterService(SomeIP::ServiceID serviceID) = 0;
+	virtual SomeIPReturnCode unregisterService(SomeIP::ServiceIDs serviceID) = 0;
 
 	/**
 	 * Subscribes to notifications for the given MessageID
 	 */
-	virtual SomeIPReturnCode subscribeToNotifications(SomeIP::MessageID messageID) = 0;
+	virtual SomeIPReturnCode subscribeToNotifications(SomeIP::MemberIDs memberID) = 0;
 
 	/**
 	 * Sends the given message to the dispatcher.
@@ -212,18 +210,17 @@ public:
 		return m_registry;
 	}
 
-	virtual bool isServiceAvailableBlocking(ServiceID service) = 0;
+	virtual bool isServiceAvailableBlocking(ServiceIDs service) = 0;
 
 protected:
 
-	void onServiceRegistered(SomeIP::ServiceID serviceID) {
+	void onServiceRegistered(SomeIP::ServiceIDs serviceID) {
 		m_registry.onServiceRegistered(serviceID);
 	}
 
-	void onServiceUnregistered(SomeIP::ServiceID serviceID) {
+	void onServiceUnregistered(SomeIP::ServiceIDs serviceID) {
 		m_registry.onServiceUnregistered(serviceID);
 	}
-
 
 	MainLoopInterface* m_mainLoop = nullptr;
 	ClientConnectionListener* messageReceivedCallback = nullptr;
@@ -258,10 +255,6 @@ public:
 		return ( ( !m_queue.isEmpty() ) || hasAvailableBytes() );
 	}
 
-//	int getFileDescriptor() const {
-//		return SocketStreamConnection::getFileDescriptor();
-//	}
-
 	void disconnect() {
 		SocketStreamConnection::disconnect();
 	}
@@ -287,17 +280,17 @@ public:
 	/**
 	 * Registers a new service.
 	 */
-	SomeIPReturnCode registerService(SomeIP::ServiceID serviceID) override;
+	SomeIPReturnCode registerService(SomeIP::ServiceIDs serviceID) override;
 
 	/**
 	 * Unregisters the given service
 	 */
-	SomeIPReturnCode unregisterService(SomeIP::ServiceID serviceID) override;
+	SomeIPReturnCode unregisterService(SomeIP::ServiceIDs serviceID) override;
 
 	/**
 	 * Subscribes to notifications for the given MessageID
 	 */
-	SomeIPReturnCode subscribeToNotifications(SomeIP::MessageID messageID);
+	SomeIPReturnCode subscribeToNotifications(SomeIP::MemberIDs memberID) override;
 
 	/**
 	 * Sends the given message to the dispatcher.
@@ -319,7 +312,7 @@ public:
 	 */
 	SomeIPReturnCode getDaemonStateDump(std::string& dump);
 
-	bool isServiceAvailableBlocking(ServiceID service) override;
+	bool isServiceAvailableBlocking(ServiceIDs service) override;
 
 private:
 	class SafeMessageQueue {
@@ -335,7 +328,7 @@ public:
 		}
 
 		const IPCInputMessage* pop() {
-			const IPCInputMessage* msg = NULL;
+			const IPCInputMessage* msg = nullptr;
 			std::lock_guard<std::mutex> lock(m_mutex);
 			if ( !isEmpty() )
 				msg = m_messageQueue[queueHeadIndex++];

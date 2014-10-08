@@ -56,7 +56,7 @@ class FInterfaceSomeIPProxyGenerator {
          public:
             «fInterface.someipProxyClassName»(CommonAPI::SomeIP::SomeIPConnection& someipProxyconnection,
                             const std::string& commonApiAddress = "«fDInterface.commonAPIAddress»",
-                            CommonAPI::SomeIP::ServiceID serviceID = «fDInterface.serviceID»);
+                            CommonAPI::SomeIP::ServiceID serviceID = «fDInterface.serviceID», CommonAPI::SomeIP::InstanceID instanceID = «fDInterface.instanceID»);
 
             virtual ~«fInterface.someipProxyClassName»() { }
 
@@ -107,8 +107,8 @@ class FInterfaceSomeIPProxyGenerator {
         «fInterface.someipProxyClassName»::«fInterface.someipProxyClassName»(
                             CommonAPI::SomeIP::SomeIPConnection& someipProxyconnection,
                             const std::string& commonApiAddress,
-                            CommonAPI::SomeIP::ServiceID serviceID):
-                CommonAPI::SomeIP::SomeIPProxy(someipProxyconnection, commonApiAddress, serviceID)
+                            CommonAPI::SomeIP::ServiceID serviceID, CommonAPI::SomeIP::InstanceID instanceID):
+                CommonAPI::SomeIP::SomeIPProxy(someipProxyconnection, commonApiAddress, serviceID, instanceID)
                 «FOR attribute : fInterface.attributes BEFORE ',' SEPARATOR ','»
                     «attribute.generateSomeIPVariableInit(fDInterface)»
                 «ENDFOR»

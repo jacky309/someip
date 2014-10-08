@@ -25,7 +25,7 @@ class ServiceAnnouncer : public ServiceRegistrationListener {
 	LOG_DECLARE_CLASS_CONTEXT("SeAn", "Service announcer");
 
 public:
-	ServiceAnnouncer(Dispatcher& dispatcher, TCPServer& tcpServer, MainLoopContext& mainLoopContext) :
+	ServiceAnnouncer(Dispatcher& dispatcher, TCPManager& tcpServer, MainLoopContext& mainLoopContext) :
 		m_dispatcher(dispatcher), m_timer(
 			mainLoopContext.addTimeout(
 				[&]() {
@@ -60,7 +60,7 @@ private:
 
 	std::unique_ptr<TimeOutMainLoopHook> m_timer;
 
-	TCPServer& m_tcpServer;
+	TCPManager& m_tcpServer;
 
 };
 

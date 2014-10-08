@@ -86,7 +86,7 @@ struct SomeIPProxyHelper<_In<_InArgs ...>, _Out<_OutArgs ...> > {
 			}
 
 		} else {
-			log_warning( "Proxy is not available: ServiceID:%i", proxy.getServiceID() );
+			log_warning() << "Proxy is not available: ServiceID: "<< proxy.getServiceIDs().toString();
 			callStatus = CallStatus::NOT_AVAILABLE;
 		}
 	}
@@ -176,7 +176,7 @@ private:
 
 			CallStatus callStatus = CallStatus::NOT_AVAILABLE;
 
-			log_warning( "Proxy is not available: ServiceID:%i", proxy.getServiceID() );
+			log_warning() << "Proxy is not available: ServiceID: " << proxy.getServiceIDs().toString();
 
 			callCallbackOnNotAvailable( asyncCallback, typename make_sequence<sizeof ... (_OutArgs)>::type() );
 

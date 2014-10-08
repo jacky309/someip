@@ -7,7 +7,7 @@ namespace SomeIP_Dispatcher {
 TCPClient& TCPManager::getOrCreateClient(const IPv4TCPEndPoint& serverID) {
 
 	// Check whether we already know that server
-	TCPClient* client = NULL;
+	TCPClient* client = nullptr;
 	for (auto existingClient : m_clients) {
 		if ( serverID == existingClient->getServerID() ) {
 			client = existingClient;
@@ -15,8 +15,8 @@ TCPClient& TCPManager::getOrCreateClient(const IPv4TCPEndPoint& serverID) {
 	}
 
 	// no matching client found => create a new one
-	if (client == NULL) {
-		client = new TCPClient(m_dispatcher, serverID, *this, m_mainLoopContext);
+	if (client == nullptr) {
+		client = new TCPClient(m_dispatcher, serverID, *this, m_mainLoopContext, m_namespace);
 		m_clients.push_back(client);
 		client->registerClient();
 	}
@@ -31,11 +31,12 @@ void TCPManager::onRemoteServiceAvailable(const SomeIPServiceDiscoveryServiceEnt
 	IPv4TCPEndPoint serverID(address->m_address, address->m_port);
 
 	// ignore our own notifications
-	for ( auto filter : m_dispatcher.getBlackList() )
-		if ( filter->isBlackListed(serverID, serviceEntry.m_serviceID) ) {
+	for ( auto filter : m_dispatcher.getBlackList() ) {
+		if ( filter->isBlackListed(serverID, ServiceIDs(serviceEntry.m_serviceID, serviceEntry.m_instanceID ) ) ) {
 			log_debug() << "Ignoring service " << serverID.toString();
 			return;
 		}
+	}
 
 	// Check whether we already know that server
 	TCPClient& client = getOrCreateClient(serverID);
@@ -43,11 +44,11 @@ void TCPManager::onRemoteServiceAvailable(const SomeIPServiceDiscoveryServiceEnt
 	bool rebootDetected = client.detectReboot(message, true);
 
 	if (rebootDetected) {
-		log_warning("Reboot detected from");
+		log_warning() << "Reboot detected from";
 		client.onRebootDetected();
 	}
 
-	client.onServiceAvailable(serviceEntry.m_serviceID);
+	client.onServiceAvailable(ServiceIDs(serviceEntry.m_serviceID, serviceEntry.m_instanceID));
 
 	log_info("Remote service with serviceID:%i, InstanceID:%i is available on IP address: %s port:%i",
 		 serviceEntry.m_serviceID, serviceEntry.m_instanceID, address->m_address.toString().c_str(), address->m_port);
@@ -74,11 +75,11 @@ void TCPManager::onRemoteServiceUnavailable(const SomeIPServiceDiscoveryServiceE
 	bool rebootDetected = client.detectReboot(message, true);
 
 	if (rebootDetected) {
-		log_warning("Reboot detected from");
+		log_warning() << "Reboot detected from";
 		client.onRebootDetected();
 	}
 
-	client.onServiceUnavailable(serviceEntry.m_serviceID);
+	client.onServiceUnavailable(ServiceIDs(serviceEntry.m_serviceID, serviceEntry.m_instanceID));
 
 	log_info("Remote service with serviceID:%i, InstanceID:%i is NOT available on IP address: %s port:%i",
 		 serviceEntry.m_serviceID, serviceEntry.m_instanceID, address->m_address.toString().c_str(), address->m_port);

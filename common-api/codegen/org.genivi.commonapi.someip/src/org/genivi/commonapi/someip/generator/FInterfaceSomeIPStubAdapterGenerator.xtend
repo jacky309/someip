@@ -117,7 +117,8 @@ inline SomeIPOutputStream& operator<<(SomeIPOutputStream& stream, const «fInter
                     const std::shared_ptr<CommonAPI::StubBase>& stub,
                     CommonAPI::SomeIP::SomeIPConnection& connection,
                     const std::string& commonApiAddress = "«fDInterface.commonAPIAddress»",
-                    CommonAPI::SomeIP::ServiceID serviceID = «fDInterface.serviceID»);
+                    CommonAPI::SomeIP::ServiceID serviceID = «fDInterface.serviceID»,
+                    CommonAPI::SomeIP::InstanceID instanceID = «fDInterface.instanceID»);
             
             «FOR attribute : fInterface.attributes»
                 «IF attribute.isObservable»
@@ -164,8 +165,9 @@ inline SomeIPOutputStream& operator<<(SomeIPOutputStream& stream, const «fInter
                 const std::shared_ptr<CommonAPI::StubBase>& stub,
                 CommonAPI::SomeIP::SomeIPConnection& connection,
                 const std::string& commonApiAddress,
-                CommonAPI::SomeIP::ServiceID serviceID):
-                «fInterface.someipStubAdapterHelperClassName»(std::dynamic_pointer_cast<«fInterface.stubClassName»>(stub), connection, commonApiAddress, serviceID) {
+                CommonAPI::SomeIP::ServiceID serviceID,
+                CommonAPI::SomeIP::InstanceID instanceID):
+                «fInterface.someipStubAdapterHelperClassName»(std::dynamic_pointer_cast<«fInterface.stubClassName»>(stub), connection, commonApiAddress, serviceID, instanceID) {
         }
 
         «FOR attribute : fInterface.attributes»

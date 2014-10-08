@@ -15,11 +15,11 @@ void LocalClient::handleIncomingIPCMessage(IPCInputMessage& inputMessage) {
 
 	case IPCMessageType::REGISTER_SERVICE : {
 
-		SomeIP::ServiceID serviceID;
-		reader >> serviceID;
+		SomeIP::ServiceIDs serviceID;
+		reader >> serviceID.serviceID;
+		reader >> serviceID.instanceID;
 
-		log_debug("REGISTER_SERVICE Message received from client %s. ServiceID:0x%X",
-			  toString().c_str(), serviceID);
+		log_debug() << "REGISTER_SERVICE Message received from client " << toString() << ". ServiceID:" << serviceID.toString();
 		Service* service = registerService(serviceID, true);
 
 		//		sendPingMessage();
@@ -33,16 +33,16 @@ void LocalClient::handleIncomingIPCMessage(IPCInputMessage& inputMessage) {
 
 	case IPCMessageType::UNREGISTER_SERVICE : {
 
-		SomeIP::ServiceID serviceID;
-		reader >> serviceID;
+		SomeIP::ServiceIDs serviceID;
+		reader >> serviceID.serviceID;
+		reader >> serviceID.instanceID;
 
-		log_debug("UNREGISTER_SERVICE Message received from client %s. ServiceID:0x%X",
-			  toString().c_str(), serviceID);
+		log_debug() << "UNREGISTER_SERVICE Message received from client " << toString() << ". ServiceID:" << serviceID.toString();
 
 		IPCReturnCode returnCode = IPCReturnCode::ERROR;
 
 		for (auto service : m_registeredServices) {
-			if (service->getServiceID() == serviceID) {
+			if (service->getServiceIDs() == serviceID) {
 				getDispatcher().unregisterService(*service);
 				removeFromVector(m_registeredServices, service);
 				returnCode = IPCReturnCode::OK;
@@ -65,16 +65,16 @@ void LocalClient::handleIncomingIPCMessage(IPCInputMessage& inputMessage) {
 		log_debug() << "GET_SERVICE_LIST Message received from client " << toString();
 		IPCOutputMessage answer(inputMessage, IPCReturnCode::OK);
 		for (auto& service : getDispatcher().getServices()) {
-			answer << service->getServiceID();
+			answer << service->getServiceIDs().serviceID << service->getServiceIDs().instanceID;
 		}
 		writeNonBlocking(answer);
 	}
 	break;
 
 	case IPCMessageType::SUBSCRIBE_NOTIFICATION : {
-		SomeIP::MessageID messageID;
-		reader >> messageID;
-		subscribeToNotification(messageID);
+		SomeIP::MemberIDs memberIDs;
+		reader >> memberIDs.m_serviceIDs.serviceID >> memberIDs.m_serviceIDs.instanceID >> memberIDs.m_memberID;
+		subscribeToNotification(memberIDs);
 	}
 	break;
 

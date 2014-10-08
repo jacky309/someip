@@ -6,6 +6,8 @@
 
 namespace SomeIP {
 
+using logging::StringBuilder;
+
 static const int SERVICE_ID_BITS_COUNT = 16;
 typedef uint32_t MessageID;
 typedef uint16_t ServiceID;
@@ -16,6 +18,63 @@ typedef uint16_t EventGroupID;
 typedef uint32_t RequestID;
 typedef uint8_t ProtocolVersion;
 typedef uint8_t InterfaceVersion;
+
+static constexpr InstanceID ANY_INSTANCE_ID = 0xFFFF;
+static constexpr InstanceID ANY_SERVICE_ID = 0xFFFF;
+
+struct ServiceIDs {
+
+	ServiceIDs() {
+	}
+
+	ServiceIDs(ServiceID serviceID,	InstanceID instanceID) : serviceID(serviceID), instanceID(instanceID) {
+	}
+
+	bool operator==(const ServiceIDs& other) const {
+		return ((serviceID == other.serviceID) && (instanceID == other.instanceID));
+	}
+
+	std::string toString() const {
+		return StringBuilder() << serviceID << "," << instanceID;
+	}
+
+	bool matches(const ServiceIDs& serviceIDWithWildcards) const {
+		if ((serviceIDWithWildcards.serviceID != ANY_SERVICE_ID) && (serviceIDWithWildcards.serviceID != serviceID) )
+			return false;
+		if ((serviceIDWithWildcards.instanceID != ANY_INSTANCE_ID) && (serviceIDWithWildcards.instanceID != instanceID) )
+			return false;
+
+		return true;
+	}
+
+	ServiceID serviceID;
+	InstanceID instanceID;
+
+};
+
+
+struct MemberIDs {
+
+	MemberIDs() {
+	}
+
+	MemberIDs(ServiceID serviceID, InstanceID instanceID, MemberID memberID) : m_serviceIDs(serviceID, instanceID) {
+		m_memberID = memberID;
+	}
+
+	std::string toString() const {
+		return "TODOODODODO";
+	}
+
+	bool operator==(const MemberIDs& other) const {
+		return ((m_serviceIDs == other.m_serviceIDs) && (m_memberID == other.m_memberID));
+	}
+
+	ServiceIDs m_serviceIDs;
+	MemberID m_memberID;
+};
+
+
 
 /// MemberID identifying the ping method. TODO : check if Some/IP defines such a thing
 static const MemberID PING_MEMBER_ID = 0xFF12;
@@ -181,24 +240,24 @@ static constexpr size_t SOMEIP_HEADER_LENGTH_ON_NETWORK = sizeof(SomeIPHeader) +
 
 class SomeIPService {
 public:
-	SomeIPService(ServiceID serviceID) :
+	SomeIPService(ServiceIDs serviceID) :
 		m_serviceID(serviceID) {
 	}
 
 	bool matchesRequest(const SomeIPHeader& msg) const {
-		return (SomeIP::getServiceID( msg.getMessageID() ) == m_serviceID);
+		return (SomeIP::getServiceID( msg.getMessageID() ) == m_serviceID.serviceID);
 	}
 
-	bool isDuplicate(const ServiceID& serviceID) const {
-		return (getServiceID() == serviceID);
+	bool isDuplicate(const ServiceIDs& serviceID) const {
+		return (getServiceIDs() == serviceID);
 	}
 
-	ServiceID getServiceID() const {
+	ServiceIDs getServiceIDs() const {
 		return m_serviceID;
 	}
 
 protected:
-	ServiceID m_serviceID;
+	ServiceIDs m_serviceID;
 
 };
 
@@ -274,5 +333,29 @@ enum class TransportProtocol
 	: uint8_t {
 	TCP = 0x06, UDP = 0x11
 };
+
+}
+
+namespace std {
+
+  template <>
+  struct hash<SomeIP::ServiceIDs>
+  {
+    std::size_t operator()(const SomeIP::ServiceIDs& k) const
+    {
+    	return 0;
+//      using std::size_t;
+//      using std::hash;
+//      using std::string;
+//
+//      // Compute individual hash values for first,
+//      // second and third and combine them using XOR
+//      // and bit shifting:
+//
+//      return ((hash<string>()(k.first)
+//               ^ (hash<string>()(k.second) << 1)) >> 1)
+//               ^ (hash<int>()(k.third) << 1);
+    }
+  };
 
 }

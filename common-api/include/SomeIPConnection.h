@@ -175,7 +175,7 @@ public:
 
 	SomeIPReturnCode registerProxy(SomeIPProxy& proxy);
 
-	void unregisterService(ServiceID serviceID) {
+	void unregisterService(ServiceIDs serviceID) {
 		getConnection().unregisterService(serviceID);
 	}
 
@@ -183,8 +183,8 @@ public:
 	//		getConnection().unregisterProxy(serviceID);
 	//	}
 
-	void subscribeNotification(MessageID messageID) {
-		getConnection().subscribeToNotifications(messageID);
+	void subscribeNotification(MemberIDs member) {
+		getConnection().subscribeToNotifications(member);
 	}
 
 	MessageProcessingResult processMessage(const InputMessage& message);
@@ -197,11 +197,11 @@ public:
 		return *m_connection.get();
 	}
 
-	const std::unordered_map<ServiceID, SomeIPProxy*> getProxies() const {
+	const std::unordered_map<ServiceIDs, SomeIPProxy*> getProxies() const {
 		return m_proxyTable;
 	}
 
-	const std::unordered_map<ServiceID, SomeIPStubAdapter*> getServices() const {
+	const std::unordered_map<ServiceIDs, SomeIPStubAdapter*> getServices() const {
 		return m_serviceTable;
 	}
 
@@ -214,14 +214,14 @@ public:
 		return false;
 	}
 
-	bool isServiceAvailableBlocking(ServiceID service) const {
+	bool isServiceAvailableBlocking(ServiceIDs service) const {
 		return m_connection->isServiceAvailableBlocking(service);
 	}
 
 private:
 	std::unique_ptr<SomeIPClient::ClientConnection> m_connection;
-	std::unordered_map<ServiceID, SomeIPStubAdapter*> m_serviceTable;
-	std::unordered_map<ServiceID, SomeIPProxy*> m_proxyTable;
+	std::unordered_map<ServiceIDs, SomeIPStubAdapter*> m_serviceTable;
+	std::unordered_map<ServiceIDs, SomeIPProxy*> m_proxyTable;
 	std::unordered_map<RequestID, MessageSink*> m_messageHandlers;
 
 	std::shared_ptr<MainLoopContext> m_mainLoopContext;

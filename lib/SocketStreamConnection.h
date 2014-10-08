@@ -190,6 +190,11 @@ public:
 	}
 
 	virtual ~SocketStreamServer() {
+		if (getFileDescriptor() != SocketStreamConnection::UNINITIALIZED_FILE_DESCRIPTOR) {
+			auto ret = close(getFileDescriptor());
+			if (ret != 0)
+				log_error() << "Could not close socket";
+		}
 	}
 
 	virtual void createNewClientConnection(int fileDescriptor) = 0;

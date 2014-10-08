@@ -4,10 +4,10 @@
 *******************************************************************************/
 package someip;
 
-import org.franca.core.franca.FInterface;
-import org.franca.core.franca.FMethod;
-import org.franca.core.franca.FAttribute;
 import org.franca.core.franca.FBroadcast;
+import org.franca.core.franca.FAttribute;
+import org.franca.core.franca.FMethod;
+import org.franca.core.franca.FInterface;
 import org.franca.deploymodel.core.FDeployedInterface;
 
 /**
@@ -24,6 +24,10 @@ public class ServiceSpecificationInterfacePropertyAccessor
 	
 	public Integer getServiceID (FInterface obj) {
 		return target.getInteger(obj, "ServiceID");
+	}
+	
+	public Integer getInstanceID (FInterface obj) {
+		return target.getInteger(obj, "InstanceID");
 	}
 	
 	public Integer getMemberID (FMethod obj) {

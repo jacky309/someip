@@ -91,6 +91,14 @@ class FrancaSomeIPGeneratorExtensions {
 		return id
     }
 
+    def instanceID(FDInterface fInterface) {
+		var id = deploymentProperties(fInterface).getInstanceID(fInterface.target)
+		if (id != null)
+			return id.toString
+		else
+			return "SomeIP::ANY_INSTANCE_ID"
+    }
+
     def commonAPIAddress(FDInterface fInterface) {
 		return 'someip:' + fInterface.serviceID
     }

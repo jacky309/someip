@@ -82,9 +82,9 @@ SomeIPReturnCode ClientDaemonConnection::connect(ClientConnectionListener& clien
 	return c;
 }
 
-SomeIPReturnCode ClientDaemonConnection::registerService(SomeIP::ServiceID serviceID) {
+SomeIPReturnCode ClientDaemonConnection::registerService(SomeIP::ServiceIDs serviceID) {
 	IPCOutputMessage msg(IPCMessageType::REGISTER_SERVICE);
-	msg << serviceID;
+	msg << serviceID.serviceID << serviceID.instanceID;
 	IPCInputMessage returnMessage = writeRequest(msg);
 
 	if ( returnMessage.isError() )
@@ -95,9 +95,9 @@ SomeIPReturnCode ClientDaemonConnection::registerService(SomeIP::ServiceID servi
 	}
 }
 
-SomeIPReturnCode ClientDaemonConnection::unregisterService(SomeIP::ServiceID serviceID) {
+SomeIPReturnCode ClientDaemonConnection::unregisterService(SomeIP::ServiceIDs serviceID) {
 	IPCOutputMessage msg(IPCMessageType::UNREGISTER_SERVICE);
-	msg << serviceID;
+	msg << serviceID.serviceID << serviceID.instanceID;
 	IPCInputMessage returnMessage = writeRequest(msg);
 
 	if ( returnMessage.isError() )
@@ -108,10 +108,10 @@ SomeIPReturnCode ClientDaemonConnection::unregisterService(SomeIP::ServiceID ser
 	}
 }
 
-SomeIPReturnCode ClientDaemonConnection::subscribeToNotifications(SomeIP::MessageID messageID) {
-	log_debug("Subscribing to notifications 0x%X", messageID);
+SomeIPReturnCode ClientDaemonConnection::subscribeToNotifications(SomeIP::MemberIDs member) {
+	log_debug() << "Subscribing to notifications " << member.toString();
 	IPCOutputMessage msg(IPCMessageType::SUBSCRIBE_NOTIFICATION);
-	msg << messageID;
+	msg << member.m_serviceIDs.serviceID  << member.m_serviceIDs.instanceID << member.m_memberID;
 	return writeMessage(msg);
 }
 
@@ -142,14 +142,14 @@ InputMessage ClientDaemonConnection::sendMessageBlocking(const OutputMessage& ms
 	return waitForAnswer(msg);
 }
 
-bool ClientDaemonConnection::isServiceAvailableBlocking(ServiceID service) {
+bool ClientDaemonConnection::isServiceAvailableBlocking(ServiceIDs service) {
 	IPCOutputMessage msg(IPCMessageType::GET_SERVICE_LIST);
 	auto inputMessage = writeRequest(msg);
 	IPCInputMessageReader reader(inputMessage);
 
 	while(reader.hasMoreData()) {
 		ServiceRegistryEntry entry;
-		reader >> entry;
+		reader >> entry.serviceID >> entry.instanceID;
 		if (entry == service)
 			return true;
 	}
@@ -271,8 +271,8 @@ void ClientDaemonConnection::handleConstIncomingIPCMessage(const IPCInputMessage
 
 	case IPCMessageType::SERVICES_REGISTERED : {
 		while ( reader.remainingBytesCount() >= sizeof(SomeIP::ServiceID) ) {
-			SomeIP::ServiceID serviceID;
-			reader >> serviceID;
+			SomeIP::ServiceIDs serviceID;
+			reader >> serviceID.serviceID;
 			onServiceRegistered(serviceID);
 		}
 	}
@@ -280,8 +280,8 @@ void ClientDaemonConnection::handleConstIncomingIPCMessage(const IPCInputMessage
 
 	case IPCMessageType::SERVICES_UNREGISTERED : {
 		while ( reader.remainingBytesCount() >= sizeof(SomeIP::ServiceID) ) {
-			SomeIP::ServiceID serviceID;
-			reader >> serviceID;
+			SomeIP::ServiceIDs serviceID;
+			reader >> serviceID.serviceID;
 			onServiceUnregistered(serviceID);
 		}
 	}

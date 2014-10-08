@@ -9,8 +9,8 @@ namespace SomeIP {
 
 class SomeIPStubAdapter : virtual public CommonAPI::StubAdapter, public MessageSink, private MessageSource {
 public:
-	SomeIPStubAdapter(const std::string& commonApiAddress, ServiceID serviceID, SomeIPConnection& connection) :
-		connection_(connection), m_someIPEndPoint(*this, serviceID), serviceID_(serviceID) {
+	SomeIPStubAdapter(const std::string& commonApiAddress, ServiceID serviceID, InstanceID instanceID, SomeIPConnection& connection) :
+		connection_(connection), m_someIPEndPoint(*this, serviceID), serviceID_(serviceID, instanceID) {
 	}
 
 	virtual ~SomeIPStubAdapter() {
@@ -44,7 +44,7 @@ public:
 		return m_instanceID;
 	}
 
-	ServiceID getServiceID() const {
+	ServiceIDs getServiceIDs() const {
 		return serviceID_;
 	}
 
@@ -64,7 +64,7 @@ private:
 
 	SomeIPConnection& connection_;
 	SomeIPEndPoint m_someIPEndPoint;
-	ServiceID serviceID_;
+	ServiceIDs serviceID_;
 
 	bool m_isRegistered = false;
 

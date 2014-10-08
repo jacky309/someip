@@ -103,7 +103,7 @@ SomeIPReturnCode TCPServer::init(int portCount) {
 }
 
 
-bool TCPServer::isBlackListed(const IPv4TCPEndPoint& server, ServiceID serviceID) const {
+bool TCPServer::isBlackListed(const IPv4TCPEndPoint& server, ServiceIDs serviceID) const {
 	// ignore our own services
 	for ( auto localAddress : m_activePorts )
 		if ( localAddress == server ) {
@@ -113,4 +113,12 @@ bool TCPServer::isBlackListed(const IPv4TCPEndPoint& server, ServiceID serviceID
 
 	return false;
 }
+
+
+void TCPServer::createNewClientConnection(int fileDescriptor) {
+	TCPClient* newClient = new TCPClient(m_dispatcher, fileDescriptor, m_tcpManager, m_mainContext, m_tcpManager.getServiceNamespace());
+	log_debug() << "New client : " << newClient->toString();
+	newClient->registerClient();
+}
+
 }

@@ -18,10 +18,10 @@ class SomeIPProxy : public virtual CommonAPI::Proxy, private ProxyStatusEvent,
 	private SomeIPClient::ServiceAvailabilityListener, public MessageSink {
 public:
 	SomeIPProxy(SomeIPConnection& connection, const std::string& commonApiAddress,
-		    ServiceID serviceID) : ServiceAvailabilityListener(serviceID), connection_(connection),
+		    ServiceID serviceID, InstanceID instanceID = ANY_INSTANCE_ID) : ServiceAvailabilityListener(ServiceIDs(serviceID, instanceID)), connection_(connection),
 		commonApiAddress_(commonApiAddress), interfaceVersionAttribute_(*this,
 										GET_INTERFACE_VERSION_MEMBER_ID),
-		m_serviceID(serviceID) {
+		m_serviceID(serviceID, instanceID) {
 	}
 
 	SomeIPProxy(const SomeIPProxy&) = delete;
@@ -54,7 +54,7 @@ public:
 	}
 
 	virtual bool isAvailableBlocking() const override {
-		return connection_.isServiceAvailableBlocking(getServiceID());
+		return connection_.isServiceAvailableBlocking(getServiceIDs());
 	}
 
 	std::string getAddress() const override {
@@ -75,7 +75,7 @@ public:
 		return commonApiAddress_;
 	}
 
-	ServiceID getServiceID() const {
+	ServiceIDs getServiceIDs() const {
 		return m_serviceID;
 	}
 
@@ -84,7 +84,7 @@ public:
 	}
 
 	OutputMessage createMethodCall(MemberID memberID) const {
-		OutputMessage msg( SomeIP::getMessageID(getServiceID(), memberID) );
+		OutputMessage msg( getServiceIDs().serviceID, getServiceIDs().instanceID, memberID );
 		msg.getHeader().setMessageType(SomeIP::MessageType::REQUEST);
 		return msg;
 	}
@@ -105,7 +105,7 @@ public:
 	}
 
 	void subscribeNotification(MemberID memberID, MessageSink& handler) {
-		getConnection().subscribeNotification( SomeIP::getMessageID(getServiceID(), memberID) );
+		getConnection().subscribeNotification( MemberIDs(getServiceIDs().serviceID, getServiceIDs().instanceID, memberID) );
 		m_messageHandlers[memberID] = &handler;
 	}
 
@@ -138,7 +138,7 @@ private:
 
 	std::vector<CancellableListener> m_availabilityListeners;
 
-	ServiceID m_serviceID;
+	ServiceIDs m_serviceID;
 	AvailabilityStatus availabilityStatus_ = AvailabilityStatus::NOT_AVAILABLE;
 
 	friend class SomeIPConnection;

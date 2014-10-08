@@ -9,9 +9,8 @@ namespace SomeIP_Dispatcher {
 LOG_DECLARE_DEFAULT_CONTEXT(dispatcherContext, "disp", "Dispatcher");
 
 void Notification::sendMessageToSubscribedClients(const DispatcherMessage& msg) {
-	for (auto* client : m_subscribedClients) {
+	for (auto* client : m_subscribedClients)
 		client->sendMessage(msg);
-	}
 }
 
 void Dispatcher::dispatchMessage(DispatcherMessage& msg, Client& client) {
@@ -29,7 +28,7 @@ void Dispatcher::dispatchMessage(DispatcherMessage& msg, Client& client) {
 			assert(false);
 		} else {
 			// we are forwarding a notification to several clients
-			Notification& notification = getOrCreateNotification( msg.getMessageID() );
+			Notification& notification = getOrCreateNotification( MemberIDs(header.getServiceID(), header.getInstanceID(), header.getMemberID() ) );
 			notification.sendMessageToSubscribedClients(msg);
 		}
 
@@ -38,7 +37,7 @@ void Dispatcher::dispatchMessage(DispatcherMessage& msg, Client& client) {
 		Client* client = getClientFromId(clientIdentifier);
 
 		if (client == nullptr) {
-			log_warning("Answer to client can not be sent since the client has disconnected. client ID: ") <<
+			log_warning() << "Answer to client can not be sent since the client has disconnected. client ID: " <<
 			clientIdentifier;
 		} else {
 			client->sendMessage(msg);
@@ -105,9 +104,9 @@ void Dispatcher::cleanDisconnectedClients() {
 	m_disconnectedClients.resize(0);
 }
 
-Service* Dispatcher::tryRegisterService(SomeIP::ServiceID serviceID, Client& client, bool isLocal) {
+Service* Dispatcher::tryRegisterService(SomeIP::ServiceIDs serviceID, Client& client, bool isLocal) {
 
-	log_info() << "tryRegisterService " << serviceID << " from " << client.toString();
+	log_info() << "tryRegisterService " << serviceID.toString() << " from " << client.toString();
 	Service* service = getService(serviceID);
 
 	if (service != nullptr) {
@@ -133,7 +132,7 @@ Service* Dispatcher::tryRegisterService(SomeIP::ServiceID serviceID, Client& cli
 	}
 
 	if (service->getClient() != &client) {
-		log_warn() << "registration refused : " << serviceID;
+		log_warn() << "registration refused : " << serviceID.toString();
 		return nullptr;
 	}
 
@@ -143,7 +142,7 @@ Service* Dispatcher::tryRegisterService(SomeIP::ServiceID serviceID, Client& cli
 ReturnCode Dispatcher::registerService(Service& service) {
 
 	for (auto& existingService : m_services) {
-		if ( existingService->isDuplicate( service.getServiceID() ) ) {
+		if ( existingService->isDuplicate( service.getServiceIDs() ) ) {
 			log_error() << "Service already registered : " << existingService->toString();
 			return ReturnCode::DUPLICATE;
 		}
@@ -159,7 +158,7 @@ ReturnCode Dispatcher::registerService(Service& service) {
 	}
 
 	for (auto notification : m_notifications) {
-		if ( notification->matchesServiceID( service.getServiceID() ) )
+		if ( notification->matchesServiceID( service.getServiceIDs() ) )
 			notification->setProviderService(&service);
 	}
 
@@ -179,7 +178,7 @@ void Dispatcher::unregisterService(Service& service) {
 			notification->setProviderService(nullptr);
 	}
 
-	log_info("Service unregistered : ") << service.toString();
+	log_info() << "Service unregistered : " << service.toString();
 }
 
 void Dispatcher::sendPingMessages() {
@@ -191,7 +190,7 @@ void Dispatcher::sendPingMessages() {
 }
 
 void Dispatcher::onNewClient(Client& client) {
-	client.assignUniqueID();
+	client.setIdentifier(m_nextAvailableClientID++);
 	assert( client.getIdentifier() == m_clients.size() );
 	m_clients.push_back(&client);
 	client.init();
@@ -205,32 +204,25 @@ void Dispatcher::onClientDisconnected(Client& client) {
 }
 
 std::string Notification::toString() const {
-	char buffer[2000];
-	snprintf( buffer, sizeof(buffer), "Notification MessageID: 0x%X ", getMessageID() );
-	std::string s = buffer;
+	StringBuilder s;
+	s << "Notification MessageID: " << getMessageID().toString();
 
-	if (m_providerService != nullptr) {
-		s += "/ Service:";
-		s += m_providerService->toString();
-	}
+	if (m_providerService != nullptr)
+		s << "/ Service:" << m_providerService->toString();
 
 	if (m_subscribedClients.size() != 0) {
-		s += "/ Notified: ";
+		s << "/ Notified: ";
 		for (auto i = m_subscribedClients.begin(); i < m_subscribedClients.end(); i++) {
 			auto& client = *i;
-			s += client->toString();
-			s += ", ";
+			s << client->toString() << ", ";
 		}
 	}
 	return s;
 }
 
 std::string Service::toString() const {
-	char buffer[2000];
-	snprintf(buffer, sizeof(buffer), "Service ServiceID: 0x%X, %s", getServiceID(), (m_client != nullptr) ?
-		 m_client->toString().c_str() :
-		 "Unknown client");
-	return buffer;
+	return logging::StringBuilder() << "Service ServiceID: "<< getServiceIDs().toString() << ", " <<
+			(m_client != nullptr) ? m_client->toString() : "Unknown client";
 }
 
 void Service::sendMessage(const DispatcherMessage& msg) {
@@ -239,7 +231,7 @@ void Service::sendMessage(const DispatcherMessage& msg) {
 
 void Service::onNotificationSubscribed(SomeIP::MemberID memberID) {
 	if (getClient() != nullptr)
-		getClient()->onNotificationSubscribed(getServiceID(), memberID);
+		getClient()->onNotificationSubscribed(getServiceIDs(), memberID);
 }
 
 void Notification::unsubscribe(Client& clientToUnsubscribe) {
@@ -247,7 +239,7 @@ void Notification::unsubscribe(Client& clientToUnsubscribe) {
 		Client* client = *i;
 		if (client == &clientToUnsubscribe) {
 			m_subscribedClients.erase(i);
-			log_debug( "Client un-subscribed to %s : %s", toString().c_str(), client->toString().c_str() );
+			log_debug( ) << "Client un-subscribed to " << toString() << " : " << client->toString();
 			break;
 		}
 	}
@@ -256,20 +248,21 @@ void Notification::unsubscribe(Client& clientToUnsubscribe) {
 void Notification::subscribe(Client& client) {
 	m_subscribedClients.push_back(&client);
 	if (m_providerService != nullptr)
-		m_providerService->onNotificationSubscribed( SomeIP::getMemberID(m_messageID) );
+		m_providerService->onNotificationSubscribed( m_messageID.m_memberID );
 }
 
 void Notification::init() {
-	auto service = m_dispatcher.getService( SomeIP::getServiceID(m_messageID) );
+	auto service = m_dispatcher.getService( m_messageID.m_serviceIDs );
 	if (service != nullptr)
 		setProviderService(service);
 }
 
 void Notification::setProviderService(Service* service) {
 	m_providerService = service;
-//	if (m_providerService != nullptr)		m_providerService->onNotificationSubscribed( SomeIP::getMemberID(m_messageID) );
+	if (m_providerService != nullptr)
+		m_providerService->onNotificationSubscribed(m_messageID.m_memberID);
 }
 
-ClientIdentifier Client::s_nextAvailableID = 0;
+//ClientIdentifier Client::s_nextAvailableID = 0;
 
 }

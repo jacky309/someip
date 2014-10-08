@@ -9,8 +9,11 @@
 #include "SomeIP-common.h"
 #include "GlibIO.h"
 #include "Networking.h"
+#include <unordered_map>
 
 namespace SomeIP_Dispatcher {
+
+typedef std::unordered_map<ServiceID, InstanceID> ServiceInstanceNamespace;
 
 using namespace std;
 
@@ -31,7 +34,8 @@ enum class ReturnCode {
 class Notification {
 
 public:
-	Notification(Dispatcher& dispatcher, SomeIP::MessageID messageID) :
+
+	Notification(Dispatcher& dispatcher, SomeIP::MemberIDs messageID) :
 		m_messageID(messageID), m_dispatcher(dispatcher) {
 		init();
 	}
@@ -44,7 +48,7 @@ public:
 
 	void sendMessageToSubscribedClients(const DispatcherMessage& msg);
 
-	SomeIP::MessageID getMessageID() const {
+	const SomeIP::MemberIDs& getMessageID() const {
 		return m_messageID;
 	}
 
@@ -54,15 +58,15 @@ public:
 		return m_providerService;
 	}
 
-	bool matchesServiceID(SomeIP::ServiceID serviceID) {
-		return ( serviceID == SomeIP::getServiceID(m_messageID) );
+	bool matchesServiceID(SomeIP::ServiceIDs serviceID) const {
+		return ( serviceID == m_messageID.m_serviceIDs );
 	}
 
 	std::string toString() const;
 
 private:
 	vector<Client*> m_subscribedClients;
-	const SomeIP::MessageID m_messageID;
+	MemberIDs m_messageID;
 	Service* m_providerService = nullptr;
 	Dispatcher& m_dispatcher;
 
@@ -73,7 +77,7 @@ private:
  */
 class Service : public SomeIP::SomeIPService {
 public:
-	Service(SomeIP::ServiceID serviceID, bool isLocal) :
+	Service(SomeIP::ServiceIDs serviceID, bool isLocal) :
 		SomeIPService(serviceID), m_isLocal(isLocal) {
 	}
 
@@ -84,8 +88,12 @@ public:
 		return m_client;
 	}
 
+	const Client* getClient() const {
+		return m_client;
+	}
+
 	virtual ReturnCode setClient(Client& client) {
-		if (m_client == NULL) {
+		if (m_client == nullptr) {
 			m_client = &client;
 			return ReturnCode::OK;
 		} else
@@ -112,7 +120,8 @@ public:
 
 	virtual std::string toString() const;
 
-	Client* m_client = NULL;
+private:
+	Client* m_client = nullptr;
 
 	bool m_isLocal;
 
@@ -138,7 +147,7 @@ public:
 
 	void dispatchMessage(DispatcherMessage& msg, Client& client);
 
-	Notification& subscribeClientForNotifications(Client& client, SomeIP::MessageID messageID) {
+	Notification& subscribeClientForNotifications(Client& client, SomeIP::MemberIDs messageID) {
 		Notification& notification = getOrCreateNotification(messageID);
 		notification.subscribe(client);
 		return notification;
@@ -148,7 +157,7 @@ public:
 
 	void cleanDisconnectedClients();
 
-	Notification& getOrCreateNotification(SomeIP::MessageID messageID) {
+	Notification& getOrCreateNotification(SomeIP::MemberIDs messageID) {
 
 		for (auto notification : m_notifications) {
 			if (notification->getMessageID() == messageID)
@@ -187,17 +196,17 @@ public:
 
 	void onClientDisconnected(Client& client);
 
-	Service* tryRegisterService(SomeIP::ServiceID serviceID, Client& client, bool isLocal = true);
+	Service* tryRegisterService(SomeIP::ServiceIDs serviceID, Client& client, bool isLocal = true);
 	ReturnCode registerService(Service& service);
 
 	void unregisterService(Service& service);
 
-	Service* getService(SomeIP::ServiceID serviceID) {
+	Service* getService(SomeIP::ServiceIDs serviceID) {
 		for (auto& service : m_services) {
-			if (service->getServiceID() == serviceID)
+			if (service->getServiceIDs() == serviceID)
 				return service;
 		}
-		return NULL;
+		return nullptr;
 	}
 
 	void sendPingMessages();
@@ -222,6 +231,8 @@ private:
 
 	std::unique_ptr<IdleMainLoopHook> m_idleCallback;
 	std::unique_ptr<TimeOutMainLoopHook> m_pingTimer;
+
+	ClientIdentifier m_nextAvailableClientID = 0;
 
 };
 

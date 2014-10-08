@@ -14,6 +14,7 @@ namespace SomeIP_Dispatcher {
 using namespace SomeIP_utils;
 
 class TCPManager;
+class TCPServer;
 
 /**
  * Handles a client connected via TCP
@@ -53,21 +54,21 @@ public:
 	/**
 	 * Constructor used when a remote client connects to us
 	 */
-	TCPClient(Dispatcher& dispatcher, int fileDescriptor, TCPManager& tcpManager, MainLoopContext& mainContext) :
-		Client(dispatcher), m_tcpManager(tcpManager), m_serviceDiscoveryDecoder(*this), m_mainLoopContext(mainContext) {
+	TCPClient(Dispatcher& dispatcher, int fileDescriptor, TCPManager& tcpManager, MainLoopContext& mainContext, ServiceInstanceNamespace& instancesNamespace) :
+		Client(dispatcher), m_tcpManager(tcpManager), m_serviceDiscoveryDecoder(*this), m_mainLoopContext(mainContext), m_instanceNamespace(instancesNamespace) {
 		setFileDescriptor(fileDescriptor);
 	}
 
 	/**
 	 * Constructor used to register a host offering one or several services
 	 */
-	TCPClient(Dispatcher& dispatcher, IPv4TCPEndPoint server, TCPManager& tcpManager, MainLoopContext& mainContext) :
-		Client(dispatcher), ServiceDiscoveryListener(*this), m_tcpManager(tcpManager), m_serviceDiscoveryDecoder(
-			*this), m_mainLoopContext(mainContext) {
+	TCPClient(Dispatcher& dispatcher, IPv4TCPEndPoint server, TCPManager& tcpManager, MainLoopContext& mainContext, ServiceInstanceNamespace& instancesNamespace) :
+		Client(dispatcher), ServiceDiscoveryListener(*this), m_tcpManager(tcpManager), m_serviceDiscoveryDecoder(*this), m_mainLoopContext(mainContext),
+		m_instanceNamespace(instancesNamespace) {
 		m_serverIdentifier = server;
 	}
 
-	~TCPClient() override {
+	~TCPClient() {
 	}
 
 	void init() override {
@@ -79,8 +80,8 @@ public:
 					const IPv4ConfigurationOption* address) override {
 
 		// TODO : consider the address
-		assert(address == NULL);
-		subscribeToNotification( SomeIP::getMessageID(serviceEntry.m_serviceID, serviceEntry.m_eventGroupID) );
+		assert(address == nullptr);
+		subscribeToNotification( MemberIDs(serviceEntry.m_serviceID, serviceEntry.m_instanceID, serviceEntry.m_eventGroupID) );
 	}
 
 	void onRemoteClientSubscriptionFinished(const SomeIPServiceDiscoveryEventGroupEntry& serviceEntry,
@@ -109,7 +110,18 @@ public:
 			fd.events = POLLIN;
 
 			m_inputDataWatcher = m_mainLoopContext.addWatch([&] () {
-										return processIncomingData([&] (InputMessage& msg) {
+										return processIncomingData(getFileDescriptor(), [&] (InputMessage& msg) {
+											auto serviceID = msg.getServiceID();
+
+//											assert(m_instanceNamespace != nullptr);
+											log_debug() << (size_t) &m_instanceNamespace;
+											log_debug() << m_instanceNamespace;
+
+											assert(m_instanceNamespace.count(serviceID) == 1);
+
+											auto instanceID = m_instanceNamespace.at(serviceID);
+											msg.setInstanceID(instanceID);
+
 											processIncomingMessage(msg);
 										});
 									}, fd);
@@ -135,22 +147,17 @@ public:
 			m_disconnectionWatcher->enable();
 		}
 
-		/*
-		 m_channelWatcher.setup( getFileDescriptor() );
-		 m_channelWatcher.enableWatch();
-		 */
-
 	}
 
 	IPv4TCPEndPoint& getServerID() {
 		return m_serverIdentifier;
 	}
 
-	void onServiceAvailable(SomeIP::ServiceID serviceID) {
+	void onServiceAvailable(SomeIP::ServiceIDs serviceID) {
 		registerService(serviceID, false);
 	}
 
-	void onServiceUnavailable(SomeIP::ServiceID serviceID) {
+	void onServiceUnavailable(SomeIP::ServiceIDs serviceID) {
 		unregisterService(serviceID);
 	}
 
@@ -191,6 +198,7 @@ public:
 	void sendMessage(const DispatcherMessage& msg) override;
 
 	InputMessage sendMessageBlocking(const OutputMessage& msg) override {
+
 		InputMessage answer;
 
 		sendMessage(msg);
@@ -198,13 +206,16 @@ public:
 		bool responseReceived = false;
 
 		while(!responseReceived)
-			processIncomingData([&] (InputMessage& inputMessage) {
+			processIncomingData(getFileDescriptor(), [&] (InputMessage& inputMessage) {
 				if (inputMessage.isAnswerTo(msg)) {
 					answer = inputMessage;
 					responseReceived = true;
 				}
-				else
-					assert(false);
+				else {
+					log_error() << "received : " << inputMessage;
+					m_messageQueue.push_back(inputMessage);
+//					assert(false);
+				}
 			});
 
 		return answer;
@@ -222,7 +233,7 @@ public:
 
 	IPCOperationReport sendMessage(const SomeIP::SomeIPHeader& header, const void* payload, size_t payloadLength);
 
-	void onNotificationSubscribed(SomeIP::MemberID serviceID, SomeIP::MemberID memberID) override;
+	void onNotificationSubscribed(SomeIP::ServiceIDs serviceID, SomeIP::MemberID memberID) override;
 
 	void onCongestionDetected() override {
 		m_outputDataWatcher->enable();
@@ -261,7 +272,7 @@ private:
 	/**
 	 * Called whenever some data is received from a client
 	 */
-	WatchStatus processIncomingData(std::function<void(InputMessage&)> handler);
+	WatchStatus processIncomingData(int fileDescriptor, std::function<void(InputMessage&)> handler);
 
 	WatchStatus onWritingPossible() {
 		return (writePendingDataNonBlocking() ==
@@ -269,9 +280,7 @@ private:
 	}
 
 	std::string toString() const {
-		char buffer[1000];
-		snprintf( buffer, sizeof(buffer), "TCP Client :address:%s", m_serverIdentifier.toString().c_str() );
-		return buffer;
+		return StringBuilder() << "TCP Client with address: " << m_serverIdentifier.toString();
 	}
 
 	bool detectReboot(const SomeIP::SomeIPServiceDiscoveryHeader& serviceDiscoveryHeader, bool isMulticast) {
@@ -299,6 +308,12 @@ private:
 
 	RebootInformation m_rebootInformationMulticast;
 	RebootInformation m_rebootInformationUnicast;
+
+	TCPServer* m_tcpServer = nullptr;
+
+	ServiceInstanceNamespace& m_instanceNamespace;
+
+	std::vector<InputMessage> m_messageQueue;
 
 };
 

@@ -87,12 +87,12 @@ void WellKnownServiceManager::init(const char* configurationFolder) {
 }
 
 
-bool WellKnownServiceManager::isBlackListed(const IPv4TCPEndPoint& server, ServiceID serviceID) const {
+bool WellKnownServiceManager::isBlackListed(const IPv4TCPEndPoint& server, ServiceIDs serviceID) const {
 
 	// ignore our own services
 	for ( auto service : m_services )
-		if ( service->getServiceID() == serviceID ) {
-			log_debug() << "Local well knownservice with this ID" << serviceID;
+		if ( service->getServiceIDs() == serviceID ) {
+			log_debug() << "Local well knownservice with this ID" << serviceID.toString();
 			return true;
 		}
 
@@ -137,7 +137,8 @@ void WellKnownServiceManager::readConfiguration(const char* folder) {
 				gchar* systemDServiceName =
 					g_key_file_get_string(gpMyKeyFile, SERVICE_SECTION, "SystemdService",
 							      &pGError);
-				SomeIP::ServiceID serviceID =
+				SomeIP::ServiceIDs serviceID;
+				serviceID.serviceID =
 					g_key_file_get_integer(gpMyKeyFile, SERVICE_SECTION, "ServiceID",
 							       &pGError);
 

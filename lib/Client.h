@@ -39,10 +39,6 @@ public:
 		m_dispatcher(dispatcher), m_endPoint(*this) {
 	}
 
-	void assignUniqueID() {
-		m_id = s_nextAvailableID++;
-	}
-
 	virtual ~Client() {
 	}
 
@@ -73,10 +69,14 @@ public:
 	/**
 	 * Called when a client has subscribed for notifications on the given property
 	 */
-	virtual void onNotificationSubscribed(SomeIP::MemberID serviceID, SomeIP::MemberID memberID) = 0;
+	virtual void onNotificationSubscribed(SomeIP::ServiceIDs serviceID, SomeIP::MemberID memberID) = 0;
 
 	ClientIdentifier getIdentifier() const {
 		return m_id;
+	}
+
+	void setIdentifier(ClientIdentifier id) {
+		m_id = id;
 	}
 
 	void sendPingMessage() {
@@ -85,12 +85,12 @@ public:
 					     });
 	}
 
-	Service* registerService(SomeIP::ServiceID serviceID, bool isLocal);
+	Service* registerService(SomeIP::ServiceIDs serviceID, bool isLocal);
 
-	void unregisterService(SomeIP::ServiceID serviceID);
+	void unregisterService(SomeIP::ServiceIDs serviceID);
 
 protected:
-	void subscribeToNotification(SomeIP::MessageID messageID);
+	void subscribeToNotification(SomeIP::MemberIDs messageID);
 
 	bool isInputBlocked() {
 		return inputBlocked;
@@ -118,8 +118,6 @@ private:
 
 	/// Counter of bytes sent to that application
 	unsigned int receivedBytesCount = 0;
-
-	static uint16_t s_nextAvailableID;
 
 	bool m_registered = false;
 

@@ -7,7 +7,7 @@ specification someip.ServiceSpecification {
 		 * A Service ID must be defined for each SOME/IP interface
 		 */
 		ServiceID : Integer;
-		
+		InstanceID : Integer;
 	}
 
 	for methods {
