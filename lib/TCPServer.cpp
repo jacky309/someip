@@ -80,7 +80,7 @@ SomeIPReturnCode TCPServer::init(int portCount) {
 
 	if (bindSuccessful) {
 		if (::listen(tcpServerSocketHandle, SOMAXCONN) != 0) {
-			log_error( "Failed to listen to TCP port %i. Error : %s", m_port, strerror(errno) );
+			log_error( ) << "Failed to listen to TCP port " << m_port << ". Error : " << strerror(errno);
 			return SomeIPReturnCode::ERROR;
 		}
 
@@ -116,7 +116,7 @@ bool TCPServer::isBlackListed(const IPv4TCPEndPoint& server, ServiceIDs serviceI
 
 
 void TCPServer::createNewClientConnection(int fileDescriptor) {
-	TCPClient* newClient = new TCPClient(m_dispatcher, fileDescriptor, m_tcpManager, m_mainContext, m_tcpManager.getServiceNamespace());
+	TCPClient* newClient = new TCPClient(m_dispatcher, m_tcpManager, m_mainContext, m_instanceNamespace, fileDescriptor);
 	log_debug() << "New client : " << newClient->toString();
 	newClient->registerClient();
 }

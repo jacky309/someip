@@ -24,27 +24,27 @@ using namespace SomeIP_Lib;
 using namespace SomeIP_utils;
 using namespace SomeIP_Dispatcher;
 
-LOG_IMPORT_CONTEXT(clientLibContext);
+LOG_IMPORT_CONTEXT (clientLibContext);
 
 /**
  * Interface to be used by client application to connect to the dispatcher. The dispatcher can either be local
  */
-class DaemonLessClient : public ClientConnection, private ServiceRegistrationListener {
+class DaemonLessClient: public ClientConnection, private ServiceRegistrationListener {
 
 	LOG_DECLARE_CLASS_CONTEXT("DLES" , "Daemonless connection");
 
-	class DaemonInterface : public Client {
+	class DaemonInterface: public Client {
 
 	public:
 
-		DaemonInterface(DaemonLessClient& client, Dispatcher& dispatcher) : Client(dispatcher),
-			m_client(client), m_dispatcher(dispatcher) {
+		DaemonInterface(DaemonLessClient& client, Dispatcher& dispatcher) :
+				Client(dispatcher), m_client(client), m_dispatcher(dispatcher) {
 		}
 
 		void init() override {
 		}
 
-		void onNotificationSubscribed(SomeIP::ServiceIDs serviceID, SomeIP::MemberID memberID) override {
+		void onNotificationSubscribed(Service& serviceID, SomeIP::MemberID memberID) override {
 		}
 
 		/**
@@ -76,18 +76,18 @@ class DaemonLessClient : public ClientConnection, private ServiceRegistrationLis
 		InputMessage sendMessageBlocking(const OutputMessage& msg) override {
 			assert(false);
 		}
-private:
+
+	private:
 		DaemonLessClient& m_client;
 		Dispatcher& m_dispatcher;
 
 	};
 
 public:
-	DaemonLessClient(MainLoopContext& mainLoopContext) : m_dispatcher(mainLoopContext)
-, tcpManager(m_dispatcher, mainLoopContext, m_tcpPortNumber)
-, serviceAnnouncer(m_dispatcher, tcpManager, mainLoopContext)
-, remoteServiceListener(m_dispatcher, tcpManager, serviceAnnouncer, mainLoopContext), m_daemonInterface(*this, m_dispatcher)
-{
+	DaemonLessClient(MainLoopContext& mainLoopContext) :
+			m_dispatcher(mainLoopContext), tcpManager(m_dispatcher, mainLoopContext, m_tcpPortNumber), serviceAnnouncer(
+					m_dispatcher, tcpManager, mainLoopContext), remoteServiceListener(m_dispatcher, tcpManager,
+					serviceAnnouncer, mainLoopContext), m_daemonInterface(*this, m_dispatcher) {
 		setMainLoopInterface(mainLoopContext);
 		m_dispatcher.addServiceRegistrationListener(*this);
 	}
@@ -106,7 +106,6 @@ public:
 	void disconnect() override {
 	}
 
-
 	void onServiceRegistered(const Service& service) override {
 		ClientConnection::onServiceRegistered(service.getServiceIDs());
 	}
@@ -124,8 +123,7 @@ public:
 		if (service != nullptr) {
 			m_registeredServices[serviceID] = service;
 			return SomeIPReturnCode::OK;
-		}
-		else
+		} else
 			return SomeIPReturnCode::ERROR;
 
 	}
@@ -148,38 +146,38 @@ public:
 	/**
 	 * Subscribes to notifications for the given MessageID
 	 */
-	 SomeIPReturnCode subscribeToNotifications(SomeIP::MemberIDs messageID) override {
-		 m_dispatcher.subscribeClientForNotifications(m_daemonInterface, messageID);
-		 return SomeIPReturnCode::OK;
-	 }
+	SomeIPReturnCode subscribeToNotifications(SomeIP::MemberIDs messageID) override {
+		m_dispatcher.subscribeClientForNotifications(m_daemonInterface, messageID);
+		return SomeIPReturnCode::OK;
+	}
 
 	/**
 	 * Sends the given message to the dispatcher.
 	 */
-	 SomeIPReturnCode sendMessage(const OutputMessage& msg) override {
-		 InputMessage inputMessage(msg);
-		 m_dispatcher.dispatchMessage(inputMessage, m_daemonInterface);
-		 return SomeIPReturnCode::OK;
-	 }
+	SomeIPReturnCode sendMessage(const OutputMessage& msg) override {
+		InputMessage inputMessage(msg);
+		m_dispatcher.dispatchMessage(inputMessage, m_daemonInterface);
+		return SomeIPReturnCode::OK;
+	}
 
 	/**
 	 * Sends a ping message to the connected peers
 	 */
-	 SomeIPReturnCode sendPing() override {
-		 m_dispatcher.sendPingMessages();
-		 return SomeIPReturnCode::OK;
-	 }
+	SomeIPReturnCode sendPing() override {
+		m_dispatcher.sendPingMessages();
+		return SomeIPReturnCode::OK;
+	}
 
 	/**
 	 * Sends the given message to the dispatcher and block until a response is received.
 	 */
-	 InputMessage sendMessageBlocking(const OutputMessage& msg) override {
-		 assert(msg.getHeader().isRequestWithReturn());
-		 Service* service = m_dispatcher.getService(ServiceIDs(msg.getHeader().getServiceID(), msg.getInstanceID()));
-		 Client* client = service->getClient();
-		 assert(client != nullptr);
-		 return client->sendMessageBlocking(msg);
-	 }
+	InputMessage sendMessageBlocking(const OutputMessage& msg) override {
+		assert(msg.getHeader().isRequestWithReturn());
+		Service* service = m_dispatcher.getService(ServiceIDs(msg.getHeader().getServiceID(), msg.getInstanceID()));
+		Client* client = service->getClient();
+		assert(client != nullptr);
+		return client->sendMessageBlocking(msg);
+	}
 
 	/**
 	 * Connects to the dispatcher.
@@ -208,7 +206,6 @@ public:
 		return SomeIPReturnCode::OK;
 	}
 
-
 	/**
 	 * Returns true if the connection to the daemon is active
 	 */
@@ -219,10 +216,10 @@ public:
 	/**
 	 * Returns true if some data has been received
 	 */
-	 bool hasIncomingMessages() override {
+	bool hasIncomingMessages() override {
 		assert(false);
 		return false;
-	 }
+	}
 
 	bool isServiceAvailableBlocking(ServiceIDs service) override {
 		return getServiceRegistry().isServiceRegistered(service);

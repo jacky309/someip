@@ -63,7 +63,7 @@ struct MemberIDs {
 	}
 
 	std::string toString() const {
-		return "TODOODODODO";
+		return StringBuilder() << "ServiceID" << m_serviceIDs.serviceID << " InstanceID: " << m_serviceIDs.instanceID << " MemberID:" << m_memberID;
 	}
 
 	bool operator==(const MemberIDs& other) const {
@@ -242,10 +242,6 @@ class SomeIPService {
 public:
 	SomeIPService(ServiceIDs serviceID) :
 		m_serviceID(serviceID) {
-	}
-
-	bool matchesRequest(const SomeIPHeader& msg) const {
-		return (SomeIP::getServiceID( msg.getMessageID() ) == m_serviceID.serviceID);
 	}
 
 	bool isDuplicate(const ServiceIDs& serviceID) const {

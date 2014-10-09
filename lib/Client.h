@@ -69,7 +69,7 @@ public:
 	/**
 	 * Called when a client has subscribed for notifications on the given property
 	 */
-	virtual void onNotificationSubscribed(SomeIP::ServiceIDs serviceID, SomeIP::MemberID memberID) = 0;
+	virtual void onNotificationSubscribed(Service& serviceID, SomeIP::MemberID memberID) = 0;
 
 	ClientIdentifier getIdentifier() const {
 		return m_id;

@@ -11,36 +11,20 @@ class TCPClient;
 
 namespace SomeIP_Dispatcher {
 
-class TCPManager : private ServiceRegistrationListener {
+class TCPManager {
 
 	LOG_DECLARE_CLASS_CONTEXT("TCPM", "TCPManager");
 
 public:
-	TCPManager(Dispatcher& dispatcher, MainLoopContext& mainLoopContext, int port) :
-		m_dispatcher(dispatcher), m_mainLoopContext(mainLoopContext), m_server(dispatcher, *this, port, mainLoopContext) {
-		m_dispatcher.addServiceRegistrationListener(*this);
+	TCPManager(Dispatcher& dispatcher, MainLoopContext& mainLoopContext, TCPPort port) :
+		m_dispatcher(dispatcher), m_mainLoopContext(mainLoopContext) {
+		m_basePort = port;
 	}
 
 	~TCPManager() {
-		m_dispatcher.removeServiceRegistrationListener(*this);
 	}
 
-	void onServiceRegistered(const Service& service) override {
-		if (service.isLocal()) {
-			assert(m_namespace.count(service.getServiceIDs().serviceID) == 0);
-			m_namespace[service.getServiceIDs().serviceID] = service.getServiceIDs().instanceID;
-			log_debug() << m_namespace;
-		}
-	}
-
-	void onServiceUnregistered(const Service& service) override {
-		if (service.isLocal()) {
-			assert(m_namespace.count(service.getServiceIDs().serviceID) == 1);
-			m_namespace.erase(service.getServiceIDs().serviceID);
-		}
-	}
-
-	TCPClient& getOrCreateClient(const IPv4TCPEndPoint& serverID);
+	RemoteTCPClient& getOrCreateClient(const IPv4TCPEndPoint& serverID);
 
 	void onRemoteServiceAvailable(const SomeIPServiceDiscoveryServiceEntry& serviceEntry,
 				      const IPv4ConfigurationOption* address,
@@ -50,25 +34,56 @@ public:
 					const IPv4ConfigurationOption* address,
 					const SomeIPServiceDiscoveryMessage& message);
 
-	ServiceInstanceNamespace& getServiceNamespace() {
-		return m_namespace;
-	}
-
 	SomeIPReturnCode init(int portCount = 1) {
-		return m_server.init(portCount);
+		return SomeIPReturnCode::OK;
 	}
 
-	const std::vector<IPv4TCPEndPoint> getIPAddresses() const {
-		return m_server.getIPAddresses();
+	/**
+	 * Returns the server which is publishing the given service
+	 */
+	TCPServer* getEndPoint(const Service& service) {
+		for (auto& server : m_servers) {
+			if (server->isServiceRegistered(service))
+				return server;
+		}
+
+		return nullptr;
+	}
+
+	/**
+	 * Returns a server which is available to publish the service given as parameter
+	 */
+	TCPServer& getFreeEndPoint(const Service& service) {
+
+		// Search for a server which has no service currently registered with the serviceID
+		TCPServer* availableServer = nullptr;
+		for (auto& server : m_servers) {
+			if (!server->isServiceRegistered(service.getServiceIDs().serviceID))
+				availableServer = server;
+		}
+
+		if (availableServer == nullptr) {
+			availableServer = new TCPServer(m_dispatcher, *this, m_basePort, m_mainLoopContext);
+			auto code = availableServer->init(m_basePort);
+			assert(!isError(code));
+			m_servers.push_back(availableServer);
+		}
+
+		availableServer->addService(service);
+
+		return *availableServer;
+	}
+
+	const std::vector<IPV4Address> getIPAddresses() const {
+		return TCPServer::getAllIPAddresses();
 	}
 
 private:
-	std::vector<TCPClient*> m_clients;
+	std::vector<RemoteTCPClient*> m_clients;
 	Dispatcher& m_dispatcher;
 	MainLoopContext& m_mainLoopContext;
-
-	TCPServer m_server;
-	ServiceInstanceNamespace m_namespace;
+	std::vector<TCPServer*> m_servers;
+	TCPPort m_basePort = -1;
 
 };
 

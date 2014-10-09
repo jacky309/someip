@@ -59,12 +59,12 @@ public:
 	void sendRegistry() {
 		IPCOutputMessage msg(IPCMessageType::SERVICES_REGISTERED);
 		for ( auto& service : getDispatcher().getServices() )
-			msg << service->getServiceIDs().serviceID;
+			msg << service->getServiceIDs().serviceID << service->getServiceIDs().instanceID ;
 
 		writeNonBlocking(msg);
 	}
 
-	void onNotificationSubscribed(SomeIP::ServiceIDs serviceID, SomeIP::MemberID memberID) override {
+	void onNotificationSubscribed(Service& serviceID, SomeIP::MemberID memberID) override {
 		// TODO : send message to inform the client that we are interested in the notification
 	}
 
@@ -91,7 +91,7 @@ public:
 	void onServiceRegistered(const Service& service) override {
 		if ( isConnected() ) {
 			IPCOutputMessage msg(IPCMessageType::SERVICES_REGISTERED);
-			msg << service.getServiceIDs().serviceID;
+			msg << service.getServiceIDs().serviceID << service.getServiceIDs().instanceID;
 			writeNonBlocking(msg);
 		}
 	}
@@ -99,7 +99,7 @@ public:
 	void onServiceUnregistered(const Service& service) override {
 		if ( isConnected() ) {
 			IPCOutputMessage msg(IPCMessageType::SERVICES_UNREGISTERED);
-			msg << service.getServiceIDs().serviceID;
+			msg << service.getServiceIDs().serviceID << service.getServiceIDs().instanceID;
 			writeNonBlocking(msg);
 		}
 	}

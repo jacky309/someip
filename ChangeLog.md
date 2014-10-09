@@ -1,3 +1,7 @@
+0.10.1
+------
+Support multiple instance IDs
+
 0.9.1
 -----
 Compatibility with CommonAPI 2.1.6

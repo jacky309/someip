@@ -13,14 +13,14 @@
 
 namespace SomeIP_Dispatcher {
 
-typedef std::unordered_map<ServiceID, InstanceID> ServiceInstanceNamespace;
-
 using namespace std;
 
 class Service;
 class Client;
 class ServiceRegistrationListener;
 class Dispatcher;
+
+typedef std::unordered_map<ServiceID, const Service*> ServiceInstanceNamespace;
 
 enum class ReturnCode {
 	OK,
@@ -119,6 +119,10 @@ public:
 	virtual void onNotificationSubscribed(SomeIP::MemberID memberID);
 
 	virtual std::string toString() const;
+
+	bool matchesRequest(const InputMessage& msg) const {
+		return ((msg.getServiceID() == getServiceIDs().serviceID) && (msg.getInstanceID() == getServiceIDs().instanceID) );
+	}
 
 private:
 	Client* m_client = nullptr;

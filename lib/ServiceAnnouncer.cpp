@@ -24,7 +24,7 @@ void ServiceAnnouncer::onServiceRegistered(const Service& service) {
 	if ( service.isLocal() ) {         // we don't publish remote services
 
 		// TODO : handle multiple instances
-		for ( auto ipAddress : m_tcpServer.getIPAddresses() ) {
+		for ( auto ipAddress : m_tcpServer.getFreeEndPoint(service).getIPAddresses() ) {
 			SomeIPServiceDiscoveryMessage serviceDiscoveryMessage(true);
 
 			SomeIPServiceDiscoveryServiceOfferedEntry serviceEntry(serviceDiscoveryMessage,
@@ -44,7 +44,8 @@ void ServiceAnnouncer::onServiceRegistered(const Service& service) {
 
 void ServiceAnnouncer::onServiceUnregistered(const Service& service) {
 	if ( service.isLocal() ) {
-		for ( auto ipAddress : m_tcpServer.getIPAddresses() ) {
+		TCPServer* server = m_tcpServer.getEndPoint(service);
+		for ( auto ipAddress : server->getIPAddresses() ) {
 
 			SomeIPServiceDiscoveryMessage serviceDiscoveryMessage(true);
 
@@ -57,8 +58,8 @@ void ServiceAnnouncer::onServiceUnregistered(const Service& service) {
 			serviceDiscoveryMessage.addEntry(serviceEntry);
 
 			sendMessage(serviceDiscoveryMessage);
-
 		}
+		server->removeService(service);
 	}
 }
 

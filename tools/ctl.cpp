@@ -102,6 +102,7 @@ ByteArray parseHexPayloadString(const std::string& str) {
 int main(int argc, const char** argv) {
 
 	int serviceToRegister = NO_SERVICE_ID;
+	int instanceToRegister = 0;
 	MessageID messageToSubscribeTo = NO_MESSAGE_ID;
 	bool dumpDaemonState = false;
 	bool blockingMode = false;
@@ -114,7 +115,8 @@ int main(int argc, const char** argv) {
 		"Send a message every 500 ms with serviceID=0x1234, MemberID=543, MessageType=REQUEST, payload=12345678 (hex)\n"
 		"someip_ctl 0x1234:543:REQUEST:12345678 -r 500"
 		);
-	commandLineParser.addOption(serviceToRegister, "service", 's', "A service to register");
+	commandLineParser.addOption(serviceToRegister, "service", 's', "A serviceID to register");
+	commandLineParser.addOption(instanceToRegister, "instance", 'i', "InstanceID of the service to register");
 	commandLineParser.addOption(messageToSubscribeTo, "subscribe", 'n', "A message to subscribe to");
 	commandLineParser.addOption(blockingMode, "blocking", 'b', "Use blocking mode");
 	commandLineParser.addOption(dumpDaemonState, "dumpDaemonState", 'd', "Dump daemon state");
@@ -143,15 +145,16 @@ int main(int argc, const char** argv) {
 						       }
 					       });
 
-		ServiceIDs service(serviceToRegister, 0);
-		connection.registerService(service);
-		log_info("Registering service serviceID:0x%X", serviceToRegister);
+		ServiceIDs service(serviceToRegister, instanceToRegister);
+		log_info() << "Registering service " << service.toString();
+		if (isError(connection.registerService(service)))
+			log_error() << "Could not register service: " << service.toString();
 	}
 
 	if (messageToSubscribeTo != NO_MESSAGE_ID) {
 		SomeIP::MemberIDs memberID(getServiceID(messageToSubscribeTo), 0, getMemberID(messageToSubscribeTo));
 		connection.subscribeToNotifications(memberID);
-		log_info("Subscribe for notifications for messageID:0x%X", messageToSubscribeTo);
+		log_info() << "Subscribe for notifications for messageID:" << memberID.toString();
 	}
 
 	if (dumpDaemonState) {

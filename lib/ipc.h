@@ -172,7 +172,7 @@ public:
 	}
 
 	bool isError() {
-		return m_isError;
+		return m_isError || (getReturnCode() != IPCReturnCode::OK);
 	}
 
 	bool isResponseOf(const IPCOutputMessage& outputMessage) const;

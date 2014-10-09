@@ -73,7 +73,7 @@ protected:
 
 
 inline OutputMessage createTestOutputMessage(SomeIP::ServiceIDs service, SomeIP::MessageType messageType,
-				      size_t contentLength) {
+		size_t contentLength) {
 	OutputMessage outputMsg;
 	OutputMessageHeader& header = outputMsg.getHeader();
 	header.setServiceID(service.serviceID);

@@ -20,9 +20,10 @@ class TCPServer;
  * Handles a client connected via TCP
  */
 class TCPClient : public Client,
-	private SocketStreamConnection,
+	protected SocketStreamConnection,
 	private ServiceDiscoveryListener {
 
+protected:
 	LOG_DECLARE_CLASS_CONTEXT("TCPC", "TCPClient");
 
 	struct RebootInformation {
@@ -54,18 +55,9 @@ public:
 	/**
 	 * Constructor used when a remote client connects to us
 	 */
-	TCPClient(Dispatcher& dispatcher, int fileDescriptor, TCPManager& tcpManager, MainLoopContext& mainContext, ServiceInstanceNamespace& instancesNamespace) :
+	TCPClient(Dispatcher& dispatcher, TCPManager& tcpManager, MainLoopContext& mainContext, ServiceInstanceNamespace& instancesNamespace, int fileDescriptor = UNINITIALIZED_FILE_DESCRIPTOR) :
 		Client(dispatcher), m_tcpManager(tcpManager), m_serviceDiscoveryDecoder(*this), m_mainLoopContext(mainContext), m_instanceNamespace(instancesNamespace) {
 		setFileDescriptor(fileDescriptor);
-	}
-
-	/**
-	 * Constructor used to register a host offering one or several services
-	 */
-	TCPClient(Dispatcher& dispatcher, IPv4TCPEndPoint server, TCPManager& tcpManager, MainLoopContext& mainContext, ServiceInstanceNamespace& instancesNamespace) :
-		Client(dispatcher), ServiceDiscoveryListener(*this), m_tcpManager(tcpManager), m_serviceDiscoveryDecoder(*this), m_mainLoopContext(mainContext),
-		m_instanceNamespace(instancesNamespace) {
-		m_serverIdentifier = server;
 	}
 
 	~TCPClient() {
@@ -119,8 +111,8 @@ public:
 
 											assert(m_instanceNamespace.count(serviceID) == 1);
 
-											auto instanceID = m_instanceNamespace.at(serviceID);
-											msg.setInstanceID(instanceID);
+											auto service = m_instanceNamespace.at(serviceID);
+											msg.setInstanceID(service->getServiceIDs().instanceID);
 
 											processIncomingMessage(msg);
 										});
@@ -149,16 +141,19 @@ public:
 
 	}
 
-	IPv4TCPEndPoint& getServerID() {
-		return m_serverIdentifier;
+	void onServiceAvailable(ServiceIDs serviceID) {
+		Service* service = registerService(serviceID, false);
+		assert( (m_instanceNamespace.count(serviceID.serviceID) == 0) ||
+				( m_instanceNamespace.at(serviceID.serviceID)->getServiceIDs().instanceID == serviceID.instanceID));
+		m_instanceNamespace[serviceID.serviceID] = service;
+		log_debug() << m_instanceNamespace;
 	}
 
-	void onServiceAvailable(SomeIP::ServiceIDs serviceID) {
-		registerService(serviceID, false);
-	}
-
-	void onServiceUnavailable(SomeIP::ServiceIDs serviceID) {
+	void onServiceUnavailable(ServiceIDs serviceID) {
 		unregisterService(serviceID);
+		assert(m_instanceNamespace.count(serviceID.serviceID) == 1);
+		m_instanceNamespace.erase(serviceID.serviceID);
+		log_debug() << m_instanceNamespace;
 	}
 
 	void onRebootDetected() {
@@ -181,8 +176,6 @@ public:
 		if ( setsockopt( fd, SOL_SOCKET, TCP_NODELAY, &on, sizeof(on) ) )
 			log_error() << "Can't enable TCP_NODELAY on the socket. Error : " << strerror(errno);
 	}
-
-	void connect();
 
 	void tagClientIdentifier(SomeIP::SomeIPHeader& header, ClientIdentifier clientIdentifier) const {
 		SomeIP::RequestID requestID = clientIdentifier;
@@ -221,6 +214,10 @@ public:
 		return answer;
 	}
 
+	virtual SomeIPReturnCode connect() {
+		return SomeIPReturnCode::OK;
+	}
+
 	SomeIPReturnCode sendMessage(const OutputMessage& msg) override {
 
 		if ( !isConnected() )
@@ -233,7 +230,7 @@ public:
 
 	IPCOperationReport sendMessage(const SomeIP::SomeIPHeader& header, const void* payload, size_t payloadLength);
 
-	void onNotificationSubscribed(SomeIP::ServiceIDs serviceID, SomeIP::MemberID memberID) override;
+	void onNotificationSubscribed(Service& serviceID, SomeIP::MemberID memberID) override;
 
 	void onCongestionDetected() override {
 		m_outputDataWatcher->enable();
@@ -280,7 +277,7 @@ private:
 	}
 
 	std::string toString() const {
-		return StringBuilder() << "TCP Client with address: " << m_serverIdentifier.toString();
+		return StringBuilder() << "TCP Client fd:" << getFileDescriptor();
 	}
 
 	bool detectReboot(const SomeIP::SomeIPServiceDiscoveryHeader& serviceDiscoveryHeader, bool isMulticast) {
@@ -289,7 +286,6 @@ private:
 	}
 
 private:
-	IPv4TCPEndPoint m_serverIdentifier;
 
 	MyInputMessage m_currentIncomingMessage;
 
@@ -314,6 +310,34 @@ private:
 	ServiceInstanceNamespace& m_instanceNamespace;
 
 	std::vector<InputMessage> m_messageQueue;
+
+};
+
+
+class RemoteTCPClient : public TCPClient {
+
+public:
+
+	/**
+	 * Constructor used to register a host offering one or several services
+	 */
+	RemoteTCPClient(Dispatcher& dispatcher, TCPManager& tcpManager, MainLoopContext& mainContext, IPv4TCPEndPoint server) :
+		TCPClient(dispatcher, tcpManager, mainContext, m_ownInstanceNamespace) , m_serverIdentifier(server) {
+	}
+
+	IPv4TCPEndPoint& getServerID() {
+		return m_serverIdentifier;
+	}
+
+	std::string toString() const {
+		return StringBuilder() << TCPClient::toString() << "with address: " << m_serverIdentifier.toString();
+	}
+
+	SomeIPReturnCode connect() override;
+
+private:
+	ServiceInstanceNamespace m_ownInstanceNamespace;
+	IPv4TCPEndPoint m_serverIdentifier;
 
 };
 

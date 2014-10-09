@@ -38,6 +38,15 @@ public:
 		return server->handleNewConnection();
 	}
 
+	bool isServiceRegistered(const Service& service) {
+		return (getServiceInstanceNamespace().count(service.getServiceIDs().serviceID) != 0) &&
+				(getServiceInstanceNamespace().at(service.getServiceIDs().serviceID)->getServiceIDs().instanceID == service.getServiceIDs().instanceID);
+	}
+
+	bool isServiceRegistered(ServiceID serviceID) {
+		return (getServiceInstanceNamespace().count(serviceID) != 0);
+	}
+
 	void createNewClientConnection(int fileDescriptor) override;
 
 	void onClientDisconnected(const Client& client) {
@@ -56,12 +65,29 @@ public:
 
 	SomeIPReturnCode init(int portCount = 1);
 
+	const ServiceInstanceNamespace& getServiceInstanceNamespace() const {
+		return m_instanceNamespace;
+	}
+
+	void addService(const Service& service) {
+		assert(m_instanceNamespace.count(service.getServiceIDs().serviceID) == 0);
+		m_instanceNamespace[service.getServiceIDs().serviceID] = &service;
+		log_debug() << m_instanceNamespace;
+	}
+
+	void removeService(const Service& service) {
+		assert(m_instanceNamespace.count(service.getServiceIDs().serviceID) == 1);
+		m_instanceNamespace.erase(service.getServiceIDs().serviceID);
+		log_debug() << m_instanceNamespace;
+	}
+
 private:
 	std::vector<IPv4TCPEndPoint> m_activePorts;
 	Dispatcher& m_dispatcher;
 	TCPManager& m_tcpManager;
 	TCPPort m_port = -1;
 	MainLoopContext& m_mainContext;
+	ServiceInstanceNamespace m_instanceNamespace;
 
 };
 

@@ -90,7 +90,7 @@ SomeIPReturnCode ClientDaemonConnection::registerService(SomeIP::ServiceIDs serv
 	if ( returnMessage.isError() )
 		return SomeIPReturnCode::ERROR;
 	else {
-		log_info("Successfully registered service 0x%X", serviceID);
+		log_info() << "Successfully registered service " << serviceID.toString();
 		return SomeIPReturnCode::OK;
 	}
 }
@@ -103,7 +103,7 @@ SomeIPReturnCode ClientDaemonConnection::unregisterService(SomeIP::ServiceIDs se
 	if ( returnMessage.isError() )
 		return SomeIPReturnCode::ERROR;
 	else {
-		log_info("Successfully unregistered service 0x%X", serviceID);
+		log_info() << "Successfully unregistered service " << serviceID.toString();
 		return SomeIPReturnCode::OK;
 	}
 }
@@ -272,7 +272,7 @@ void ClientDaemonConnection::handleConstIncomingIPCMessage(const IPCInputMessage
 	case IPCMessageType::SERVICES_REGISTERED : {
 		while ( reader.remainingBytesCount() >= sizeof(SomeIP::ServiceID) ) {
 			SomeIP::ServiceIDs serviceID;
-			reader >> serviceID.serviceID;
+			reader >> serviceID.serviceID >> serviceID.instanceID;
 			onServiceRegistered(serviceID);
 		}
 	}
@@ -281,7 +281,7 @@ void ClientDaemonConnection::handleConstIncomingIPCMessage(const IPCInputMessage
 	case IPCMessageType::SERVICES_UNREGISTERED : {
 		while ( reader.remainingBytesCount() >= sizeof(SomeIP::ServiceID) ) {
 			SomeIP::ServiceIDs serviceID;
-			reader >> serviceID.serviceID;
+			reader >> serviceID.serviceID >> serviceID.instanceID ;
 			onServiceUnregistered(serviceID);
 		}
 	}
@@ -356,7 +356,6 @@ void ClientDaemonConnection::onCongestionDetected() {
 	fd.fd = getFileDescriptor();
 	fd.events = POLLIN | POLLOUT | POLLHUP;
 	poll(&fd, 1, 1000);
-
 }
 
 void ClientDaemonConnection::onDisconnected() {

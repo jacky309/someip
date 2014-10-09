@@ -11,7 +11,7 @@
 
 static const SomeIP::ServiceIDs TEST_SERVICE_ID(0x543F, 0x3);
 
-static const int TIMEOUT = 200;
+static const int TIMEOUT = 2000;
 static const size_t MESSAGE_SIZE = 65536;
 
 void sendMessageWithExpectedAnswer(OutputMessage& outputMsg, OutputMessage& expectedMsg) {
@@ -102,6 +102,46 @@ struct AutoconnectConnection {
 
 };
 
+/**
+ * Send a message to ourself, using two distinct connections.
+ */
+TEST_F(SomeIPTest, SendSelfMultipleInstances) {
+
+	using namespace SomeIPClient;
+
+	ClientDaemonConnection connection;
+
+	OutputMessage testOutputMsg = createTestOutputMessage(TEST_SERVICE_ID, SomeIP::MessageType::REQUEST,
+							      MESSAGE_SIZE);
+
+	TestSink sink(
+		[&](const InputMessage &msg) {
+			EXPECT_TRUE(msg == testOutputMsg);
+			OutputMessage returnMessage = createMethodReturn(msg);
+			returnMessage.getPayloadOutputStream().writeRawData( msg.getPayload(), msg.getPayloadLength() );
+			connection.sendMessage(returnMessage);
+		});
+
+	GlibMainLoopInterfaceImplementation glibIntegration;
+	connection.setMainLoopInterface(glibIntegration);
+	connection.connect(sink);
+
+	connection.registerService(TEST_SERVICE_ID);
+	auto TEST_SERVICE_ID2 = TEST_SERVICE_ID;
+	TEST_SERVICE_ID2.instanceID++;
+
+	connection.registerService(TEST_SERVICE_ID2);
+
+	OutputMessage expectedMsg = testOutputMsg;
+	expectedMsg.getHeader().setMessageType(SomeIP::MessageType::RESPONSE);
+
+	sendMessageWithExpectedAnswer(testOutputMsg, expectedMsg);
+
+	EXPECT_EQ(sink.getReceivedMessageCount(), 1);
+
+//	exit(1);
+
+}
 
 /**
  * Send a message to ourself, using two distinct connections.

@@ -125,4 +125,21 @@ void SomeIPRuntime::registerProxyFactoryMethod(const std::string& interfaceID, P
 	registeredProxyFactoryFunctions.insert({interfaceID, function});
 }
 
+
+std::shared_ptr<Factory> SomeIPRuntime::doCreateFactory(std::shared_ptr<MainLoopContext> mainLoopContext,
+					 const std::string& factoryName,
+					 const bool nullOnInvalidName) {
+//		m_connection = std::make_shared<SomeIPConnection>( new SomeIPClient::ClientDaemonConnection() );
+
+	m_connection = std::make_shared<SomeIPConnection>();
+
+//		MainLoopInterface* mainLoop = new CommonAPIMainLoopInterface(mainLoopContext);
+
+//	m_connection->setConnection(new SomeIPClient::DaemonLessClient(*m_connection));
+	m_connection->setConnection(new SomeIPClient::ClientDaemonConnection());
+
+	return createFactory(mainLoopContext);
+}
+
+
 }

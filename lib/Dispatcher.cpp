@@ -54,7 +54,7 @@ void Dispatcher::dispatchMessage(DispatcherMessage& msg, Client& client) {
 
 		// service request
 		for (auto& service : m_services) {
-			if ( service->matchesRequest( msg.getHeader() ) ) {
+			if ( service->matchesRequest( msg ) ) {
 				service->sendMessage(msg);
 				bServiceFound = true;
 			}
@@ -231,7 +231,7 @@ void Service::sendMessage(const DispatcherMessage& msg) {
 
 void Service::onNotificationSubscribed(SomeIP::MemberID memberID) {
 	if (getClient() != nullptr)
-		getClient()->onNotificationSubscribed(getServiceIDs(), memberID);
+		getClient()->onNotificationSubscribed(*this, memberID);
 }
 
 void Notification::unsubscribe(Client& clientToUnsubscribe) {

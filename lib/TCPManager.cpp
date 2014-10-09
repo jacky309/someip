@@ -4,10 +4,10 @@
 
 namespace SomeIP_Dispatcher {
 
-TCPClient& TCPManager::getOrCreateClient(const IPv4TCPEndPoint& serverID) {
+RemoteTCPClient& TCPManager::getOrCreateClient(const IPv4TCPEndPoint& serverID) {
 
 	// Check whether we already know that server
-	TCPClient* client = nullptr;
+	RemoteTCPClient* client = nullptr;
 	for (auto existingClient : m_clients) {
 		if ( serverID == existingClient->getServerID() ) {
 			client = existingClient;
@@ -16,7 +16,7 @@ TCPClient& TCPManager::getOrCreateClient(const IPv4TCPEndPoint& serverID) {
 
 	// no matching client found => create a new one
 	if (client == nullptr) {
-		client = new TCPClient(m_dispatcher, serverID, *this, m_mainLoopContext, m_namespace);
+		client = new RemoteTCPClient(m_dispatcher, *this, m_mainLoopContext, serverID);
 		m_clients.push_back(client);
 		client->registerClient();
 	}
@@ -39,7 +39,7 @@ void TCPManager::onRemoteServiceAvailable(const SomeIPServiceDiscoveryServiceEnt
 	}
 
 	// Check whether we already know that server
-	TCPClient& client = getOrCreateClient(serverID);
+	RemoteTCPClient& client = getOrCreateClient(serverID);
 
 	bool rebootDetected = client.detectReboot(message, true);
 

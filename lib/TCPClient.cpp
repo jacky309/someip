@@ -86,7 +86,7 @@ void TCPClient::onRemoteServiceUnavailable(const SomeIPServiceDiscoveryServiceEn
 	m_tcpManager.onRemoteServiceUnavailable(serviceEntry, address, message);
 }
 
-void TCPClient::connect() {
+SomeIPReturnCode RemoteTCPClient::connect() {
 
 	int fileDescriptor;
 
@@ -107,12 +107,14 @@ void TCPClient::connect() {
 	/* Map TCP transport protocol name to protocol number. */
 	if ( ( ptrp = getprotobyname("tcp") ) == 0 ) {
 		log_error() << "Failed to connect to server. Cannot map \"tcp\" to protocol number";
+		return SomeIPReturnCode::ERROR;
 	}
 
 	/* Create a socket. */
 	fileDescriptor = socket(AF_INET, SOCK_STREAM, ptrp->p_proto);
 	if (fileDescriptor < 0) {
 		log_error( ) << "Failed to connect to server. Socket creation failed. Error : " << strerror(errno);
+		return SomeIPReturnCode::ERROR;
 	}
 
 	enableNoDelay(fileDescriptor);
@@ -120,11 +122,14 @@ void TCPClient::connect() {
 	/* Connect the socket to the specified server. */
 	if (::connect( fileDescriptor, (struct sockaddr*) &sad, sizeof(sad) ) < 0) {
 		log_error( ) << "Failed to connect to server : " << m_serverIdentifier.toString();
+		return SomeIPReturnCode::ERROR;
 	}
 
 	setFileDescriptor(fileDescriptor);
 
 	setupConnection();
+
+	return SomeIPReturnCode::OK;
 }
 
 
@@ -165,15 +170,17 @@ IPCOperationReport TCPClient::sendMessage(const SomeIP::SomeIPHeader& header, co
 	return v;
 }
 
-void TCPClient::onNotificationSubscribed(SomeIP::ServiceIDs serviceID, SomeIP::MemberID memberID) {
+void TCPClient::onNotificationSubscribed(Service& service, SomeIP::MemberID memberID) {
 
-	auto& instances = m_tcpManager.getServiceNamespace();
+	auto& instances = m_instanceNamespace;
+
+	const auto serviceID = service.getServiceIDs();
 
 	if (instances.count(serviceID.serviceID) != 0) {
-		assert(	instances[serviceID.serviceID] == serviceID.instanceID ); // TODO : handle multiple instance
+		assert(	instances[serviceID.serviceID]->getServiceIDs().instanceID == serviceID.instanceID ); // TODO : handle multiple instance
 	}
 
-	instances[serviceID.serviceID] = serviceID.instanceID;
+	instances[serviceID.serviceID] = &service;
 
 	if ( !isConnected() ) {
 		connect();

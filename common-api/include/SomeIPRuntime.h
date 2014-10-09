@@ -71,18 +71,7 @@ public:
 
 	std::shared_ptr<Factory> doCreateFactory(std::shared_ptr<MainLoopContext> mainLoopContext,
 						 const std::string& factoryName,
-						 const bool nullOnInvalidName) override {
-//		m_connection = std::make_shared<SomeIPConnection>( new SomeIPClient::ClientDaemonConnection() );
-
-		m_connection = std::make_shared<SomeIPConnection>();
-
-//		MainLoopInterface* mainLoop = new CommonAPIMainLoopInterface(mainLoopContext);
-
-//		m_connection->setConnection(new SomeIPClient::DaemonLessClient(*m_connection));
-		m_connection->setConnection(new SomeIPClient::ClientDaemonConnection());
-
-		return createFactory(mainLoopContext);
-	}
+						 const bool nullOnInvalidName) override;
 
 	std::shared_ptr<CommonAPI::ServicePublisher> getServicePublisher() override {
 		return m_connection;
