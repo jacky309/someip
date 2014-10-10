@@ -24,6 +24,12 @@ class ServiceAnnouncer : public ServiceRegistrationListener {
 
 	LOG_DECLARE_CLASS_CONTEXT("SeAn", "Service announcer");
 
+	struct AnnouncementChannel {
+		int broadcastFileDescriptor;
+		struct sockaddr_in addr;
+		IPV4Address address;
+	};
+
 public:
 	ServiceAnnouncer(Dispatcher& dispatcher, TCPManager& tcpServer, MainLoopContext& mainLoopContext) :
 		m_dispatcher(dispatcher), m_timer(
@@ -48,17 +54,16 @@ public:
 
 	void onServiceUnregistered(const Service& service);
 
-	void sendMessage(const SomeIPServiceDiscoveryMessage& serviceDiscoveryMessage);
+	void sendMessage(const SomeIPServiceDiscoveryMessage& serviceDiscoveryMessage, AnnouncementChannel& channel);
 
 	SomeIPReturnCode init();
 
 private:
-	int m_broadcastFileDescriptor;
-	struct sockaddr_in addr;
-
 	Dispatcher& m_dispatcher;
 
 	std::unique_ptr<TimeOutMainLoopHook> m_timer;
+
+	std::vector<AnnouncementChannel> m_channels;
 
 	TCPManager& m_tcpServer;
 

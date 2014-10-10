@@ -24,7 +24,7 @@ public:
 	~TCPManager() {
 	}
 
-	RemoteTCPClient& getOrCreateClient(const IPv4TCPEndPoint& serverID);
+	RemoteTCPClient* getOrCreateClient(const IPv4TCPEndPoint& serverID);
 
 	void onRemoteServiceAvailable(const SomeIPServiceDiscoveryServiceEntry& serviceEntry,
 				      const IPv4ConfigurationOption* address,
@@ -36,6 +36,12 @@ public:
 
 	SomeIPReturnCode init(int portCount = 1) {
 		return SomeIPReturnCode::OK;
+	}
+
+	void onClientReboot(RemoteTCPClient& client) {
+		client.disconnect();
+		client.unregisterClient();
+		removeFromVector(m_clients, &client);
 	}
 
 	/**
@@ -53,7 +59,7 @@ public:
 	/**
 	 * Returns a server which is available to publish the service given as parameter
 	 */
-	TCPServer& getFreeEndPoint(const Service& service) {
+	TCPServer* bindService(const Service& service) {
 
 		// Search for a server which has no service currently registered with the serviceID
 		TCPServer* availableServer = nullptr;
@@ -64,14 +70,14 @@ public:
 
 		if (availableServer == nullptr) {
 			availableServer = new TCPServer(m_dispatcher, *this, m_basePort, m_mainLoopContext);
-			auto code = availableServer->init(m_basePort);
+			auto code = availableServer->init(m_portCount);
 			assert(!isError(code));
 			m_servers.push_back(availableServer);
 		}
 
 		availableServer->addService(service);
 
-		return *availableServer;
+		return availableServer;
 	}
 
 	const std::vector<IPV4Address> getIPAddresses() const {
@@ -84,6 +90,7 @@ private:
 	MainLoopContext& m_mainLoopContext;
 	std::vector<TCPServer*> m_servers;
 	TCPPort m_basePort = -1;
+	int m_portCount = 10;
 
 };
 

@@ -151,16 +151,9 @@ public:
 
 	void onServiceUnavailable(ServiceIDs serviceID) {
 		unregisterService(serviceID);
-		assert(m_instanceNamespace.count(serviceID.serviceID) == 1);
+//		assert(m_instanceNamespace.count(serviceID.serviceID) == 1);
 		m_instanceNamespace.erase(serviceID.serviceID);
 		log_debug() << m_instanceNamespace;
-	}
-
-	void onRebootDetected() {
-		disconnect();
-		unregisterClient();             // TODO: make sure the instance won't be destroyed by the dispatcher
-
-		registerClient();
 	}
 
 	void onDisconnected() override {

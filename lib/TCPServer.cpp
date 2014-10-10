@@ -24,8 +24,10 @@ std::vector<IPV4Address> TCPServer::getAllIPAddresses() {
 
 			if (family == AF_INET) {
 
-				auto* p = reinterpret_cast<uint8_t*>(&( (struct sockaddr_in*) ifa->ifa_addr )->sin_addr);
-				IPV4Address address(p);
+//				auto* mask = reinterpret_cast<uint8_t*>(&( (struct sockaddr_in*) ifa->ifa_addr )->sin_addr);
+				IPV4Address address(((struct sockaddr_in*) ifa->ifa_addr )->sin_addr);
+				address.setInterfaceName(ifa->ifa_name);
+//				address.setMask(mask);
 				if ( !address.isLocalAddress() )
 					ipAddresses.push_back(address);
 

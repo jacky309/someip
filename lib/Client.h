@@ -40,6 +40,7 @@ public:
 	}
 
 	virtual ~Client() {
+		m_isValid = false;
 	}
 
 	void unregisterClient();
@@ -120,6 +121,8 @@ private:
 	unsigned int receivedBytesCount = 0;
 
 	bool m_registered = false;
+
+	bool m_isValid = true;
 
 };
 

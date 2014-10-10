@@ -13,6 +13,9 @@ namespace SomeIP_Lib {
 
 static const uint16_t SERVICE_DISCOVERY_UDP_PORT = 10102;
 
+// TODO : What should be the broadcast address ?
+static constexpr const char* SERVICE_DISCOVERY_BROADCAST_ADDRESS = "226.1.1.1";
+
 struct Serializable {
 	virtual ~Serializable() {
 	}
@@ -46,14 +49,17 @@ public:
 
 	IPv4ConfigurationOption(NetworkDeserializer& deserializer) {
 		m_type = Type::IPv4Option;
-		deserializer >> m_address.numbers[0] >> m_address.numbers[1] >> m_address.numbers[2] >> m_address.numbers[3];
+		std::array<uint8_t,4> address;
+		deserializer >> address[0] >> address[1] >> address[2] >> address[3];
 		deserializer >> reserved;
 		deserializer.readEnum(m_protocol);
 		deserializer >> m_port;
+		m_address = address;
 	}
 
 	void serialize(NetworkSerializer& serializer) const override {
-		serializer << m_address.numbers[0] << m_address.numbers[1] << m_address.numbers[2] << m_address.numbers[3];
+		auto address = m_address.toArray();
+		serializer << address[0] << address[1] << address[2] << address[3];
 		serializer << reserved;
 		serializer.writeEnum(m_protocol);
 		serializer << m_port;

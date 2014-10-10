@@ -99,10 +99,8 @@ SomeIPReturnCode RemoteTCPClient::connect() {
 	sad.sin_family = AF_INET; /* set family to Internet     */
 	sad.sin_port = htons(m_serverIdentifier.m_port);
 
-	/* Convert host name to equivalent IP address and copy to sad. */
-	memcpy( &(sad.sin_addr), &m_serverIdentifier.m_address, sizeof(sad.sin_addr) );
-
-	//		sad.sin_addr;
+	auto addr = m_serverIdentifier.m_address.getInAddr();
+	memcpy( &(sad.sin_addr), &addr, sizeof(sad.sin_addr) );
 
 	/* Map TCP transport protocol name to protocol number. */
 	if ( ( ptrp = getprotobyname("tcp") ) == 0 ) {
@@ -118,6 +116,8 @@ SomeIPReturnCode RemoteTCPClient::connect() {
 	}
 
 	enableNoDelay(fileDescriptor);
+
+	log_debug() << "Connecting to " << m_serverIdentifier.toString();
 
 	/* Connect the socket to the specified server. */
 	if (::connect( fileDescriptor, (struct sockaddr*) &sad, sizeof(sad) ) < 0) {

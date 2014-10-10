@@ -40,6 +40,13 @@ SomeIPReturnCode RemoteServiceListener::init() {
 	addr.sin_port = htons(SERVICE_DISCOVERY_UDP_PORT);
 
 	if (::bind( m_broadcastFileDescriptor, (struct sockaddr*) &addr, sizeof(addr) ) == 0) {
+		struct ip_mreq group;
+		group.imr_multiaddr.s_addr = inet_addr(SERVICE_DISCOVERY_BROADCAST_ADDRESS);
+		group.imr_interface.s_addr = INADDR_ANY; //inet_addr(f);
+		if (setsockopt(m_broadcastFileDescriptor, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *) &group, sizeof(group)) < 0) {
+			log_error() << "Adding multicast group error";
+			return SomeIPReturnCode::ERROR;
+		}
 
 		pollfd fd;
 		fd.fd = m_broadcastFileDescriptor;

@@ -99,6 +99,9 @@ IPCOperationReport UDSConnection::readNonBlocking(IPCInputMessage& msg) {
 }
 
 IPCOperationReport SocketStreamConnection::writeBytesBlocking(const void* buffer, ssize_t length) {
+
+	assert(getFileDescriptor() != UNINITIALIZED_FILE_DESCRIPTOR);
+
 	increaseWrittenBytesCounter(length);
 
 	ssize_t sentBytes = 0;
@@ -203,6 +206,9 @@ IPCOperationReport UDSConnection::writeNonBlocking(const IPCMessage& msg) {
 }
 
 IPCOperationReport SocketStreamConnection::writeBytesNonBlocking(const void* data, ssize_t length) {
+
+	assert(getFileDescriptor() != UNINITIALIZED_FILE_DESCRIPTOR);
+
 	increaseWrittenBytesCounter(length);
 
 	const char* dataAsChar = reinterpret_cast<const char*>(data);

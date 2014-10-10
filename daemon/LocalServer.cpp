@@ -19,7 +19,7 @@ void LocalServer::init(const char* socketPath) {
 
 	if (systemdPassedSockets == 1) {
 		// we got a file descriptor from systemd => use it instead of creating a new one
-		m_fileDescriptor = SD_LISTEN_FDS_START;
+		setFileDescriptor(SD_LISTEN_FDS_START);
 		log_info() << "Got a file descriptor from systemd";
 	} else
 		initServerSocket(socketPath);
