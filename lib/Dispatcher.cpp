@@ -221,8 +221,8 @@ std::string Notification::toString() const {
 }
 
 std::string Service::toString() const {
-	return logging::StringBuilder() << "Service ServiceID: "<< getServiceIDs().toString() << ", " <<
-			(m_client != nullptr) ? m_client->toString() : "Unknown client";
+	return (logging::StringBuilder() << "Service ServiceID: "<< getServiceIDs().toString() <<
+			", " << ( (m_client != nullptr) ? m_client->toString() : "Unknown client") );
 }
 
 void Service::sendMessage(const DispatcherMessage& msg) {
