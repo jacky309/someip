@@ -5,7 +5,7 @@
 
 #include "SomeIPProxy.h"
 #include "SomeIP-clientLib.h"
-#include "SomeIP-standaloneClientLib.h"
+//#include "SomeIP-standaloneClientLib.h"
 
 #include <map>
 
