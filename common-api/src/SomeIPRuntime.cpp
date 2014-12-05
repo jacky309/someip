@@ -10,7 +10,7 @@ namespace SomeIP {
 
 CommonAPI::MiddlewareInfo middlewareInfo = CommonAPI::SomeIP::SomeIPRuntime::middlewareInfo_;
 
-const CommonAPI::MiddlewareInfo SomeIPRuntime::middlewareInfo_( "SomeIP", &SomeIPRuntime::getInstanceAsGenericRuntime,
+const CommonAPI::MiddlewareInfo SomeIPRuntime::middlewareInfo_( SomeIPRuntime::ID, &SomeIPRuntime::getInstanceAsGenericRuntime,
 								Version(1, 0) );
 
 struct SomeIPRegistration {

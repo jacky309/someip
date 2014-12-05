@@ -116,12 +116,12 @@ void SomeIPStubAdapter::deinit() {
 }
 
 void SomeIPRuntime::registerAdapterFactoryMethod(const std::string& interfaceID, AdapterFactoryFunction function) {
-	printf("SomeIP: Registering stubadapter factory for interface: %s", interfaceID.c_str());
+	printf("SomeIP: Registering stubadapter factory for interface: %s\n", interfaceID.c_str());
 	registeredAdapterFactoryFunctions.insert({interfaceID, function});
 }
 
 void SomeIPRuntime::registerProxyFactoryMethod(const std::string& interfaceID, ProxyFactoryFunction function) {
-	printf("SomeIP: Registering proxy factory for interface: %s", interfaceID.c_str());
+	printf("SomeIP: Registering proxy factory for interface: %s\n", interfaceID.c_str());
 	registeredProxyFactoryFunctions.insert({interfaceID, function});
 }
 

@@ -19,7 +19,6 @@ add_library( someip_lib SHARED
 	ipc/IPC.cpp
 	Message.cpp
 	lib.cpp
-	
 	Client.cpp
 	Dispatcher.cpp
 	TCPManager.cpp
@@ -27,7 +26,6 @@ add_library( someip_lib SHARED
 	TCPServer.cpp
 	RemoteServiceListener.cpp
 	ServiceAnnouncer.cpp
-	
 )
 
 message("LOGGING_LIBRARIES : ${LOGGING_LIBRARIES}")

@@ -77,11 +77,54 @@ add_subdirectory (lib)
 add_subdirectory (clientLib)
 add_subdirectory (utilLib)
 
+OPTION( ENABLE_TEST "Enable testing" OFF)
+
 add_subdirectory (common-api)
 
 if (ENABLE_TEST)
+	
+	include( CTest )
+	
+	macro(add_gtest_test testName files libraries)
+	
+		if (NOT DEFINED GTEST_DIR)
+			set(GTEST_DIR $ENV{GTEST_DIR})
+		endif()
+	
+		if (DEFINED GTEST_DIR)
+		
+			message("Google test found in ${GTEST_DIR}")
+		
+			include_directories(${GTEST_DIR}/include)
+			link_directories(${GTEST_DIR}/lib/.libs)
+		
+			add_executable(${testName}
+				${files}
+			)
+		
+			target_link_libraries(${testName} 
+				gtest
+				${libraries}
+			)
+		
+			INSTALL(TARGETS ${testName}
+			  DESTINATION bin/test
+			)
+		
+			add_test(
+			    NAME ${testName}
+			    COMMAND ${testName}
+			)
+	
+		else()
+			message("Google test not found")
+		endif()
+	
+	endmacro()
+
     enable_testing()
-	add_subdirectory (test)
+	add_subdirectory(test)
+	add_subdirectory(common-api/test)
 endif()
 
 if (ENABLE_DOC)

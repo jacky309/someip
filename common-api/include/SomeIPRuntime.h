@@ -57,6 +57,9 @@ typedef std::shared_ptr<SomeIPProxy> (*ProxyFactoryFunction)(SomeIPConnection& s
 class SomeIPRuntime : public Runtime {
 
 public:
+
+	static constexpr const char* ID = "SomeIP";
+
 	SomeIPRuntime() {
 	}
 

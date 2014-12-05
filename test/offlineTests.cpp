@@ -1,4 +1,4 @@
-#include "CommonAPI-SomeIP.h"
+//#include "CommonAPI-SomeIP.h"
 #include "SomeIP-Serialization.h"
 #include "SomeIP-clientLib.h"
 
