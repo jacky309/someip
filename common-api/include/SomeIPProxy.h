@@ -31,6 +31,8 @@ public:
 
 	void onListenerAdded(const CancellableListener& listener) override {
 		m_availabilityListeners.push_back(listener);
+
+		// That is what the DBUS backend also does => notify immediately if the proxy is already available... That should be changed
 		if ( isAvailable() )
 			listener(AvailabilityStatus::AVAILABLE);
 	}

@@ -80,10 +80,6 @@ SomeIPReturnCode ServiceAnnouncer::init() {
 	for (auto& address : interfaces) {
 
 		struct in_addr localInterface;
-//		struct sockaddr_in groupSock;
-//		int sd;
-		char databuf[1024] = "Multicast test message lol!";
-		int datalen = sizeof(databuf);
 
 		AnnouncementChannel channel;
 		channel.address = address;
