@@ -1,7 +1,6 @@
 /*-*- Mode: C; c-basic-offset: 8; indent-tabs-mode: nil -*-*/
 
-#ifndef foosddaemonhfoo
-#define foosddaemonhfoo
+#pragma once
 
 /***
   Copyright 2010 Lennart Poettering
@@ -29,10 +28,6 @@
 
 #include <sys/types.h>
 #include <inttypes.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*
   Reference implementation of a few systemd related interfaces for
@@ -249,9 +244,3 @@ int sd_notifyf(int unset_environment, const char* format, ...) _sd_printf_attr_(
   See sd_booted(3) for more information.
 */
 int sd_booted(void) _sd_hidden_;
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif

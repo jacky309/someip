@@ -17,3 +17,4 @@ install(FILES ${GENERATED_OUTPUT_JAR} DESTINATION ${COMMON_API_CODEGEN_JAR_DESTI
 # Install dependencies
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/org.genivi.commonapi.someip/target/dependencies/ DESTINATION ${COMMON_API_CODEGEN_JAR_DESTINATION_PATH})
 
+export_maven_repository(someip)

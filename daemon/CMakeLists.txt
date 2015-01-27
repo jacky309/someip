@@ -6,7 +6,7 @@ add_executable( someip_dispatcher
 	Activation.cpp
 	LocalServer.cpp
 	LocalClient.cpp
-	sd-daemon.c
+	sd-daemon.cpp
 )
 
 TARGET_LINK_LIBRARIES( someip_dispatcher
