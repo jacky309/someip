@@ -14,7 +14,7 @@ namespace SomeIP_Lib {
 static const uint16_t SERVICE_DISCOVERY_UDP_PORT = 10102;
 
 // TODO : What should be the broadcast address ?
-static constexpr const char* SERVICE_DISCOVERY_BROADCAST_ADDRESS = "226.1.1.1";
+static constexpr const char* SERVICE_DISCOVERY_MULTICAST_ADDRESS = "226.1.1.1";
 
 struct Serializable {
 	virtual ~Serializable() {

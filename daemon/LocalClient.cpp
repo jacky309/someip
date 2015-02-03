@@ -144,7 +144,7 @@ void LocalClient::initConnection() {
 		pollfd fd;
 		fd.fd = getFileDescriptor();
 		fd.events = POLLIN;
-		m_inputDataWatcher = m_mainLoopContext.addWatch([&] () {
+		m_inputDataWatcher = m_mainLoopContext.addFileDescriptorWatch([&] () {
 									return onIncomingDataAvailable();
 								}, fd);
 		m_inputDataWatcher->enable();
@@ -154,7 +154,7 @@ void LocalClient::initConnection() {
 		pollfd fd;
 		fd.fd = getFileDescriptor();
 		fd.events = POLLOUT;
-		m_outputDataWatcher = m_mainLoopContext.addWatch([&] () {
+		m_outputDataWatcher = m_mainLoopContext.addFileDescriptorWatch([&] () {
 									 return onWritingPossible();
 								 }, fd);
 	}
@@ -163,7 +163,7 @@ void LocalClient::initConnection() {
 		pollfd fd;
 		fd.fd = getFileDescriptor();
 		fd.events = POLLHUP;
-		m_disconnectionWatcher = m_mainLoopContext.addWatch([&] () {
+		m_disconnectionWatcher = m_mainLoopContext.addFileDescriptorWatch([&] () {
 									    disconnect();
 								    }, fd);
 		m_disconnectionWatcher->enable();

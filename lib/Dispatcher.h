@@ -140,7 +140,7 @@ class Dispatcher {
 
 public:
 	Dispatcher(MainLoopContext& mainLoopContext) :
-		m_idleCallback( mainLoopContext.addIdleCallback([&]() {
+		m_idleCallback( mainLoopContext.addIdle([&]() {
 									cleanDisconnectedClients();
 									return false;
 								}) ), m_pingTimer( mainLoopContext.addTimeout([&]() {

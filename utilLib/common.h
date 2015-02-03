@@ -209,7 +209,7 @@ private:
 };
 
 template<typename LogDataType, typename =
-		 typename std::enable_if<std::is_base_of<logging::LogDataCommon, LogDataType>::value>::type>
+		 typename std::enable_if<std::is_base_of<logging::LogData, LogDataType>::value>::type>
 LogDataType& operator<<(LogDataType& log, const ByteArray& s) {
 	log << s.toString();
 	return log;

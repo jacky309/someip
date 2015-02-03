@@ -92,7 +92,7 @@ bool WellKnownServiceManager::isBlackListed(const IPv4TCPEndPoint& server, Servi
 	// ignore our own services
 	for ( auto service : m_services )
 		if ( service->getServiceIDs() == serviceID ) {
-			log_debug() << "Local well knownservice with this ID" << serviceID.toString();
+			log_debug() << "Local well known service with this ID" << serviceID.toString();
 			return true;
 		}
 

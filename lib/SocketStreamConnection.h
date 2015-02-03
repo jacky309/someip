@@ -242,7 +242,7 @@ protected:
 		pollfd fd;
 		fd.fd = m_fileDescriptor;
 		fd.events = POLLIN;
-		m_connectionWatcher = m_mainLoopInterface.addWatch([&] () {
+		m_connectionWatcher = m_mainLoopInterface.addFileDescriptorWatch([&] () {
 			handleNewConnection();
 								}, fd);
 		m_connectionWatcher->enable();

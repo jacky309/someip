@@ -127,7 +127,7 @@ public:
 		getConnection().disconnect();
 	}
 
-	std::unique_ptr<IdleMainLoopHook> addIdleCallback(IdleMainLoopHook::CallBackFunction callBackFunction) override {
+	std::unique_ptr<IdleMainLoopHook> addIdle(IdleMainLoopHook::CallBackFunction callBackFunction) override {
 		return std::unique_ptr<IdleMainLoopHook>( new CommonAPIIdleMainLoopHook(callBackFunction, m_mainLoopContext) );
 	}
 
@@ -138,7 +138,7 @@ public:
 											      m_mainLoopContext) );
 	}
 
-	std::unique_ptr<WatchMainLoopHook> addWatch(WatchMainLoopHook::CallBackFunction callBackFunction,
+	std::unique_ptr<WatchMainLoopHook> addFileDescriptorWatch(WatchMainLoopHook::CallBackFunction callBackFunction,
 						    const pollfd& fd) override {
 		return std::unique_ptr<WatchMainLoopHook>( new CommonAPIWatchMainLoopHook(callBackFunction, fd, m_mainLoopContext) );
 	}

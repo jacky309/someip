@@ -41,7 +41,7 @@ SomeIPReturnCode RemoteServiceListener::init() {
 
 	if (::bind( m_broadcastFileDescriptor, (struct sockaddr*) &addr, sizeof(addr) ) == 0) {
 		struct ip_mreq group;
-		group.imr_multiaddr.s_addr = inet_addr(SERVICE_DISCOVERY_BROADCAST_ADDRESS);
+		group.imr_multiaddr.s_addr = inet_addr(SERVICE_DISCOVERY_MULTICAST_ADDRESS);
 		group.imr_interface.s_addr = INADDR_ANY; //inet_addr(f);
 		if (setsockopt(m_broadcastFileDescriptor, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *) &group, sizeof(group)) < 0) {
 			log_error() << "Adding multicast group error";
@@ -51,7 +51,7 @@ SomeIPReturnCode RemoteServiceListener::init() {
 		pollfd fd;
 		fd.fd = m_broadcastFileDescriptor;
 		fd.events = POLLIN;
-		m_inputDataWatcher = m_mainLoopContext.addWatch([&] () {
+		m_inputDataWatcher = m_mainLoopContext.addFileDescriptorWatch([&] () {
 									handleMessage();
 								}, fd);
 		m_inputDataWatcher->enable();

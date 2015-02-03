@@ -92,7 +92,7 @@ SomeIPReturnCode ServiceAnnouncer::init() {
 
 		memset((char *) &groupSock, 0, sizeof(groupSock));
 		groupSock.sin_family = AF_INET;
-		groupSock.sin_addr.s_addr = inet_addr(SERVICE_DISCOVERY_BROADCAST_ADDRESS);
+		groupSock.sin_addr.s_addr = inet_addr(SERVICE_DISCOVERY_MULTICAST_ADDRESS);
 		groupSock.sin_port = htons(SERVICE_DISCOVERY_UDP_PORT);
 
 		/* Set local interface for outbound multicast datagrams. */

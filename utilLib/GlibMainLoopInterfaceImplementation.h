@@ -140,7 +140,7 @@ private:
 		CallBackFunction m_callBack;
 	};
 
-	std::unique_ptr<IdleMainLoopHook> addIdleCallback(IdleMainLoopHook::CallBackFunction callBackFunction) override {
+	std::unique_ptr<IdleMainLoopHook> addIdle(IdleMainLoopHook::CallBackFunction callBackFunction) override {
 		return std::unique_ptr<IdleMainLoopHook>( new GLibIdle(callBackFunction, m_context) );
 	}
 
@@ -149,7 +149,7 @@ private:
 		return std::unique_ptr<TimeOutMainLoopHook>( new GLibTimeOut(callBackFunction, durationInMilliseconds, m_context) );
 	}
 
-	std::unique_ptr<WatchMainLoopHook> addWatch(WatchMainLoopHook::CallBackFunction callBackFunction,
+	std::unique_ptr<WatchMainLoopHook> addFileDescriptorWatch(WatchMainLoopHook::CallBackFunction callBackFunction,
 						    const pollfd& fd) override {
 		return std::unique_ptr<WatchMainLoopHook>( new GLibFileDescriptorWatch(callBackFunction, fd, m_context) );
 	}

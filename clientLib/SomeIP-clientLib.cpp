@@ -51,7 +51,7 @@ SomeIPReturnCode ClientDaemonConnection::connect(ClientConnectionListener& clien
 		fd.fd = getFileDescriptor();
 		fd.revents = 0;
 		fd.events = POLLIN;
-		m_inputDataWatch = m_mainLoop->addWatch([&] () {
+		m_inputDataWatch = m_mainLoop->addFileDescriptorWatch([&] () {
 								dispatchIncomingMessages();
 							}, fd);
 
@@ -61,7 +61,7 @@ SomeIPReturnCode ClientDaemonConnection::connect(ClientConnectionListener& clien
 		assert(returnCode == 0);
 		fd.fd = m_queuedMessageIndicatorPipe[0];
 
-		m_bufferedMessagesWatch = m_mainLoop->addWatch([&] () {
+		m_bufferedMessagesWatch = m_mainLoop->addFileDescriptorWatch([&] () {
 			 dispatchQueuedMessages();
 							    }, fd);
 
@@ -72,7 +72,7 @@ SomeIPReturnCode ClientDaemonConnection::connect(ClientConnectionListener& clien
 		m_bufferedMessagesWatch->enable();
 
 		fd.events = POLLHUP;
-		m_disconnectionWatch = m_mainLoop->addWatch([&] () {
+		m_disconnectionWatch = m_mainLoop->addFileDescriptorWatch([&] () {
 								    onDisconnected();
 							    }, fd);
 		m_disconnectionWatch->enable();

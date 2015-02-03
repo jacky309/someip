@@ -60,12 +60,12 @@ struct MainLoopInterface {
 	virtual ~MainLoopInterface() {
 	}
 
-	virtual std::unique_ptr<IdleMainLoopHook> addIdleCallback(IdleMainLoopHook::CallBackFunction callBackFunction) = 0;
+	virtual std::unique_ptr<IdleMainLoopHook> addIdle(IdleMainLoopHook::CallBackFunction callBackFunction) = 0;
 
 	virtual std::unique_ptr<TimeOutMainLoopHook> addTimeout(TimeOutMainLoopHook::CallBackFunction,
 								int durationInMilliseconds) = 0;
 
-	virtual std::unique_ptr<WatchMainLoopHook> addWatch(WatchMainLoopHook::CallBackFunction, const pollfd& fd) = 0;
+	virtual std::unique_ptr<WatchMainLoopHook> addFileDescriptorWatch(WatchMainLoopHook::CallBackFunction, const pollfd& fd) = 0;
 
 };
 
