@@ -3,6 +3,4 @@
 
 namespace SomeIP_utils {
 
-FILE* SomeIPFileLoggingContext::m_file = nullptr;
-
 }
