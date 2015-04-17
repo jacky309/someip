@@ -54,7 +54,7 @@ int run(int argc, const char** argv) {
 	if ( commandLineParser.parse(argc, argv) )
 		exit(1);
 
-	SomeIPFileLoggingContext::openFile(logFilePath);
+	SomeIPFileLoggingContext::setFilePath(logFilePath);
 
 	MainLoopApplication app;
 
