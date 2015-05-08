@@ -24,16 +24,28 @@ Additionally, you need to download those packages:
 Build
 -----
 
-Here are instructions on how to build the package:
+Here are instructions on how to build the package.
+By setting the CMAKE_INSTALL_PREFIX variable, you can set the path where you want the software packages to be installed. The default value is "/usr/local".
+If you prefer to use another location, you will have to set the PKG_CONFIG_PATH, LD_LIBRARY_PATH and PATH in order for packages to find their dependencies.
+
+# replace "/My/Installation/Location" by the actual location where you want the packages be be installed
+export APP_INSTALL_PATH=/My/Installation/Location
+export LIB_ARCH=`gcc --print-multiarch`
+export PATH=$APP_INSTALL_PATH/bin:$PATH:$PATH
+export LD_LIBRARY_PATH=$APP_INSTALL_PATH/lib:$APP_INSTALL_PATH/lib/${LIB_ARCH}:$LD_LIBRARY_PATH
+export PKG_CONFIG_PATH=$APP_INSTALL_PATH/lib/pkgconfig:$APP_INSTALL_PATH/lib/$LIB_ARCH/pkgconfig:$PKG_CONFIG_PATH
+
+Once that is done, you are ready to build & install the packages.
+
 - Download and install the "common-api-cmdline" package, which contains the runtime needed for commonAPI command-line generators.
 	$ git clone https://github.com/Pelagicore/common-api-cmdline.git
 	$ cd common-api-cmdline
 	$ cmake -DCMAKE_INSTALL_PREFIX=/My/Installation/Location
 	$ make install
-- Download and install the "common-api-tools" component, and build the "org.genivi.commonapi.core" package, which is needed by the Some/IP generator to generate the API of your stubs/proxies
+- Download and install the "common-api-tools" component, which is needed by the Some/IP generator to generate the API of your stubs/proxies
 	$ git clone https://github.com/Pelagicore/common-api-tools.git
-	$ cd common-api-tools/org.genivi.commonapi.core
-	$ mvn install
+	$ cd common-api-tools
+	$ cmake -DCMAKE_INSTALL_PREFIX=/My/Installation/Location
 - Build and install our package
 	$ cd someip
 	$ cmake . -DCMAKE_INSTALL_PREFIX=/My/Installation/Location
@@ -44,11 +56,6 @@ Build examples
 --------------
 
 Follow these steps to build the example application:
-- Build and install the CMake integration package
-	$ git clone https://github.com/Pelagicore/common-api-cmake.git
-	$ cd common-api-command-line-codegen
-	$ cmake . -DCMAKE_INSTALL_PREFIX=/My/Installation/Location
-	$ make install
 - Example application
 	$ git clone https://github.com/Pelagicore/common-api-someip-test-app.git
 	Check the README file of that repository for installation instructions
