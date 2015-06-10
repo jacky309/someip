@@ -131,7 +131,7 @@ public:
 	}
 
 	bool usesStaticBuffer() const {
-		return (m_dynamicData == NULL);
+		return (m_dynamicData == nullptr);
 	}
 
 	unsigned char* getData() {

@@ -230,6 +230,23 @@ TEST_F(SomeIPTest, SerializationComplex) {
 	EXPECT_EQ(readBool, referenceBool);
 }
 
+TEST_F(SomeIPTest, SerializationLSB) {
+
+	ByteArray byteArray;
+	NetworkSerializer stream(byteArray);
+
+	uint32_t referenceInt = 0x00123456;
+	stream << SomeIP_utils::LSBSerializer<3, uint32_t>(referenceInt);
+
+	NetworkDeserializer inputStream( byteArray.getData(), byteArray.size() );
+
+	uint32_t readInt;
+	inputStream >> SomeIP_utils::LSBDeserializer<3, uint32_t>(readInt);
+	EXPECT_EQ(readInt, referenceInt & 0xFFFFFF);
+}
+
+
+
 int main(int argc, char** argv) {
 	::testing::InitGoogleTest(&argc, argv);
 	auto ret = RUN_ALL_TESTS();

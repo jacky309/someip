@@ -271,7 +271,7 @@ public:
 	}
 
 	template<typename T>
-	NetworkSerializer& operator<<(T& v) {
+	NetworkSerializer& operator<<(const T& v) {
 		writeValue(v);
 		return *this;
 	}
@@ -356,5 +356,111 @@ public:
 	size_t m_offset;
 	bool m_isWritten = false;
 };
+
+template<int BytesCount, typename Type>
+class LSBSerializer {
+
+public:
+
+	LSBSerializer(const Type& value) : m_value(value) {
+	}
+
+	void serialize(NetworkSerializer& serializer) const {
+		for(int i = 0; i<BytesCount;i++) {
+			size_t bits = (BytesCount - i - 1) * 8;
+			uint8_t v = (m_value >> bits);
+			serializer << v;
+		}
+	}
+
+	const Type & m_value;
+};
+
+template<int BytesCount, typename Type>
+class LSBDeserializer {
+
+public:
+
+	LSBDeserializer(Type& value) : m_value(value) {
+	}
+
+	void deserialize(NetworkDeserializer& deserializer) const {
+		m_value = 0;
+
+		for(int i = 0; i<BytesCount;i++) {
+			uint8_t v;
+			deserializer >> v;
+			m_value <<= 8;
+			m_value += v;
+		}
+	}
+
+	Type & m_value;
+};
+
+template<int BytesCount, typename Type>
+inline NetworkSerializer& operator<<(NetworkSerializer& serializer, const LSBSerializer<BytesCount, Type>& v) {
+	v.serialize(serializer);
+	return serializer;
+}
+
+template<int BytesCount, typename Type>
+inline NetworkDeserializer& operator>>(NetworkDeserializer& serializer, const LSBDeserializer<BytesCount, Type>& v) {
+	v.deserialize(serializer);
+	return serializer;
+}
+
+
+class Tuple4Bits4Bits {
+
+public:
+
+	Tuple4Bits4Bits(uint8_t& value1, uint8_t& value2) : m_value1(value1), m_value2(value2) {
+	}
+
+	void deserialize(NetworkDeserializer& deserializer) const {
+		uint8_t value;
+		deserializer >> value;
+		m_value1 = value >> 4;
+		m_value2 = value & 0xF;
+	}
+
+	uint8_t& m_value1;
+	uint8_t& m_value2;
+};
+
+class Tuple4Bits4BitsReadOnly {
+
+public:
+
+	Tuple4Bits4BitsReadOnly(const uint8_t& value1, const uint8_t& value2) : m_value1(value1), m_value2(value2) {
+	}
+
+	void serialize(NetworkSerializer& serializer) const {
+		uint8_t value = (m_value1 << 4) + m_value2;
+		serializer << value;
+	}
+
+	const uint8_t& m_value1;
+	const uint8_t& m_value2;
+};
+
+inline Tuple4Bits4BitsReadOnly to4BitsTuple(const uint8_t& value1, const uint8_t& value2) {
+	return Tuple4Bits4BitsReadOnly(value1, value2);
+}
+
+inline Tuple4Bits4Bits to4BitsTuple(uint8_t& value1, uint8_t& value2) {
+	return Tuple4Bits4Bits(value1, value2);
+}
+
+inline NetworkDeserializer& operator>>(NetworkDeserializer& deserializer, const Tuple4Bits4Bits& v) {
+	v.deserialize(deserializer);
+	return deserializer;
+}
+
+inline NetworkSerializer& operator<<(NetworkSerializer& serializer, const Tuple4Bits4BitsReadOnly& v) {
+	v.serialize(serializer);
+	return serializer;
+}
 
 }

@@ -72,6 +72,8 @@ public:
 
 };
 
+
+
 class SomeIPServiceDiscoveryServiceEntry : public SomeIPServiceDiscoveryServiceEntryHeader, public Serializable {
 
 public:
@@ -87,14 +89,14 @@ public:
 	}
 
 	void deserialize(NetworkDeserializer& deserializer) {
-		deserializer >> m_indexFirstOptionRun >> m_indexSecondOptionRun >> m_1 >> m_2 >> m_serviceID >> m_instanceID
-		>> m_majorVersion >> m_ttl >> m_minorVersion;
+		deserializer >> m_indexFirstOptionRun >> m_indexSecondOptionRun >> to4BitsTuple(m_1,m_2) >> m_serviceID >> m_instanceID
+		>> m_majorVersion >> LSBDeserializer<3, uint32_t>(m_ttl) >> m_minorVersion;
 	}
 
 	void serialize(NetworkSerializer& serializer) const override {
 		serializer.writeEnum(m_type);
-		serializer << m_indexFirstOptionRun << m_indexSecondOptionRun << m_1 << m_2 << m_serviceID << m_instanceID
-			   << m_majorVersion << m_ttl << m_minorVersion;
+		serializer << m_indexFirstOptionRun << m_indexSecondOptionRun << to4BitsTuple(m_1, m_2) << m_serviceID << m_instanceID
+			   << m_majorVersion << LSBSerializer<3, uint32_t>(m_ttl)  << m_minorVersion;
 	}
 
 };
@@ -114,14 +116,15 @@ public:
 	}
 
 	void deserialize(NetworkDeserializer& deserializer) {
-		deserializer >> m_indexFirstOptionRun >> m_indexSecondOptionRun >> m_1 >> m_2 >> m_serviceID >> m_instanceID
-		>> m_majorVersion >> m_ttl >> m_reserved16 >> m_eventGroupID;
+		Tuple4Bits4Bits tuple(m_1, m_2);
+		deserializer >> m_indexFirstOptionRun >> m_indexSecondOptionRun >> to4BitsTuple(m_1, m_2) >> m_serviceID >> m_instanceID
+		>> m_majorVersion >> LSBDeserializer<3, uint32_t>(m_ttl) >> m_reserved16 >> m_eventGroupID;
 	}
 
 	void serialize(NetworkSerializer& serializer) const override {
 		serializer.writeEnum(m_type);
-		serializer << m_indexFirstOptionRun << m_indexSecondOptionRun << m_1 << m_2 << m_serviceID << m_instanceID
-			   << m_majorVersion << m_ttl << m_reserved16 << m_eventGroupID;
+		serializer << m_indexFirstOptionRun << m_indexSecondOptionRun << to4BitsTuple(m_1, m_2) << m_serviceID << m_instanceID
+			   << m_majorVersion << LSBSerializer<3, uint32_t>(m_ttl) << m_reserved16 << m_eventGroupID;
 	}
 
 };
