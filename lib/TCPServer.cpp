@@ -75,6 +75,11 @@ SomeIPReturnCode TCPServer::init(int portCount) {
 			log_warn() << "Failed to bind TCP server socket " << m_port << ". Error : " << strerror(errno);
 			m_port++;
 		} else {
+			int opt = 1;
+			if ( setsockopt(tcpServerSocketHandle, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int)) == -1 )
+			{
+				log_error() << "Failed to setsockopt SO_REUSEADDR. Error : " << strerror(errno);
+			}
 			bindSuccessful = true;
 			break;
 		}
@@ -82,7 +87,7 @@ SomeIPReturnCode TCPServer::init(int portCount) {
 
 	if (bindSuccessful) {
 		if (::listen(tcpServerSocketHandle, SOMAXCONN) != 0) {
-			log_error( ) << "Failed to listen to TCP port " << m_port << ". Error : " << strerror(errno);
+			log_error() << "Failed to listen to TCP port " << m_port << ". Error : " << strerror(errno);
 			return SomeIPReturnCode::ERROR;
 		}
 
