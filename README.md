@@ -52,3 +52,10 @@ Change log
 
 FAQ
 ---
+
+
+LICENSE and COPYRIGHT --------------------- This implementation of
+SOMEIP is licensed under the Mozilla Public License 2.0. You should
+find a copy of the MPL v2 in the top level directory of SOMEIP.
+
+Copyright (C) Pelagicore 2015
