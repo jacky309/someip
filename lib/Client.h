@@ -57,7 +57,7 @@ public:
 	 */
 	virtual std::string toString() const = 0;
 
-	virtual void sendMessage(const DispatcherMessage& msg) = 0;
+	virtual SomeIPReturnCode sendMessage(const DispatcherMessage& msg) = 0;
 
 	virtual SomeIPReturnCode sendMessage(const OutputMessage& msg) = 0;
 

@@ -133,7 +133,7 @@ SomeIPReturnCode RemoteTCPClient::connect() {
 }
 
 
-void TCPClient::sendMessage(const DispatcherMessage& msg) {
+SomeIPReturnCode TCPClient::sendMessage(const DispatcherMessage& msg) {
 
 	log_traffic() << "Sending message to client " << toString() << ". Message: " << msg.toString();
 

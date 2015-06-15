@@ -52,22 +52,24 @@ void ServiceAnnouncer::onServiceUnregistered(const Service& service) {
 	if (service.isLocal()) {
 		TCPServer* server = m_tcpServer.getEndPoint(service);
 
-		for (auto& channel : m_channels) {
-			for (auto ipAddress : server->getIPAddresses())
-				if (channel.address == ipAddress.getAddress()) {
+		if (server != nullptr) {
+			for (auto& channel : m_channels) {
+				for (auto ipAddress : server->getIPAddresses())
+					if (channel.address == ipAddress.getAddress()) {
 
-					SomeIPServiceDiscoveryMessage serviceDiscoveryMessage(true);
+						SomeIPServiceDiscoveryMessage serviceDiscoveryMessage(true);
 
-					SomeIPServiceDiscoveryServiceUnregisteredEntry serviceEntry(serviceDiscoveryMessage,
-							service.getServiceIDs(), SomeIP::TransportProtocol::TCP, ipAddress.m_address,
-							ipAddress.m_port);
+						SomeIPServiceDiscoveryServiceUnregisteredEntry serviceEntry(serviceDiscoveryMessage,
+								service.getServiceIDs(), SomeIP::TransportProtocol::TCP, ipAddress.m_address,
+								ipAddress.m_port);
 
-					serviceDiscoveryMessage.addEntry(serviceEntry);
+						serviceDiscoveryMessage.addEntry(serviceEntry);
 
-					sendMessage(serviceDiscoveryMessage, channel);
-				}
+						sendMessage(serviceDiscoveryMessage, channel);
+					}
+			}
+			server->removeService(service);
 		}
-		server->removeService(service);
 	}
 }
 

@@ -68,13 +68,13 @@ public:
 		// TODO : send message to inform the client that we are interested in the notification
 	}
 
-	void sendMessage(const DispatcherMessage& msg) override {
-		log_traffic( "Sending message to client %s. Message: %s", toString().c_str(), msg.toString().c_str() );
-		sendIPCMessage( msg.getIPCMessage() );
+	SomeIPReturnCode sendMessage(const DispatcherMessage& msg) override {
+		log_traffic() << "Sending message to client " << toString() << ". Message: " << msg.toString();
+		return !isError(sendIPCMessage( msg.getIPCMessage() )) ? SomeIPReturnCode::OK : SomeIPReturnCode::ERROR;
 	}
 
 	SomeIPReturnCode sendMessage(const OutputMessage& msg) override {
-		log_traffic( "Sending message to client %s. Message: %s", toString().c_str(), msg.toString().c_str() );
+		log_traffic() << "Sending message to client " << toString() << ". Message: " << msg.toString();
 		return sendIPCMessage( msg.getIPCMessage() );
 	}
 

@@ -54,8 +54,11 @@ class DaemonLessClient: public ClientConnection, private ServiceRegistrationList
 			return std::string();
 		}
 
-		void sendMessage(const DispatcherMessage& msg) override {
+		SomeIPReturnCode sendMessage(const DispatcherMessage& msg) override {
 			m_client.m_listener->processMessage(msg);
+
+			// TODO : return correct code
+			return SomeIPReturnCode::OK;
 		}
 
 		SomeIPReturnCode sendMessage(const OutputMessage& msg) override {

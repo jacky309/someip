@@ -29,6 +29,7 @@ public:
 	}
 
 	virtual ~TCPServer() {
+		log_info() << toString() << " destroyed";
 	}
 
 	bool isBlackListed(const IPv4TCPEndPoint& server, ServiceIDs serviceID) const override;
@@ -72,13 +73,17 @@ public:
 	void addService(const Service& service) {
 		assert(m_instanceNamespace.count(service.getServiceIDs().serviceID) == 0);
 		m_instanceNamespace[service.getServiceIDs().serviceID] = &service;
-		log_debug() << m_instanceNamespace;
+		log_debug() << toString() << m_instanceNamespace;
+	}
+
+	std::string toString() const {
+		return StringBuilder() << "TCPServer port:" << m_port;
 	}
 
 	void removeService(const Service& service) {
 		assert(m_instanceNamespace.count(service.getServiceIDs().serviceID) == 1);
 		m_instanceNamespace.erase(service.getServiceIDs().serviceID);
-		log_debug() << m_instanceNamespace;
+		log_debug() << toString() << m_instanceNamespace;
 	}
 
 private:

@@ -181,7 +181,7 @@ public:
 		return header.getRequestID() >> 16;
 	}
 
-	void sendMessage(const DispatcherMessage& msg) override;
+	SomeIPReturnCode sendMessage(const DispatcherMessage& msg) override;
 
 	InputMessage sendMessageBlocking(const OutputMessage& msg) override {
 
@@ -208,7 +208,7 @@ public:
 	}
 
 	virtual SomeIPReturnCode connect() {
-		return SomeIPReturnCode::OK;
+		return SomeIPReturnCode::ERROR;
 	}
 
 	SomeIPReturnCode sendMessage(const OutputMessage& msg) override {
