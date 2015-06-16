@@ -168,8 +168,9 @@ ReturnCode Dispatcher::registerService(Service& service) {
 void Dispatcher::unregisterService(Service& service) {
 	removeFromVector(m_services, &service);
 
-	// Notify listeners
-	for (auto listener : m_serviceRegistrationListeners) {
+	// Notify listeners in reverse order since the service announcer needs to be notified before having the service unregistered from TCP and UDP endpoints
+	for (auto i = m_serviceRegistrationListeners.rbegin(); i != m_serviceRegistrationListeners.rend(); ++i) {
+		auto listener = *i;
 		listener->onServiceUnregistered(service);
 	}
 

@@ -20,7 +20,7 @@ namespace SomeIP_Dispatcher {
 /**
  * Announces the available services via UDP
  */
-class ServiceAnnouncer : public ServiceRegistrationListener {
+class ServiceAnnouncer : public ServiceRegistrationListener  {
 
 	LOG_DECLARE_CLASS_CONTEXT("SeAn", "Service announcer");
 
@@ -36,11 +36,16 @@ public:
 			mainLoopContext.addTimeout(
 				[&]() {
 					announceServices();
-				}, 300000) ), m_tcpServer(tcpServer) {
+				}, 30000) ), m_tcpServer(tcpServer) {
+		m_dispatcher.addServiceRegistrationListener(*this);
 	}
 
 	virtual ~ServiceAnnouncer() {
 	}
+
+	void onServiceRegistered(const Service& service) override;
+
+	void onServiceUnregistered(const Service& service) override;
 
 	void announceServices() {
 		for ( auto service : m_dispatcher.getServices() ) {
@@ -49,10 +54,6 @@ public:
 			}
 		}
 	}
-
-	void onServiceRegistered(const Service& service);
-
-	void onServiceUnregistered(const Service& service);
 
 	void sendMessage(const SomeIPServiceDiscoveryMessage& serviceDiscoveryMessage, AnnouncementChannel& channel);
 

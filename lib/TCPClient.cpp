@@ -150,6 +150,9 @@ SomeIPReturnCode TCPClient::sendMessage(const DispatcherMessage& msg) {
 		sendMessage( requestHeader, msg.getPayload(), msg.getPayloadLength() );
 	} else
 		sendMessage( header, msg.getPayload(), msg.getPayloadLength() );
+
+	// TODO : return correct code
+	return SomeIPReturnCode::OK;
 }
 
 IPCOperationReport TCPClient::sendMessage(const SomeIP::SomeIPHeader& header, const void* payload, size_t payloadLength) {

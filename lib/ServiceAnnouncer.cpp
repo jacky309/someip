@@ -27,12 +27,9 @@ void ServiceAnnouncer::sendMessage(const SomeIPServiceDiscoveryMessage& serviceD
 
 void ServiceAnnouncer::onServiceRegistered(const Service& service) {
 
-	if (service.isLocal()) {         // we don't publish remote services
+	const TCPServer* server = m_tcpServer.getEndPoint(service);
 
-		TCPServer* server = m_tcpServer.bindService(service);
-
-		assert(server != nullptr);
-
+	if (server != nullptr)
 		for (auto channel : m_channels)
 			for (auto ipAddress : server->getIPAddresses())
 				if (channel.address == ipAddress.getAddress()) {
@@ -45,37 +42,33 @@ void ServiceAnnouncer::onServiceRegistered(const Service& service) {
 
 					sendMessage(serviceDiscoveryMessage, channel);
 				}
-	}
+
 }
 
 void ServiceAnnouncer::onServiceUnregistered(const Service& service) {
-	if (service.isLocal()) {
-		TCPServer* server = m_tcpServer.getEndPoint(service);
 
-		if (server != nullptr) {
-			for (auto& channel : m_channels) {
-				for (auto ipAddress : server->getIPAddresses())
-					if (channel.address == ipAddress.getAddress()) {
+	const TCPServer* server = m_tcpServer.getEndPoint(service);
 
-						SomeIPServiceDiscoveryMessage serviceDiscoveryMessage(true);
+	if (server != nullptr)
+		for (auto& channel : m_channels) {
+			for (auto ipAddress : server->getIPAddresses())
+				if (channel.address == ipAddress.getAddress()) {
 
-						SomeIPServiceDiscoveryServiceUnregisteredEntry serviceEntry(serviceDiscoveryMessage,
-								service.getServiceIDs(), SomeIP::TransportProtocol::TCP, ipAddress.m_address,
-								ipAddress.m_port);
+					SomeIPServiceDiscoveryMessage serviceDiscoveryMessage(true);
 
-						serviceDiscoveryMessage.addEntry(serviceEntry);
+					SomeIPServiceDiscoveryServiceUnregisteredEntry serviceEntry(serviceDiscoveryMessage,
+							service.getServiceIDs(), SomeIP::TransportProtocol::TCP, ipAddress.m_address,
+							ipAddress.m_port);
 
-						sendMessage(serviceDiscoveryMessage, channel);
-					}
-			}
-			server->removeService(service);
+					serviceDiscoveryMessage.addEntry(serviceEntry);
+
+					sendMessage(serviceDiscoveryMessage, channel);
+				}
 		}
-	}
+
 }
 
 SomeIPReturnCode ServiceAnnouncer::init() {
-
-	m_dispatcher.addServiceRegistrationListener(*this);
 
 	auto interfaces = TCPServer::getAllIPAddresses();
 
