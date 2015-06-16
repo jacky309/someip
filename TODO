@@ -1,2 +1,3 @@
 - Support for managed interface
 - Support threaded handling of incoming messages
+- Determine the license for each .cpp and .h file
