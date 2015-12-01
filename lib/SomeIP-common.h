@@ -6,8 +6,6 @@
 #include <poll.h>
 #include <memory>
 
-#include <ByteArray.h>
-
 //#define ENABLE_PING
 
 namespace SomeIP_Lib {

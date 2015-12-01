@@ -13,8 +13,6 @@
 
 #include "ivi-logging.h"
 
-#include <ByteArray.h>
-
 namespace SomeIP_utils {
 
 using logging::byteArrayToString;
