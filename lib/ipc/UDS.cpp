@@ -116,7 +116,7 @@ IPCOperationReport SocketStreamConnection::writeBytesBlocking(const void* buffer
 			}
 
 		if (n != length - sentBytes) {
-			log_verbose("Reception buffer is full");
+			log_verbose() << "Reception buffer is full";
 			onCongestionDetected();
 		}
 
@@ -141,14 +141,14 @@ void setSocketBufferSize(int fd, int size) {
 
 	getsockopt(fd, SOL_SOCKET, SO_SNDBUF, &actualBufferSize, &actualBufferSizeSizeOf);
 	if (actualBufferSize < size)
-		log_error("Send socket buffer size could not be set.");
+		log_error() << "Send socket buffer size could not be set.";
 
 	if ( setsockopt( fd, SOL_SOCKET, SO_RCVBUF, &buffsize, sizeof(buffsize) ) )
 		throw Exception("Can't set socket buffer size");
 
 	getsockopt(fd, SOL_SOCKET, SO_RCVBUF, &actualBufferSize, &actualBufferSizeSizeOf);
 	if (actualBufferSize < size)
-		log_error("Send socket buffer size could not be set.");
+		log_error() << "Send socket buffer size could not be set.";
 }
 
 IPCOperationReport UDSConnection::writeBlocking(const IPCMessage& msg) {

@@ -45,7 +45,7 @@ protected:
 		int fileDescriptor = socket(AF_UNIX, SOCK_STREAM, 0);
 
 		if ( fileDescriptor == -1 ) {
-			log_warning("Failed to create socket");
+			log_warning() << "Failed to create socket";
 			return SomeIPReturnCode::ERROR;
 		}
 

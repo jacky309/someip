@@ -38,7 +38,7 @@ void WellKnownService::sendMessage(const DispatcherMessage& msg) {
 
 SomeIPReturnCode WellKnownService::activateService() {
 
-	log_info("Activating service ") << toString();
+	log_info() << "Activating service " << toString();
 
 	if (m_state != ProcessState::STARTING) {
 

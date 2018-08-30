@@ -101,7 +101,7 @@ public:
 	}
 
 	/**
-	 * Returns true if the service is provided by a local application, or false otherwise
+	 * Returns true if the service is provided by a local application, false otherwise
 	 */
 	bool isLocal() const {
 		return m_isLocal;

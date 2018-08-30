@@ -155,7 +155,7 @@ protected:
 		onCongestionDetected();
 	}
 
-	bool isCongested() {
+	bool isCongested() const {
 		return (m_dataToBeSent.size() != 0);
 	}
 
@@ -163,13 +163,13 @@ private:
 	void increaseWrittenBytesCounter(size_t count) {
 		m_writtenBytesCount += count;
 		if ( ( (m_writtenBytesCount / 1000) % 1000 ) == 0 )
-			log_verbose( "Written %zu bytes to %s", m_writtenBytesCount, toString().c_str() );
+			log_verbose() << "Written " << m_writtenBytesCount << " bytes to " << toString().c_str();
 	}
 
 	void increaseReadBytesCounter(size_t count) {
 		m_receivedBytesCount += count;
 		if ( ( (m_receivedBytesCount / 1000) % 1000 ) == 0 )
-			log_verbose( "Received %zu bytes from %s", m_receivedBytesCount, toString().c_str() );
+			log_verbose() << "Received " << m_receivedBytesCount << " bytes from " << toString().c_str();
 	}
 
 	//	const char* uds_socket_path;

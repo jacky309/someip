@@ -53,13 +53,13 @@ public:
 		if (timeoutInMilliseconds != 0)
 			g_timeout_add(timeoutInMilliseconds, timeout_callback, this);
 
-		log_info("Entering main loop");
+		log_info() << "Entering main loop";
 
 		g_main_loop_run(m_mainLoop);
 	}
 
 	void exit() {
-		log_info("Exiting main loop");
+		log_info() << "Exiting main loop";
 		g_main_loop_quit(m_mainLoop);
 	}
 
@@ -143,11 +143,11 @@ public:
 			sigaddset(&mask, SIGINT);
 
 		if (sigprocmask(SIG_BLOCK, &mask, NULL) == -1)
-			log_error("Error during sigprocmask() call");
+			log_error() << "Error during sigprocmask() call";
 
 		unixSignalFileDescriptor = signalfd(-1, &mask, 0);
 		if (unixSignalFileDescriptor == -1)
-			log_error("Error during signalfd() call");
+			log_error() << "Error during signalfd() call";
 
 		GIOChannel* channel = g_io_channel_unix_new(unixSignalFileDescriptor);
 		g_io_add_watch(channel, G_IO_IN | G_IO_HUP, onUnixSignalReceived, this);

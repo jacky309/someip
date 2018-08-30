@@ -16,7 +16,7 @@ void Notification::sendMessageToSubscribedClients(const DispatcherMessage& msg) 
 void Dispatcher::dispatchMessage(DispatcherMessage& msg, Client& client) {
 
 	if (m_messageCounter++ % 10000 == 0)
-		log_info("Message count : ") << m_messageCounter;
+		log_info() << "Message count : " << m_messageCounter;
 
 	log_traffic() << "Message received from client " << client.toString() << " : " << msg;
 
