@@ -16,8 +16,6 @@ if (USE_LIBCPP)
 endif()
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wextra")
 
-add_definitions(-DCOMMONAPI_INTERNAL_COMPILATION)
-
 find_package(IVILogging REQUIRED)
 set(LOGGING_LIBRARIES ${IVILOGGING_LIBRARIES})
 
@@ -26,10 +24,6 @@ FIND_PACKAGE(PkgConfig REQUIRED)
 
 pkg_check_modules(GLIB REQUIRED glib-2.0)
 add_definitions(${GLIB_CFLAGS})
-
-pkg_check_modules(COMMONAPI REQUIRED CommonAPI)
-add_definitions(${COMMONAPI_CFLAGS_OTHER})
-include_directories(${COMMONAPI_INCLUDE_DIRS})
 
 include_directories(
 	utilLib
@@ -48,15 +42,11 @@ link_directories(
 	${GLIB_LIBRARY_DIRS}
 )
 
-configure_file(CommonAPI-SomeIP.pc.in CommonAPI-SomeIP.pc @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CommonAPI-SomeIP.pc DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig)
+#configure_file(CommonAPI-SomeIP.pc.in CommonAPI-SomeIP.pc @ONLY)
+#install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CommonAPI-SomeIP.pc DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig)
 
 set(DEVELOPMENT_INCLUDE_PATH " -I${CMAKE_CURRENT_BINARY_DIR}/lib -I${CMAKE_CURRENT_SOURCE_DIR} -I${CMAKE_CURRENT_SOURCE_DIR}/clientLib -I${CMAKE_CURRENT_SOURCE_DIR}/utilLib -I${CMAKE_CURRENT_SOURCE_DIR}/lib -I${CMAKE_CURRENT_SOURCE_DIR}/common-api/include #")
 set(DEVELOPMENT_LIBRARY_PATH " -L${CMAKE_CURRENT_BINARY_DIR}/clientLib -L${CMAKE_CURRENT_BINARY_DIR}/lib #" )
-configure_file(CommonAPI-SomeIP.pc.in CommonAPI-SomeIP-uninstalled.pc @ONLY)
-if(INSTALL_PKGCONFIG_UNINSTALLED_FILE)
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CommonAPI-SomeIP-uninstalled.pc DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig)
-endif()
 
 if (ENABLE_SYSTEMD)
 	add_definitions(-DENABLE_SYSTEMD)
@@ -78,8 +68,6 @@ add_subdirectory (clientLib)
 add_subdirectory (utilLib)
 
 OPTION( ENABLE_TEST "Enable testing" OFF)
-
-add_subdirectory (common-api)
 
 if (ENABLE_TEST)
 	
@@ -124,7 +112,6 @@ if (ENABLE_TEST)
 
     enable_testing()
 	add_subdirectory(test)
-	add_subdirectory(common-api/test)
 endif()
 
 if (ENABLE_DOC)

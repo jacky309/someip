@@ -1,12 +1,9 @@
 #pragma once
 
-#include "CommonAPI/SerializableVariant.h"
 #include "SomeIP-common.h"
 #include "utilLib/serialization.h"
 
 namespace SomeIP_Lib {
-
-using CommonAPI::Variant;
 
 using SomeIP_utils::Serializer;
 using SomeIP_utils::Deserializer;
@@ -66,20 +63,6 @@ SomeIPOutputStream& operator<<(SomeIPOutputStream& stream, const T& v) {
 
 inline SomeIPOutputStream& operator<<(SomeIPOutputStream& stream, const char& v) {
 	stream.writeValue(v);
-	return stream;
-}
-
-template<typename ... _Types>
-SomeIPOutputStream& operator<<(SomeIPOutputStream& stream, const Variant<_Types ...>& v) {
-
-	LengthPlaceHolder<uint32_t, SomeIPSerializer> lengthPlaceHolder(stream);
-
-	uint32_t type = v.getValueType();
-	stream << type;
-
-	writeToOutputStream(v, stream);
-	stream.alignToBoundary(4);
-
 	return stream;
 }
 
@@ -159,10 +142,6 @@ inline SomeIPInputStream& operator>>(SomeIPInputStream& stream, std::string& str
 	return stream;
 }
 
-inline SomeIPInputStream& operator>>(SomeIPInputStream& stream, CommonAPI::Version& v) {
-	return stream;
-}
-
 template<typename T> SomeIPInputStream& operator>>(SomeIPInputStream& stream, std::vector<T>& v) {
 	uint32_t size;
 	stream.readValue(size);
@@ -171,23 +150,6 @@ template<typename T> SomeIPInputStream& operator>>(SomeIPInputStream& stream, st
 		stream >> element;
 		v.push_back(element);
 	}
-	return stream;
-}
-
-template<typename ... _Types>
-SomeIPInputStream& operator>>(SomeIPInputStream& stream, Variant<_Types ...>& v) {
-
-	uint32_t length;
-	stream.readValue(length);
-
-	auto initialPosition = stream.currentDataPosition_;
-
-	uint32_t typeIndex;
-	stream.readValue(typeIndex);
-
-	readFromInputStream(v, typeIndex, stream);
-
-	stream.currentDataPosition_ = initialPosition + length;
 	return stream;
 }
 
@@ -219,12 +181,6 @@ public:
 private:
 	SomeIPOutputStream& outputStream_;
 };
-
-template<typename ... _Types>
-void writeToOutputStream(const Variant<_Types ...>& variant, SomeIPOutputStream& outputStream) {
-	OutputStreamWriteVisitor visitor(outputStream);
-	CommonAPI::ApplyVoidVisitor<OutputStreamWriteVisitor, Variant<_Types ...>, _Types ...>::visit(visitor, variant);
-}
 
 template<class Variant, typename ... _Types> struct SomeIPVariantDeserializer;
 
@@ -260,10 +216,5 @@ struct SomeIPVariantDeserializer<Variant, _Type, _Types ...> {
 	}
 
 };
-
-template<typename ... _Types>
-void readFromInputStream(Variant<_Types ...>& variant, uint8_t typeIndex, SomeIPInputStream& inputStream) {
-	SomeIPVariantDeserializer<Variant<_Types ...>, _Types ...>::deserialize(variant, inputStream, typeIndex);
-}
 
 }
